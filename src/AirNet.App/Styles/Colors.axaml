@@ -1,0 +1,145 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!--
+    AirNet shares AirPDF's warm "paper" surfaces, type scale and radii so the two products read
+    as one family. What changes is the signal colour: teal becomes the primary accent because
+    healthy connectivity should look calm, and AirPDF's terracotta is demoted to the alert tone,
+    so a degrading link literally takes on the sibling product's brand colour.
+  -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F1EEE7" />
+      <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="#F4F0E8" />
+      <SolidColorBrush x:Key="ToolbarBackgroundBrush" Color="#F9F7F2" />
+      <SolidColorBrush x:Key="StatusBackgroundBrush" Color="#F9F7F2" />
+      <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#EAE5DC" />
+      <SolidColorBrush x:Key="SurfaceBrush" Color="#FBFAF7" />
+      <SolidColorBrush x:Key="SurfaceAltBrush" Color="#F6F2EB" />
+      <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#EDE7DD" />
+      <SolidColorBrush x:Key="SurfacePressedBrush" Color="#E3DCCF" />
+      <SolidColorBrush x:Key="BorderBrush" Color="#DED7CB" />
+      <SolidColorBrush x:Key="BorderStrongBrush" Color="#C7BEB0" />
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1D232C" />
+      <SolidColorBrush x:Key="TextSecondaryBrush" Color="#69645C" />
+      <SolidColorBrush x:Key="TextTertiaryBrush" Color="#9A9286" />
+      <SolidColorBrush x:Key="InverseTextBrush" Color="#FFFFFF" />
+
+      <SolidColorBrush x:Key="AccentBrush" Color="#2E6F63" />
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="#245A50" />
+      <SolidColorBrush x:Key="AccentSoftBrush" Color="#E2EFEB" />
+      <SolidColorBrush x:Key="AccentTextBrush" Color="#1F5A50" />
+      <SolidColorBrush x:Key="AccentOnBrush" Color="#FFFFFF" />
+
+      <SolidColorBrush x:Key="GoodBrush" Color="#2E6F63" />
+      <SolidColorBrush x:Key="GoodSoftBrush" Color="#E2EFEB" />
+      <SolidColorBrush x:Key="WarnBrush" Color="#A9701A" />
+      <SolidColorBrush x:Key="WarnSoftBrush" Color="#F6EAD4" />
+      <SolidColorBrush x:Key="BadBrush" Color="#B23A2B" />
+      <SolidColorBrush x:Key="BadSoftBrush" Color="#F8E2DD" />
+      <SolidColorBrush x:Key="DangerBrush" Color="#B23A2B" />
+      <SolidColorBrush x:Key="DangerSoftBrush" Color="#F8E2DD" />
+      <SolidColorBrush x:Key="BrandBrush" Color="#E3563B" />
+
+      <SolidColorBrush x:Key="TrackBrush" Color="#E7E0D4" />
+      <SolidColorBrush x:Key="GridLineBrush" Color="#E4DCD0" />
+      <SolidColorBrush x:Key="GuideBrush" Color="#B9AE9E" />
+      <SolidColorBrush x:Key="ShadowBrush" Color="#240E1720" />
+      <SolidColorBrush x:Key="CardShadowBrush" Color="#1F0E1720" />
+      <SolidColorBrush x:Key="OverlayScrimBrush" Color="#660D1117" />
+
+      <LinearGradientBrush x:Key="ChartFillBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0" Color="#422E6F63" />
+        <GradientStop Offset="1" Color="#002E6F63" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="ChartFillWarnBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0" Color="#42A9701A" />
+        <GradientStop Offset="1" Color="#00A9701A" />
+      </LinearGradientBrush>
+
+      <!-- Fluent bridge keys, so stock controls inherit the palette -->
+      <Color x:Key="SystemAccentColor">#2E6F63</Color>
+      <SolidColorBrush x:Key="SystemAccentColorBrush" Color="#2E6F63" />
+      <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#1D232C" />
+      <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="#69645C" />
+      <SolidColorBrush x:Key="TextFillColorTertiaryBrush" Color="#9A9286" />
+      <SolidColorBrush x:Key="TextControlBackground" Color="#FBFAF7" />
+      <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="TextControlBorderBrush" Color="#DED7CB" />
+      <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#C7BEB0" />
+      <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#2E6F63" />
+      <SolidColorBrush x:Key="TextControlForeground" Color="#1D232C" />
+    </ResourceDictionary>
+
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="AppBackgroundBrush" Color="#13171C" />
+      <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="#14191F" />
+      <SolidColorBrush x:Key="ToolbarBackgroundBrush" Color="#181D23" />
+      <SolidColorBrush x:Key="StatusBackgroundBrush" Color="#181D23" />
+      <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#171C22" />
+      <SolidColorBrush x:Key="SurfaceBrush" Color="#1C222A" />
+      <SolidColorBrush x:Key="SurfaceAltBrush" Color="#202831" />
+      <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#2A333D" />
+      <SolidColorBrush x:Key="SurfacePressedBrush" Color="#333E4A" />
+      <SolidColorBrush x:Key="BorderBrush" Color="#2C343E" />
+      <SolidColorBrush x:Key="BorderStrongBrush" Color="#43505D" />
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F3EFE6" />
+      <SolidColorBrush x:Key="TextSecondaryBrush" Color="#ABA49A" />
+      <SolidColorBrush x:Key="TextTertiaryBrush" Color="#7B756D" />
+      <SolidColorBrush x:Key="InverseTextBrush" Color="#13171C" />
+
+      <SolidColorBrush x:Key="AccentBrush" Color="#69B3A4" />
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="#86C6B8" />
+      <SolidColorBrush x:Key="AccentSoftBrush" Color="#1E312E" />
+      <SolidColorBrush x:Key="AccentTextBrush" Color="#8FD0C2" />
+      <!-- Dark accent is a light teal, so primary buttons need dark ink to stay readable. -->
+      <SolidColorBrush x:Key="AccentOnBrush" Color="#10201C" />
+
+      <SolidColorBrush x:Key="GoodBrush" Color="#69B3A4" />
+      <SolidColorBrush x:Key="GoodSoftBrush" Color="#1E312E" />
+      <SolidColorBrush x:Key="WarnBrush" Color="#E0A85C" />
+      <SolidColorBrush x:Key="WarnSoftBrush" Color="#33280F" />
+      <SolidColorBrush x:Key="BadBrush" Color="#FF8E79" />
+      <SolidColorBrush x:Key="BadSoftBrush" Color="#39221F" />
+      <SolidColorBrush x:Key="DangerBrush" Color="#FF8E79" />
+      <SolidColorBrush x:Key="DangerSoftBrush" Color="#39221F" />
+      <SolidColorBrush x:Key="BrandBrush" Color="#FF6B4E" />
+
+      <SolidColorBrush x:Key="TrackBrush" Color="#2B343E" />
+      <SolidColorBrush x:Key="GridLineBrush" Color="#242C35" />
+      <SolidColorBrush x:Key="GuideBrush" Color="#4A5764" />
+      <SolidColorBrush x:Key="ShadowBrush" Color="#66000000" />
+      <SolidColorBrush x:Key="CardShadowBrush" Color="#4D000000" />
+      <SolidColorBrush x:Key="OverlayScrimBrush" Color="#99000000" />
+
+      <LinearGradientBrush x:Key="ChartFillBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0" Color="#4D69B3A4" />
+        <GradientStop Offset="1" Color="#0069B3A4" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="ChartFillWarnBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0" Color="#4DE0A85C" />
+        <GradientStop Offset="1" Color="#00E0A85C" />
+      </LinearGradientBrush>
+
+      <Color x:Key="SystemAccentColor">#69B3A4</Color>
+      <SolidColorBrush x:Key="SystemAccentColorBrush" Color="#69B3A4" />
+      <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#F3EFE6" />
+      <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="#ABA49A" />
+      <SolidColorBrush x:Key="TextFillColorTertiaryBrush" Color="#7B756D" />
+      <SolidColorBrush x:Key="TextControlBackground" Color="#1C222A" />
+      <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#202831" />
+      <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#202831" />
+      <SolidColorBrush x:Key="TextControlBorderBrush" Color="#2C343E" />
+      <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#43505D" />
+      <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#69B3A4" />
+      <SolidColorBrush x:Key="TextControlForeground" Color="#F3EFE6" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <FontFamily x:Key="AppFontFamily">Inter, Segoe UI, Microsoft YaHei UI, Noto Sans CJK SC, PingFang SC, sans-serif</FontFamily>
+  <FontFamily x:Key="DisplayFontFamily">Georgia, Times New Roman, Songti SC, SimSun, serif</FontFamily>
+  <FontFamily x:Key="MonoFontFamily">Cascadia Mono, Consolas, SF Mono, Menlo, monospace</FontFamily>
+
+  <CornerRadius x:Key="CardCornerRadius">14</CornerRadius>
+  <CornerRadius x:Key="SmallCornerRadius">9</CornerRadius>
+</ResourceDictionary>

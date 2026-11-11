@@ -1,0 +1,307 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AirNet.App.ViewModels"
+             xmlns:controls="using:AirNet.App.Controls"
+             x:Class="AirNet.App.Views.MonitorView"
+             x:DataType="vm:MonitorViewModel">
+  <UserControl.Resources>
+    <DataTemplate x:Key="MetricTileTemplate" x:DataType="vm:MetricTile">
+      <Border Classes="tile" Padding="11,9">
+        <StackPanel Spacing="3">
+          <StackPanel Orientation="Horizontal" Spacing="5">
+            <Ellipse Classes="tileDot"
+                     Classes.warn="{Binding IsWarn}"
+                     Classes.bad="{Binding IsBad}" />
+            <TextBlock Text="{Binding Label}"
+                       Classes="eyebrow"
+                       FontSize="9.5"
+                       LetterSpacing="0.8" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="0">
+            <TextBlock Text="{Binding Value}" Classes="value" FontSize="21" />
+            <TextBlock Text="{Binding Unit}" Classes="unit" />
+          </StackPanel>
+          <TextBlock Text="{Binding Foot}"
+                     Classes="micro"
+                     FontSize="10"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+      </Border>
+    </DataTemplate>
+  </UserControl.Resources>
+
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <Grid MaxWidth="1160"
+          Margin="24,18,24,26"
+          RowDefinitions="Auto,*"
+          RowSpacing="12">
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="1">
+          <TextBlock Text="实时检测" Classes="h3" />
+          <TextBlock Text="60 秒窗口 · 20 次采样 · 逐跳定位"
+                     Classes="caption"
+                     FontSize="10.5" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Border Classes="pill" Padding="9,3">
+            <StackPanel Orientation="Horizontal" Spacing="5">
+              <Ellipse Width="5" Height="5" Fill="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+              <TextBlock Text="ICMP + TCP 双探测" FontSize="10" />
+            </StackPanel>
+          </Border>
+          <Button Classes="ghost" Height="30" MinHeight="30" Padding="11,0" Command="{Binding Shell.RunScanCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Path Classes="icon small muted" Data="{StaticResource IconRefresh}" />
+              <TextBlock Text="重新检测" FontSize="11.5" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </Grid>
+
+      <Grid Grid.Row="1" ColumnDefinitions="*,312" ColumnSpacing="12">
+        <StackPanel Spacing="12">
+          <!-- Health -->
+          <Border Classes="card" Padding="20,16">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="22">
+              <Grid Width="116" Height="116">
+                <controls:ScoreRing Width="116"
+                                    Height="116"
+                                    Thickness="9"
+                                    Value="{Binding View.Score}"
+                                    TrackBrush="{DynamicResource TrackBrush}"
+                                    ProgressBrush="{DynamicResource GoodBrush}" />
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding View.ScoreText}"
+                             FontSize="38"
+                             FontWeight="SemiBold"
+                             LetterSpacing="-1.8"
+                             HorizontalAlignment="Center" />
+                  <TextBlock Text="{Binding View.GradeLabel}"
+                             Classes="eyebrow"
+                             FontSize="10"
+                             HorizontalAlignment="Center"
+                             Margin="0,-2,0,0" />
+                </StackPanel>
+              </Grid>
+
+              <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
+                <TextBlock Text="{Binding View.Verdict}" Classes="h2" />
+                <TextBlock Text="{Binding View.Summary}"
+                           Classes="caption"
+                           LineHeight="18"
+                           MaxLines="2"
+                           TextWrapping="Wrap"
+                           TextTrimming="CharacterEllipsis" />
+                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2,0,0">
+                  <Border Classes="pill" Padding="8,3">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <controls:SignalBars Width="18"
+                                          Height="13"
+                                          Percent="{Binding View.SignalPercent}"
+                                          FillBrush="{DynamicResource GoodBrush}"
+                                          EmptyBrush="{DynamicResource TrackBrush}"
+                                          VerticalAlignment="Center" />
+                      <TextBlock Text="{Binding View.SignalChip}" FontSize="10" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Border>
+                  <Border Classes="pill" Padding="8,3">
+                    <TextBlock Text="{Binding View.InterfaceChip}" FontSize="10" />
+                  </Border>
+                  <Border Classes="pill" Padding="8,3">
+                    <TextBlock Text="{Binding View.EgressChip}" Classes="mono" FontSize="10" />
+                  </Border>
+                </StackPanel>
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <!-- Timeline -->
+          <Border Classes="card" Padding="18,14">
+            <Grid RowDefinitions="Auto,Auto,Auto">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="LATENCY / 60S" Classes="eyebrow" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                  <TextBlock Text="{Binding View.LatencyAvgText, StringFormat='平均 {0} ms'}"
+                             Classes="micro"
+                             FontSize="10" />
+                  <TextBlock Text="{Binding View.LatencyP95Text, StringFormat='P95 {0} ms'}"
+                             Classes="micro"
+                             FontSize="10" />
+                  <TextBlock Text="{Binding View.SampleCountText}" Classes="micro" FontSize="10" />
+                </StackPanel>
+              </Grid>
+
+              <controls:Sparkline Grid.Row="1"
+                                  Height="104"
+                                  Margin="0,10,0,0"
+                                  Series="{Binding View.Series}"
+                                  Stroke="{DynamicResource AccentBrush}"
+                                  Fill="{DynamicResource ChartFillBrush}"
+                                  GridLines="3"
+                                  GridLineBrush="{DynamicResource GridLineBrush}"
+                                  ShowGuides="True"
+                                  GuideValue="{Binding View.LatencyAvg}"
+                                  GuideBrush="{DynamicResource GuideBrush}" />
+
+              <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,7,0,0">
+                <TextBlock Text="60 秒前" Classes="micro" FontSize="10" />
+                <TextBlock Grid.Column="1" Text="{Binding View.PeakText}" Classes="micro" FontSize="10" />
+              </Grid>
+            </Grid>
+          </Border>
+
+          <!-- Findings -->
+          <Border Classes="card" Padding="18,14">
+            <StackPanel Spacing="0">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="诊断结论" Classes="h3" FontSize="13.5" />
+                <TextBlock Grid.Column="1"
+                           Text="按影响排序"
+                           Classes="micro"
+                           FontSize="10"
+                           VerticalAlignment="Center" />
+              </Grid>
+              <ItemsControl ItemsSource="{Binding View.Findings}" Margin="0,4,0,0">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FindingRow">
+                    <Border BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="0,1,0,0"
+                            Padding="0,9,0,0"
+                            Margin="0,8,0,0">
+                      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="9">
+                        <Ellipse Classes="sevDot"
+                                 Classes.warn="{Binding IsWarn}"
+                                 Classes.bad="{Binding IsBad}"
+                                 Classes.info="{Binding IsInfo}"
+                                 Margin="1,5,0,0"
+                                 VerticalAlignment="Top" />
+                        <StackPanel Grid.Column="1" Spacing="1">
+                          <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" />
+                          <TextBlock Text="{Binding Detail}"
+                                     Classes="caption"
+                                     FontSize="10.5"
+                                     LineHeight="15"
+                                     TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Grid.Column="2"
+                                Classes="mini"
+                                Content="{Binding ActionLabel}"
+                                IsVisible="{Binding HasAction}"
+                                VerticalAlignment="Top"
+                                Margin="0,1,0,0" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <!-- Next step -->
+          <Border Classes="card" Padding="16,12">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+              <StackPanel Spacing="3" VerticalAlignment="Center">
+                <TextBlock Text="NEXT" Classes="eyebrow" FontSize="9.5" />
+                <TextBlock Text="导出可分享的报告，或与昨天同一时段对比。"
+                           Classes="caption"
+                           FontSize="10.5"
+                           TextWrapping="Wrap"
+                           MaxWidth="420" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                <Button Classes="ghost" Height="30" MinHeight="30" Padding="11,0" FontSize="11.5" Content="导出报告" />
+                <Button Classes="mini" Height="30" MinHeight="30" Padding="11,0" FontSize="11.5" Content="复制诊断信息" />
+              </StackPanel>
+            </Grid>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Spacing="12">
+          <!-- Metric tiles -->
+          <Border Classes="card" Padding="14,12">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="关键指标" Classes="eyebrow" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding View.CapturedAtText}"
+                           Classes="micro"
+                           FontSize="10" />
+              </Grid>
+              <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                <ContentControl Grid.Row="0" Grid.Column="0" Content="{Binding View.Metrics[0]}" ContentTemplate="{StaticResource MetricTileTemplate}" />
+                <ContentControl Grid.Row="0" Grid.Column="1" Content="{Binding View.Metrics[1]}" ContentTemplate="{StaticResource MetricTileTemplate}" />
+                <ContentControl Grid.Row="1" Grid.Column="0" Content="{Binding View.Metrics[2]}" ContentTemplate="{StaticResource MetricTileTemplate}" />
+                <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding View.Metrics[3]}" ContentTemplate="{StaticResource MetricTileTemplate}" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <!-- Scenarios -->
+          <Border Classes="card" Padding="14,12">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="场景体验" Classes="h3" FontSize="13" />
+                <TextBlock Grid.Column="1" Text="预测" Classes="micro" FontSize="10" VerticalAlignment="Center" />
+              </Grid>
+              <ItemsControl ItemsSource="{Binding View.Scenarios}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ScenarioRow">
+                    <Grid ColumnDefinitions="72,*,24" ColumnSpacing="8" Margin="0,2">
+                      <TextBlock Text="{Binding Name}" FontSize="10.5" VerticalAlignment="Center" />
+                      <controls:MeterBar Grid.Column="1" Height="5" Value="{Binding Bar}" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="2"
+                                 Text="{Binding ScoreText}"
+                                 Classes="score"
+                                 Classes.warn="{Binding IsWarn}"
+                                 Classes.bad="{Binding IsBad}"
+                                 FontSize="11"
+                                 HorizontalAlignment="Right" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Text="由延迟、抖动、丢包与带宽共同估算"
+                         Classes="micro"
+                         FontSize="10"
+                         Margin="0,2,0,0" />
+            </StackPanel>
+          </Border>
+
+          <!-- Path -->
+          <Border Classes="card" Padding="14,12">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="链路" Classes="h3" FontSize="13" />
+                <TextBlock Grid.Column="1" Text="逐跳" Classes="micro" FontSize="10" VerticalAlignment="Center" />
+              </Grid>
+              <ItemsControl ItemsSource="{Binding View.Hops}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:HopRow">
+                    <Grid RowDefinitions="Auto,Auto" Margin="0,1">
+                      <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Ellipse Classes="sevDot" Width="5" Height="5" VerticalAlignment="Center" Margin="0,0,7,0" />
+                        <StackPanel Grid.Column="1" Spacing="0">
+                          <TextBlock Text="{Binding Label}" FontSize="10.5" />
+                          <TextBlock Text="{Binding Address}"
+                                     Classes="mono"
+                                     FontSize="9.5"
+                                     Foreground="{DynamicResource TextTertiaryBrush}" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding LatencyText}"
+                                   Classes="mono"
+                                   FontSize="10"
+                                   VerticalAlignment="Center" />
+                      </Grid>
+                      <controls:MeterBar Grid.Row="1" Height="3" Margin="12,4,0,4" Value="{Binding Bar}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

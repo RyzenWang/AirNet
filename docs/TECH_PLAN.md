@@ -1,0 +1,283 @@
+# AirNet 技术方案 v0.1
+
+> 目标：用最小体积把"网络到底哪里不好"测清楚，并给出**可执行**的建议。
+> 技术栈刻意与 `F:\AirPdf` 对齐（.NET 10 + Avalonia 11.3 + CommunityToolkit.Mvvm），共享设计系统、
+> 自绘控件经验、单文件发布与 Velopack 更新管线。
+
+---
+
+## 1. 目标与非目标
+
+**目标**
+
+1. 3 秒内给出可用结论（健康分 + 一句话归因）。
+2. 结论可解释：每个判断都能落到一条测量证据。
+3. 体积与资源占用量级：单文件 ≤ 20MB、运行内存 ≤ 120MB、冷启动 ≤ 600ms（当前原型未裁剪，实测不达标，见图 §8）。
+4. 无驱动、无后台服务、无开机自启；关窗即停。
+5. Windows / macOS / Linux 同一套代码，能力按平台降级。
+
+**非目标**
+
+- 不做"网络加速/游戏加速"（无法在不改变路由的前提下承诺收益）。
+- 不做全局抓包、不做 DNS 劫持、不改系统代理。
+- 不做云侧画像、不上传测量数据（可选匿名统计必须显式开启）。
+- 不做 7×24 后台监控（那是另一类产品，与"轻"冲突）。
+
+## 2. 技术选型
+
+| 层 | 选择 | 理由 |
+| --- | --- | --- |
+| 运行时 | .NET 10 | 与 AirPDF 一致；`System.Net.NetworkInformation` / `Socket` / `SslStream` 齐备；AOT+R2R 可压到 15–20MB |
+| UI | Avalonia 11.3 | 跨平台单代码库；自绘 `DrawingContext` 足够画环/曲线；与 AirPDF 样式可直接复用 |
+| MVVM | CommunityToolkit.Mvvm 8.4 | 源生成器，零反射，AOT 友好 |
+| 图标/字体 | Lucide 几何 + Inter | 与 AirPDF 同一套资产 |
+| 图表 | **自研 4 个控件** | 引 OxyPlot/SkiaSharp 图表会多 2–4MB，且样式难融入纸张语言 |
+| 存储 | JSON 追加日志（首版）→ 超阈值再上 SQLite | 30 天 × 每天 24 次 ≈ 720 条，JSON 足够；避免 1.5MB 原生依赖破坏体积承诺 |
+| 发布 | 单文件 self-contained + Velopack | 与 AirPDF 同管线，增量更新 |
+| 测试 | xUnit + Avalonia.Headless | Headless 可做视觉回归（本原型的 `--export` 已是雏形） |
+
+**为什么不用 WinUI/WPF**：只能在 Windows 上跑，与 AirPDF 的跨平台发布流程不通用。
+**为什么不用 Electron/Tauri**：Electron 体积 100MB+；Tauri 需要 Rust 工具链，且网络 API 仍要回到系统调用。
+
+## 3. 架构
+
+```
+AirNet.sln
+├─ src/AirNet.Core            纯 .NET，无 UI 依赖，可被 CLI/测试直接引用
+│  ├─ Probes/                 InterfaceInspector, LatencyProbe, ThroughputProbe, MeasurementRunner
+│  ├─ Diagnostics/            NetworkSnapshot(模型), LatencyAnalyzer(统计), DiagnosisEngine(评分/归因)
+│  └─ Demo/                   确定性样例数据（评审与演示用）
+└─ src/AirNet.App             Avalonia
+   ├─ ViewModels/             Shell(导航+扫描生命周期), Overview, Monitor, Speed, Settings
+   ├─ Views/                  ShellView + 四个页面（UserControl，非 Window）
+   ├─ Controls/               ScoreRing, Sparkline, MeterBar, SignalBars
+   └─ Styles/                 Colors, Icons, Controls
+```
+
+**依赖方向**：`App → Core`，Core 不引用 Avalonia。所有"数字 → 文案"的格式化集中在 `SnapshotView`，
+XAML 里不写转换器，视觉评审时只读 XAML 就能看懂。
+
+**线程模型**
+
+- 探针全部 `async`，跑在线程池；不占用 UI 线程。
+- 采样结果先入 `Channel<Sample>`，UI 侧用一个 250ms 的 `DispatcherTimer` 批量取，避免每 100ms 触发一次布局。
+- 每次扫描一个 `CancellationTokenSource`；"停止"按钮立即 `Cancel()`，探针在每次循环检查 token（最坏 1 个探测周期内退出）。
+- 扫描期间禁用主按钮、把结论区切到"采集中"骨架态，**不做全屏遮罩**（会让人以为卡死）。
+
+**生命周期**：窗口创建即空闲，只有用户点"开始检测"或开启自动刷新才发包；窗口关闭 → 取消所有 token → 退出。
+
+## 4. 探测层
+
+| 探针 | 实现 | 权限 | 耗时 | 降级 |
+| --- | --- | --- | --- | --- |
+| 接口清单 | `NetworkInterface.GetAllNetworkInterfaces()` + 网关/掩码/MTU | 无 | <10ms | 无 |
+| 网关探测 | ICMP 网关地址 ×4 | 无 | ~300ms | TCP 连网关常用端口 |
+| 参考主机 ICMP | `Ping.SendPingAsync` ×20，间隔 110ms | 无 | ~2.2s | ICMP 全丢 → TCP 握手计时 ×12 |
+| TCP 握手 | `Socket.ConnectAsync` + `Stopwatch` | 无 | 每包 20–1200ms | — |
+| DNS 解析 | `Dns.GetHostAddressesAsync` 计时 ×3 | 无 | ~100ms | 直连 53/UDP 查询绕开缓存 |
+| TLS 握手 | `SslStream.AuthenticateAsClientAsync` 计时 | 无 | ~200ms | 跳过 |
+| HTTP 首字节 | `HttpClient` + `ResponseHeadersRead` | 无 | ~200ms | 跳过 |
+| 出口 IP / 落地 | `https://1.1.1.1/cdn-cgi/trace`（纯文本，<1KB） | 无 | ~150ms | 关闭该项 |
+| 带宽 | 多流 ranged GET/DELETE，5s 窗口 | 无 | 5–8s | 单流 |
+| 逐跳 | 调用系统 `tracert -d -w 800 -h 12` 解析输出 | 无（子进程） | 5–10s | 仅网关+目标两跳 |
+| Wi-Fi 信号/速率 | Windows `wlanapi.dll`；macOS `CoreWLAN`；Linux `iw`/`/proc/net/wireless` | 无 | <50ms | 仅报"无线/有线" |
+| MTU | `PingOptions.DontFragment` + 缓冲区二分 | 无 | ~1s | 跳过 |
+
+### 4.1 一个必须解决的坑：ICMP 分辨率
+
+本机实测（`AirNet.exe --selftest`）：
+
+```
+avg=35  p95=35  jitter=0  loss=0  sent=20  received=20
+```
+
+`System.Net.NetworkInformation.Ping` 的 `RoundtripTime` 是**整毫秒**，20 个包全部落在 35ms，
+于是抖动恒为 0 —— 这对"网络好不好"的判断是致命的（真实抖动可能有 ±3ms）。
+
+**对策**（按优先级）：
+
+1. 抖动与 P95 一律由 `Stopwatch` 计时的 TCP 握手样本计算（含小数毫秒），ICMP 只用于丢包判定；
+2. Windows 上可用 `IcmpSendEcho2`（iphlpapi，无需管理员）拿整数 RTT，但配合 `Stopwatch` 包裹调用即可获得亚毫秒精度；
+3. 高精度模式（可选，需一次 UAC）：raw socket（`SocketType.Raw + ICMP`）自建 echo 包，时间戳字段由本进程填充。
+
+原型已实现 1 的降级路径（ICMP 全丢时切 TCP），尚未把 TCP 样本用于抖动 —— 这是 M1 的第一件事。
+
+### 4.2 采样与窗口
+
+- 一轮扫描 = 20 个 ICMP（110ms 间隔）+ 3 次 DNS + 网关 4 包 + 可选带宽。约 2.4s。
+- 传感器窗口：延迟曲线保留最近 60 个样本 / 60 秒；计算 P95 用全部样本。
+- 自动刷新：默认关闭；开启后 60s 一次，且**只在窗口可见时**执行（`IsVisible` 事件），最小化即暂停。
+- 移动网络（`NetworkInterfaceType.Wwanpp*`）默认不做带宽测试，避免偷跑流量。
+
+### 4.3 带宽测速算法
+
+```
+预热：先跑 500ms 小请求，丢弃（TCP 慢启动、TLS 复用）
+主体：4 路并发 ranged GET，块大小 256KB，丢弃 body 只计数
+统计：取 5 秒滑动窗口中吞吐最高的 1 秒作为峰值，同时报"平均"
+上行：4 路并发 POST 随机 64KB 块，同样窗口统计
+顺序：下行 → 上行 → 复测一次延迟（判定是否被测速本身挤爆）
+```
+
+注意点：
+
+- 服务端选点：Cloudflare（全球任播，`speed.cloudflare.com/__down|__up`）+ 可配置自有端点；
+- 必须校验 `Content-Length` 与实际读到的字节一致，遇到运营商劫持页（HTML）要判失败；
+- 结果要给"口径说明"：单流保守、多流接近峰值（UI 的"测速说明"卡片已写明）。
+
+## 5. 诊断模型
+
+### 5.1 评分
+
+```
+score = 100
+      − clamp((avg − 12) × 0.42, 0, 26)      // 平均延迟
+      − clamp((jitter − 1.5) × 1.1, 0, 14)   // 抖动
+      − clamp(loss × 9, 0, 38)               // 丢包（权重最高）
+      − clamp((70 − wifi%) × 0.12, 0, 12)    // 无线信号
+分档：≥90 优秀 / ≥75 良好 / ≥60 一般 / <60 较差
+```
+
+权重来自"用户体感优先级"：丢包 > 抖动 > 延迟 > 射频。每项设上限，避免单一维度把分数打到 0（那会让用户失去区分度）。
+M2 用真实场景数据回归校准（见 5.4）。
+
+### 5.2 归因：三段式
+
+用"网关 / 公网参考 / 目标"三段的延迟与丢包差值定位问题域：
+
+| 现象 | 判定 | 首条建议 |
+| --- | --- | --- |
+| 网关延迟 <2ms 且丢包 0，公网段高 | **运营商/跨网** | 换 DNS、错峰、报障工单 |
+| 网关延迟高或丢包 | **局域网/无线** | 换 5/6GHz、信道、网线、重启路由 |
+| 网关与公网都正常，目标高 | **对端服务** | 换节点/稍后重试 |
+| 三段都高，但 Wi-Fi 信号低 | **射频受限** | 靠近 AP、避开干扰 |
+| DNS 高、其余正常 | **解析链路** | 换公共 DNS / 开启缓存 |
+
+### 5.3 规则库
+
+每条规则结构化为 `Finding { Severity, Title, Detail, ActionLabel, Evidence[] }`，
+`ActionLabel` 对应一个可执行动作（M2 起可真正执行，见 6）。
+
+已实现（原型）：丢包三档、抖动两档、无线信号、DNS 耗时。
+M1 追加：上行/下行不对称、IPv6 可用但劣于 IPv4、MTU 黑洞、代理/VPN 命中、双 NAT、网关 DNS 慢于公共 DNS。
+
+### 5.4 场景估计
+
+```
+网页   = 100 − 0.22·latency − 0.7·jitter − 5·loss
+4K视频 = 100 − 8·loss − (latency>80 ? 0.3·(latency−80) : 0)
+游戏   =  96 − 0.5·latency − 1.5·jitter − 7·loss
+会议   = 100 − 1.4·jitter − 7·loss − (up<8 ? 2·(8−up) : 0)
+下载   = min(100, 52 + 0.12·downMbps)
+```
+
+这些系数是**先验**，标注为"预测"。M3 用"同一时刻的真实 QoE 采样"（视频缓冲事件、游戏 RTT）做回归，
+把"预测"换成"校准值"，并在 UI 上区分（已实现文案：`场景体验 / 预测`）。
+
+## 6. 优化动作（"优化"到底做什么）
+
+原则：**只做可解释、可回退、不改用户路由的配置修正**。
+
+| 动作 | 平台 | 需要权限 | 回退 |
+| --- | --- | --- | --- |
+| 切换 DNS 为 223.5.5.5 / 1.1.1.1 | Win(`netsh`)、macOS(`networksetup`)、Linux(`nmcli`) | 管理员 | 记录原值，一键还原 |
+| 建议关闭高占用进程 | 全平台（只读列举） | 无 | 不执行，仅提示 |
+| 5GHz/6GHz 与信道建议 | Windows `WlanGetNetworkBssList` 扫描邻区 | 无 | 只读建议 |
+| 无线节能/省电模式排查 | Win 设备管理器查询 | 无（读） | 只读建议 |
+| MTU 黑洞修复建议 | 全平台 | 管理员 | 记录原值 |
+| 关闭 IPv6（当 IPv6 明显更差时） | 全平台 | 管理员 | 显式确认 + 还原 |
+
+UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提供"还原"；③ 失败时给出原始错误。
+**不提供**：改 hosts、改代理、改防火墙、"加速"开关。
+
+## 7. 数据与报告
+
+- 存储：`%AppData%/AirNet/runs.jsonl`（每行一次快照摘要），保留 30 天，超过 2MB 轮转；
+  打开历史页时按需读取（`File.ReadLines` 流式），不做全量反序列化。
+- 报告：`报告` 页 = 一个可导出的自包含 HTML（内嵌 SVG 曲线与样式，单文件 40–80KB），
+  同时提供 PNG（复用 `RenderTargetBitmap`，与本次截图同一套机制）。
+- 隐私：报告导出的 IP 默认做掩码（`192.168.1.x`、出口只留 ASN/城市），可手动关闭。
+
+## 8. 性能预算与手段
+
+| 指标 | 预算 | 实测（Release，未裁剪） | 手段 |
+| --- | --- | --- | --- |
+| 安装包 | ≤ 20MB | 影子拷贝 247KB + 运行时 ~70MB（框架依赖） | `PublishSingleFile` + `TrimMode=partial` + R2R 后目标 15–20MB |
+| 冷启动 | ≤ 600ms | **1391ms** 到窗口可见 | 无数据库、无启动扫描；XAML 编译绑定；启动阶段不加载 Inter 全部字重 |
+| 运行内存 | ≤ 120MB | **154MB** 工作集 / 174MB 私有 | 图表只保留 60 点、不缓存位图；裁剪 + R2R 后再压 20–30% |
+| 扫描 CPU | < 3% | 未测 | 探针 110ms 间隔；UI 250ms 合并刷新 |
+| 首帧渲染 | ≤ 120ms | 未测 | 单窗口、四页 `IsVisible` 切换（不做导航栈重建） |
+
+> 结论：当前原型是**未裁剪的框架依赖构建**，内存与启动都不达标。M1 必须先把 `PublishSingleFile + Trim + R2R`
+> 跑通并重测，否则"轻量"只是文案。
+
+## 9. 跨平台矩阵
+
+| 能力 | Windows | macOS | Linux |
+| --- | --- | --- | --- |
+| ICMP | `Ping`（同步/异步） | 同 | 同（部分发行版需 `CAP_NET_RAW`→ 自动退 TCP） |
+| 无线信号 | `wlanapi.dll` | CoreWLAN（P/Invoke） | `iw` 或 `/proc/net/wireless` |
+| 邻区扫描 | `WlanGetNetworkBssList` | CoreWLAN scan | `iw scan`（需 root，则跳过） |
+| 逐跳 | `tracert` 子进程 | `traceroute` | `traceroute`/`tracepath` |
+| 改 DNS | `netsh interface ip set dns` | `networksetup -setdnsservers` | `nmcli con mod` |
+| 自定义标题栏 | `BorderOnly + NoChrome` | 同 | 同 |
+
+## 10. 权限、隐私与安全
+
+- **默认零提权**：所有测量无需管理员。只有"切换 DNS / 改 MTU"这类写操作才申请一次提权，并明确展示命令。
+- **零上传**：除"出口 IP 查询"（可关）与"测速"（可选）外不产生外发流量；遥测默认关闭。
+- 子进程调用（`tracert`）必须使用参数数组而非字符串拼接，避免注入。
+- 报告/日志中的 IP 可掩码；不记录 SSID 明文（默认只存 `Wi-Fi#1` 这种占位）。
+
+## 11. 测试策略
+
+| 层级 | 手段 | 覆盖 |
+| --- | --- | --- |
+| 单元 | xUnit | `LatencyAnalyzer`（空集/全丢/单点/抖动的均值绝对差）、`DiagnosisEngine`（分档边界、规则触发） |
+| 集成 | 本机 `--selftest` 模式（已实现） | 探针链路真实可用性，CI 上可跳过 |
+| 网络伪造 | `tc netem`（Linux）/ Clumsy（Windows）注入丢包抖动 | 归因是否正确 |
+| 视觉回归 | `--export` 截图 + 像素 diff | 深浅色 × 四页，防样式回退 |
+| 现场 | 手动矩阵：Wi-Fi/有线、VPN、双栈、热点、移动网络 | 降级路径 |
+
+## 12. 里程碑
+
+| 阶段 | 范围 | 产出 | 估时 |
+| --- | --- | --- | --- |
+| **M0 视觉原型**（本次） | 四页原型 + 设计系统 + 真实探针内核 + 样例数据 | 可运行 exe、8 张截图、本文档 | 已完成 |
+| **M1 测量内核** | TCP 计时抖动、Wi-Fi 信号、DNS 三段分解、TLS/TTFB、评分校准、历史落盘 | 可用版本（无优化动作） | 2 周 |
+| **M2 诊断与优化** | 归因树、规则库 12 条、逐跳、一键 DNS（含还原）、报告导出 | 1.0 | 3 周 |
+| **M3 场景与分发** | 游戏/会议模式、双栈、自动复测、CLI、单文件发布 + Velopack、签名 | 1.1 | 2 周 |
+
+## 13. 风险
+
+| 风险 | 影响 | 对策 |
+| --- | --- | --- |
+| ICMP 被运营商/防火墙拦截 | 误判"丢包 100%" | 三重判定：ICMP 全丢即切 TCP；UI 标注"TCP 探测" |
+| 虚拟网卡（Hyper-V/WSL/VPN）抢占 | 测错接口 | 已实现：过滤虚拟网卡 + 优先"有默认网关"的接口（本机实测由 `vEthernet` 纠正为 `以太网`） |
+| 无线信号在 macOS/Linux 拿不到 | 该平台无射频分 | 计算分时置中值并标注"该平台不支持射频测量" |
+| 测速服务被劫持/限速 | 数字失真 | 校验字节数、多端点探测、异常时给"无法测量"而非假数字 |
+| 杀软对 raw socket / 子进程敏感 | 误报 | 默认不用 raw socket；`tracert` 仅在用户点击时启动 |
+| 测量抖动导致结论跳变 | 用户不信任 | 一轮结论需 20 个样本过阈值；只有 1 个坏包不降档 |
+
+## 14. 从 AirPDF 直接复用的资产
+
+- `Styles/Colors.axaml`、`Styles/Controls.axaml` 的结构（本仓库已按 AirNet 调整 token）；
+- 自绘控件的写法（`AffectsRender<T>` + `DrawingContext`，无第三方图表库）；
+- 自定义标题栏（`SystemDecorations=BorderOnly` + `BeginMoveDrag`）；
+- `--export` 截图流水线（视觉回归基线）；
+- 单文件发布 + Velopack 更新管线（`packaging/`）。
+
+## 15. 原型现状（务必区分）
+
+| 能力 | 状态 |
+| --- | --- |
+| 设计系统 + 四页视觉 + 深浅色 | ✅ 已完成 |
+| 真实 ICMP/TCP/DNS 探针、接口识别 | ✅ 已实现并自测通过 |
+| 评分、场景估计、规则诊断 | ✅ 已实现（系数待校准） |
+| 带宽测速（单流） | ✅ 已实现，UI 已接线 |
+| Wi-Fi 信号/邻区、逐跳、TLS/TTFB、MTU | ⬜ 未实现（本文档给方案） |
+| 历史持久化、报告导出、一键优化 | ⬜ 未实现（按钮为占位） |
+| 快捷键（Ctrl+R / 1-4 / T / Esc） | ⬜ 未接线（设置页已展示） |
+| 动效（数字滚动、环填充） | ⬜ 未实现（规范已定） |
+
+> 原型以**确定性样例数据**启动（右上角标注"示例数据"），点"开始检测"即切换为真实测量结果。

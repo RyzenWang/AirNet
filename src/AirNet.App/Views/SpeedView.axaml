@@ -1,0 +1,225 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AirNet.App.ViewModels"
+             xmlns:controls="using:AirNet.App.Controls"
+             x:Class="AirNet.App.Views.SpeedView"
+             x:DataType="vm:SpeedViewModel">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <Grid MaxWidth="1160" Margin="24,18,24,26" RowDefinitions="Auto,*" RowSpacing="12">
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="1">
+          <TextBlock Text="带宽测速" Classes="h3" />
+          <TextBlock Text="单连接 ranged GET · 就近服务器 · 12 MB 样本" Classes="caption" FontSize="10.5" />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Classes="primary"
+                Height="32"
+                MinHeight="32"
+                Padding="14,0"
+                Command="{Binding RunTestCommand}"
+                IsEnabled="{Binding !IsTesting}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Path Data="{StaticResource IconZap}"
+                  Width="14"
+                  Height="14"
+                  Stroke="{DynamicResource AccentOnBrush}"
+                  StrokeThickness="1.8"
+                  StrokeLineCap="Round"
+                  StrokeJoin="Round"
+                  Stretch="Uniform"
+                  VerticalAlignment="Center" />
+            <TextBlock Text="{Binding TestButtonText}" FontSize="12" FontWeight="SemiBold" />
+          </StackPanel>
+        </Button>
+      </Grid>
+
+      <Grid Grid.Row="1" ColumnDefinitions="*,300" ColumnSpacing="12">
+        <StackPanel Spacing="12">
+          <Border Classes="card" Padding="22,16">
+            <Grid RowDefinitions="Auto,Auto,Auto">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="SPEED TEST" Classes="eyebrow" VerticalAlignment="Center" />
+                <Border Grid.Column="1" Classes="pill" Padding="9,3">
+                  <StackPanel Orientation="Horizontal" Spacing="5">
+                    <Ellipse Width="5" Height="5" Fill="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding ServerText}" FontSize="10" />
+                  </StackPanel>
+                </Border>
+              </Grid>
+
+              <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*" Margin="0,12,0,0">
+                <StackPanel Spacing="4" HorizontalAlignment="Center">
+                  <Grid Width="138" Height="138">
+                    <controls:ScoreRing Width="138"
+                                        Height="138"
+                                        Thickness="10"
+                                        Value="{Binding DownloadGauge}"
+                                        TrackBrush="{DynamicResource TrackBrush}"
+                                        ProgressBrush="{DynamicResource AccentBrush}" />
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding DownloadText}"
+                                 FontSize="38"
+                                 FontWeight="SemiBold"
+                                 LetterSpacing="-2"
+                                 HorizontalAlignment="Center" />
+                      <TextBlock Text="Mbps" Classes="eyebrow" FontSize="8" HorizontalAlignment="Center" Margin="0,-1,0,0" />
+                    </StackPanel>
+                  </Grid>
+                  <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Center" Margin="0,2,0,0">
+                    <Path Classes="icon small accent" Data="{StaticResource IconDownload}" Width="13" Height="13" />
+                    <TextBlock Text="下行 / DOWNLOAD" Classes="caption" FontSize="10" FontWeight="SemiBold" />
+                  </StackPanel>
+                </StackPanel>
+
+                <Border Grid.Column="1" Width="1" Background="{DynamicResource BorderBrush}" Margin="14,14" />
+
+                <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Center">
+                  <Grid Width="138" Height="138">
+                    <controls:ScoreRing Width="138"
+                                        Height="138"
+                                        Thickness="10"
+                                        Value="{Binding UploadGauge}"
+                                        TrackBrush="{DynamicResource TrackBrush}"
+                                        ProgressBrush="{DynamicResource GoodBrush}" />
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding UploadText}"
+                                 FontSize="38"
+                                 FontWeight="SemiBold"
+                                 LetterSpacing="-2"
+                                 HorizontalAlignment="Center" />
+                      <TextBlock Text="Mbps" Classes="eyebrow" FontSize="8" HorizontalAlignment="Center" Margin="0,-1,0,0" />
+                    </StackPanel>
+                  </Grid>
+                  <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Center" Margin="0,2,0,0">
+                    <Path Classes="icon small accent" Data="{StaticResource IconUpload}" Width="13" Height="13" />
+                    <TextBlock Text="上行 / UPLOAD" Classes="caption" FontSize="10" FontWeight="SemiBold" />
+                  </StackPanel>
+                </StackPanel>
+              </Grid>
+
+              <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+                <TextBlock Text="{Binding ScaleText}" Classes="micro" FontSize="10" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Shell.View.Summary}"
+                           Classes="micro"
+                           FontSize="10"
+                           MaxWidth="380"
+                           TextTrimming="CharacterEllipsis" />
+              </Grid>
+            </Grid>
+          </Border>
+
+          <Border Classes="card" Padding="18,14">
+            <StackPanel Spacing="10">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="历史趋势" Classes="h3" FontSize="13.5" />
+                <TextBlock Grid.Column="1" Text="近 6 次 · 下行" Classes="micro" FontSize="10" VerticalAlignment="Center" />
+              </Grid>
+              <ItemsControl ItemsSource="{Binding History}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <UniformGrid Columns="6" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:SpeedHistoryBar">
+                    <StackPanel Spacing="5" Margin="0,0,7,0">
+                      <Border Height="76" Background="Transparent">
+                        <Border Height="{Binding BarHeight}"
+                                Width="46"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Bottom"
+                                CornerRadius="4,4,2,2"
+                                Background="{DynamicResource AccentBrush}"
+                                Opacity="0.82" />
+                      </Border>
+                      <TextBlock Text="{Binding ValueText}"
+                                 FontSize="10"
+                                 FontWeight="SemiBold"
+                                 HorizontalAlignment="Center" />
+                      <TextBlock Text="{Binding Label}"
+                                 Classes="micro"
+                                 FontSize="10"
+                                 HorizontalAlignment="Center" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Spacing="12">
+          <Border Classes="card" Padding="16,14">
+            <StackPanel Spacing="9">
+              <TextBlock Text="本次结果" Classes="eyebrow" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="下行" Classes="caption" FontSize="11" />
+                <TextBlock Grid.Column="1" Text="{Binding DownloadText, StringFormat='{}{0} Mbps'}" FontSize="11.5" FontWeight="SemiBold" />
+              </Grid>
+              <Border Classes="hairline" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="上行" Classes="caption" FontSize="11" />
+                <TextBlock Grid.Column="1" Text="{Binding UploadText, StringFormat='{}{0} Mbps'}" FontSize="11.5" FontWeight="SemiBold" />
+              </Grid>
+              <Border Classes="hairline" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="延迟" Classes="caption" FontSize="11" />
+                <TextBlock Grid.Column="1" Text="{Binding LatencyText}" FontSize="11.5" FontWeight="SemiBold" />
+              </Grid>
+              <Border Classes="hairline" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="抖动" Classes="caption" FontSize="11" />
+                <TextBlock Grid.Column="1" Text="{Binding JitterText}" FontSize="11.5" FontWeight="SemiBold" />
+              </Grid>
+              <Border Classes="hairline" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="完成于" Classes="caption" FontSize="11" />
+                <TextBlock Grid.Column="1" Text="{Binding TestedAtText}" Classes="mono" FontSize="10" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="16,14">
+            <StackPanel Spacing="9">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Path Classes="icon small accent" Data="{StaticResource IconShield}" Width="14" Height="14" />
+                <TextBlock Text="测速说明" Classes="h3" FontSize="12.5" VerticalAlignment="Center" />
+              </StackPanel>
+              <TextBlock Text="单连接测试，结果偏保守；多流并发更接近家宽峰值。"
+                         Classes="caption"
+                         FontSize="10"
+                         LineHeight="15"
+                         TextWrapping="Wrap" />
+              <TextBlock Text="只传输随机字节，不上传任何本地信息。"
+                         Classes="caption"
+                         FontSize="10"
+                         LineHeight="15"
+                         TextWrapping="Wrap" />
+              <TextBlock Text="链路已被其他应用占满时，测速会低估真实带宽。"
+                         Classes="caption"
+                         FontSize="10"
+                         LineHeight="15"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="16,14">
+            <StackPanel Spacing="8">
+              <TextBlock Text="让数字更准" Classes="h3" FontSize="12.5" />
+              <TextBlock Text="测速前暂停下载与视频通话，优先使用 5 GHz 或有线，结果更接近家宽上限。"
+                         Classes="caption"
+                         FontSize="10"
+                         LineHeight="15"
+                         TextWrapping="Wrap" />
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <Button Classes="mini" Content="千兆基准" />
+                <Button Classes="mini" Content="移动网络模式" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

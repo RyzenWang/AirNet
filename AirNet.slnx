@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AirNet.App/AirNet.App.csproj" />
+    <Project Path="src/AirNet.Core/AirNet.Core.csproj" />
+  </Folder>
+</Solution>

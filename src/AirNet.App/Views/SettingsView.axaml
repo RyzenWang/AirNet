@@ -1,0 +1,209 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AirNet.App.ViewModels"
+             x:Class="AirNet.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <Grid MaxWidth="1000" Margin="24,18,24,26" RowDefinitions="Auto,*" RowSpacing="12">
+      <StackPanel Grid.Row="0" Spacing="1">
+        <TextBlock Text="设置" Classes="h3" />
+        <TextBlock Text="所有选项即时生效，配置保存在本机" Classes="caption" FontSize="10.5" />
+      </StackPanel>
+
+      <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="12">
+        <StackPanel Spacing="12">
+          <Border Classes="card" Padding="18,16">
+            <StackPanel Spacing="11">
+              <TextBlock Text="外观" Classes="h3" FontSize="13.5" />
+              <TextBlock Text="与 AirPDF 共用同一套纸张色板，介于暖白与墨黑之间。"
+                         Classes="caption"
+                         FontSize="10.5"
+                         LineHeight="16"
+                         TextWrapping="Wrap" />
+              <Border Background="{DynamicResource SurfaceAltBrush}"
+                      BorderBrush="{DynamicResource BorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="9"
+                      Padding="3"
+                      HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                  <Button Classes="seg"
+                          Classes.active="{Binding Shell.IsSystemTheme}"
+                          Command="{Binding Shell.SetThemeModeCommand}"
+                          CommandParameter="System"
+                          Content="跟随系统" />
+                  <Button Classes="seg"
+                          Classes.active="{Binding Shell.IsLightTheme}"
+                          Command="{Binding Shell.SetThemeModeCommand}"
+                          CommandParameter="Light"
+                          Content="浅色" />
+                  <Button Classes="seg"
+                          Classes.active="{Binding Shell.IsDarkTheme}"
+                          Command="{Binding Shell.SetThemeModeCommand}"
+                          CommandParameter="Dark"
+                          Content="深色" />
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="18,16">
+            <StackPanel Spacing="2">
+              <TextBlock Text="检测" Classes="h3" FontSize="13.5" Margin="0,0,0,8" />
+
+              <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                <StackPanel Spacing="1">
+                  <TextBlock Text="定时自动刷新" FontSize="12" FontWeight="SemiBold" />
+                  <TextBlock Text="每 60 秒在后台补一次采样，仅统计不提醒" Classes="micro" FontSize="10" />
+                </StackPanel>
+                <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding AutoRefresh, Mode=TwoWay}" VerticalAlignment="Center" />
+              </Grid>
+              <Border Classes="hairline" />
+
+              <Grid ColumnDefinitions="*,Auto" Margin="0,10,0,10">
+                <StackPanel Spacing="1">
+                  <TextBlock Text="检测时包含带宽" FontSize="12" FontWeight="SemiBold" />
+                  <TextBlock Text="会消耗约 12 MB 流量，移动网络下建议关闭" Classes="micro" FontSize="10" />
+                </StackPanel>
+                <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding IncludeSpeed, Mode=TwoWay}" VerticalAlignment="Center" />
+              </Grid>
+              <Border Classes="hairline" />
+
+              <Grid ColumnDefinitions="*,Auto" Margin="0,10,0,10">
+                <StackPanel Spacing="1">
+                  <TextBlock Text="ICMP + TCP 双探测" FontSize="12" FontWeight="SemiBold" />
+                  <TextBlock Text="ICMP 被拦截时自动改用 TCP 时间，避免误判丢包" Classes="micro" FontSize="10" />
+                </StackPanel>
+                <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding DualProbe, Mode=TwoWay}" VerticalAlignment="Center" />
+              </Grid>
+              <Border Classes="hairline" />
+
+              <Grid ColumnDefinitions="*,Auto" Margin="0,10,0,0">
+                <StackPanel Spacing="1">
+                  <TextBlock Text="保留历史" FontSize="12" FontWeight="SemiBold" />
+                  <TextBlock Text="本地保存最近 30 天，用于对比与趋势" Classes="micro" FontSize="10" />
+                </StackPanel>
+                <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding KeepHistory, Mode=TwoWay}" VerticalAlignment="Center" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="18,16">
+            <StackPanel Spacing="10">
+              <TextBlock Text="快捷键" Classes="h3" FontSize="13.5" />
+              <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="9">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Border Classes="pill" Padding="7,2">
+                    <TextBlock Text="Ctrl R" Classes="mono" FontSize="10" />
+                  </Border>
+                  <TextBlock Text="开始检测" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                  <Border Classes="pill" Padding="7,2">
+                    <TextBlock Text="Ctrl 1-4" Classes="mono" FontSize="10" />
+                  </Border>
+                  <TextBlock Text="切换页面" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+                  <Border Classes="pill" Padding="7,2">
+                    <TextBlock Text="Ctrl T" Classes="mono" FontSize="10" />
+                  </Border>
+                  <TextBlock Text="切换主题" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                  <Border Classes="pill" Padding="7,2">
+                    <TextBlock Text="Esc" Classes="mono" FontSize="10" />
+                  </Border>
+                  <TextBlock Text="停止检测" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Spacing="12">
+          <Border Classes="card" Padding="18,16">
+            <StackPanel Spacing="10">
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <Path Classes="icon small accent" Data="{StaticResource IconShield}" Width="15" Height="15" />
+                <TextBlock Text="数据与隐私" Classes="h3" FontSize="13.5" VerticalAlignment="Center" />
+              </StackPanel>
+              <TextBlock Text="{Binding PrivacyText}"
+                         Classes="caption"
+                         FontSize="10.5"
+                         LineHeight="17"
+                         TextWrapping="Wrap" />
+              <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,0">
+                <Button Classes="mini" Content="清空历史" />
+                <Button Classes="mini" Content="导出诊断包" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="18,16">
+            <StackPanel Spacing="9">
+              <TextBlock Text="关于" Classes="eyebrow" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="AirNet" FontSize="13" FontWeight="SemiBold" />
+                <TextBlock Grid.Column="1" Text="{Binding VersionText}" Classes="micro" FontSize="10" />
+              </Grid>
+              <Border Classes="hairline" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="运行环境" Classes="caption" FontSize="10.5" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding RuntimeText}"
+                           Classes="micro"
+                           FontSize="10"
+                           TextTrimming="CharacterEllipsis"
+                           MaxWidth="240"
+                           TextAlignment="Right" />
+              </Grid>
+              <Border Classes="hairline" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="占用" Classes="caption" FontSize="10.5" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding FootprintText}"
+                           Classes="micro"
+                           FontSize="10"
+                           TextTrimming="CharacterEllipsis"
+                           MaxWidth="240"
+                           TextAlignment="Right" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="tile" Padding="14,12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="设计说明" Classes="eyebrow" FontSize="10" />
+              <TextBlock Text="纸张色板与字号阶梯沿用 AirPDF；青色代表健康链路，陶土色只在降级与告警时出现。"
+                         Classes="caption"
+                         FontSize="10"
+                         LineHeight="16"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="18,16">
+            <StackPanel Spacing="8">
+              <TextBlock Text="项目" Classes="eyebrow" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="许可" Classes="caption" FontSize="10.5" />
+                <TextBlock Grid.Column="1" Text="MIT" Classes="micro" FontSize="10" />
+              </Grid>
+              <Border Classes="hairline" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="技术栈" Classes="caption" FontSize="10.5" />
+                <TextBlock Grid.Column="1" Text=".NET 10 · Avalonia 11.3" Classes="micro" FontSize="10" />
+              </Grid>
+              <Border Classes="hairline" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="反馈" Classes="caption" FontSize="10.5" />
+                <TextBlock Grid.Column="1" Text="issue / 邮箱" Classes="micro" FontSize="10" />
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </Grid>
+  </ScrollViewer>
+</UserControl>
