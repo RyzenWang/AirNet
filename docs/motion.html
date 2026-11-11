@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>AirNet · 动效方案对比</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{
+    --paper:#F1EEE7; --card:#FBFAF7; --soft:#F6F2EB; --ink:#1D232C; --muted:#69645C;
+    --line:#DED7CB; --track:#E7E0D4; --accent:#2E6F63; --accent-soft:#E2EFEB;
+    --warn:#A9701A; --good:#2E6F63;
+    --font:"Inter","Segoe UI","Microsoft YaHei UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.5 var(--font)}
+  main{max-width:1180px;margin:0 auto;padding:36px 24px 64px}
+  header.page{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:26px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.2px;font-size:16px}
+  .mark{width:20px;height:20px;border-radius:6px;background:var(--accent)}
+  h1{font-size:26px;letter-spacing:-.6px;margin:14px 0 6px}
+  .lead{color:var(--muted);max-width:640px;font-size:13px}
+  .controls{display:flex;gap:8px;align-items:center}
+  button{font:inherit;font-size:12px;font-weight:600;padding:8px 14px;border-radius:9px;border:1px solid var(--line);
+    background:var(--card);color:var(--ink);cursor:pointer}
+  button:hover{background:var(--soft)}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px;margin-top:22px}
+  section.variant{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px}
+  .vhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .vhead h2{font-size:16px;margin:0;letter-spacing:-.2px}
+  .vhead .tag{font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);
+    border:1px solid var(--line);border-radius:20px;padding:3px 9px}
+  .desc{color:var(--muted);font-size:12px;margin:0}
+  .desc b{color:var(--ink);font-weight:600}
+  .stage{position:relative;margin-top:2px}
+  footer.note{margin-top:34px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:12px;line-height:1.9}
+  footer.note b{color:var(--ink)}
+  .kbd{font-family:ui-monospace,Consolas,monospace;font-size:11px;background:var(--soft);border:1px solid var(--line);
+    border-radius:5px;padding:1px 5px}
+
+  /* ---------- mini dashboard (shared) ---------- */
+  .mini{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--card);
+    padding:12px 14px 10px;transition:opacity .2s ease, filter .3s ease;min-height:268px}
+  .mini .topbar{display:flex;align-items:center;gap:8px;font-size:11px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+  .mini .dot{width:7px;height:7px;border-radius:50%;background:var(--good);flex:0 0 auto}
+  .mini .phase{font-weight:600;color:var(--muted);transition:color .3s}
+  .mini .elapsed{margin-left:auto;font-family:ui-monospace,Consolas,monospace;font-size:10px;color:#9A9286}
+  .mini .body{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;padding-top:12px}
+  .ringwrap{position:relative;width:96px;height:96px}
+  .ringwrap svg{display:block;transform:rotate(-90deg)}
+  .ringwrap .track{fill:none;stroke:var(--track);stroke-width:8}
+  .ringwrap .prog{fill:none;stroke:var(--accent);stroke-width:8;stroke-linecap:round;
+    stroke-dasharray:264;stroke-dashoffset:264;transition:stroke-dashoffset .55s cubic-bezier(.22,1,.36,1);
+    transform-box:fill-box;transform-origin:center}
+  .ringwrap .score{position:absolute;inset:0;display:grid;place-items:center;font-size:26px;font-weight:600;
+    letter-spacing:-1.2px}
+  .ringwrap .grade{position:absolute;left:0;right:0;bottom:16px;text-align:center;font-size:9px;letter-spacing:1px;
+    color:#9A9286;text-transform:uppercase}
+  .verdict{font-size:13px;font-weight:600;margin:0 0 3px}
+  .summary{font-size:11px;color:var(--muted);margin:0}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:11px}
+  .tile{border:1px solid var(--line);border-radius:8px;background:var(--soft);padding:6px 8px;position:relative;overflow:hidden}
+  .tile b{display:block;font-size:15px;font-weight:600;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+  .tile b i{font-style:normal;font-size:9px;color:var(--muted);font-weight:600;margin-left:2px}
+  .tile span{font-size:9px;color:#9A9286;letter-spacing:.4px}
+  .spark{width:100%;height:52px;margin-top:10px;display:block}
+  .spark .area{fill:rgba(46,111,99,.10)}
+  .spark .line{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .spark .head{fill:var(--accent);opacity:0}
+  .mini.done .spark .head{opacity:1;transition:opacity .2s .4s}
+  .scanbar{position:absolute;left:0;right:0;bottom:0;height:3px;background:transparent}
+  .scanbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s linear}
+  .sweep{position:absolute;inset:0;pointer-events:none;opacity:0;
+    background:linear-gradient(180deg,transparent 0%,rgba(46,111,99,.13) 45%,rgba(46,111,99,.20) 50%,rgba(46,111,99,.13) 55%,transparent 100%);
+    background-size:100% 160px;background-repeat:no-repeat}
+
+  /* ---------- A · 仪表扫描 ---------- */
+  .mini[data-v="a"].scanning .sweep{opacity:1;animation:sweep 1.6s linear infinite}
+  @keyframes sweep{0%{background-position:0 -160px}100%{background-position:0 300px}}
+  .mini[data-v="a"].scanning .prog{animation:arcSpin 1.15s linear infinite}
+  @keyframes arcSpin{
+    0%{stroke-dashoffset:200;transform:rotate(0deg)}
+    100%{stroke-dashoffset:200;transform:rotate(360deg)}
+  }
+  .mini[data-v="a"].scanning .ringwrap svg{transition:none}
+  .mini[data-v="a"].done .sweep{opacity:0;animation:none;transition:opacity .3s}
+
+  /* ---------- B · 数字涌入 ---------- */
+  .mini[data-v="b"].scanning .tile{animation:tileBreath 1.05s ease-in-out infinite}
+  .mini[data-v="b"].scanning .tile:nth-child(2){animation-delay:.12s}
+  .mini[data-v="b"].scanning .tile:nth-child(3){animation-delay:.24s}
+  .mini[data-v="b"].scanning .tile:nth-child(4){animation-delay:.36s}
+  @keyframes tileBreath{0%,100%{border-color:var(--line)}50%{border-color:rgba(46,111,99,.55)}}
+  .mini[data-v="b"].scanning .spark .line{stroke-dasharray:520;stroke-dashoffset:520;animation:draw 2.4s linear infinite}
+  .mini[data-v="b"].done .spark .line{animation:none;stroke-dashoffset:0;transition:stroke-dashoffset .5s linear}
+  .mini[data-v="b"].done .spark .head{opacity:1;transition:opacity .2s .45s}
+  .mini[data-v="b"].done .tile{animation:flash .45s ease-out}
+  .mini[data-v="b"].done .tile:nth-child(2){animation-delay:.05s}
+  .mini[data-v="b"].done .tile:nth-child(3){animation-delay:.1s}
+  .mini[data-v="b"].done .tile:nth-child(4){animation-delay:.15s}
+  @keyframes flash{0%{background:rgba(46,111,99,.24)}100%{background:var(--soft)}}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .mini[data-v="b"].done .prog{animation:pop .6s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes pop{0%{transform:rotate(-90deg) scale(.92)}60%{transform:rotate(-90deg) scale(1.035)}100%{transform:rotate(-90deg) scale(1)}}
+  .mini[data-v="b"].done .ringwrap svg{transform-origin:50% 50%;animation:pop .6s cubic-bezier(.34,1.56,.64,1)}
+
+  /* ---------- C · 剧场 ---------- */
+  /* The orb exists in every variant's markup but only C ever shows it. */
+  .mini .orb{position:absolute;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;
+    transition:opacity .25s}
+  .mini[data-v="c"].scanning .orb{opacity:1}
+  .mini .orb .core{width:74px;height:74px;border-radius:50%;border:2px solid var(--accent);
+    display:grid;place-items:center;font-size:11px;font-weight:600;color:var(--accent);background:var(--card);
+    position:relative;z-index:2;letter-spacing:.5px}
+  .mini .orb .wave{position:absolute;left:50%;top:50%;width:74px;height:74px;margin:-37px 0 0 -37px;
+    border-radius:50%;border:1px solid var(--accent);opacity:0}
+  .mini[data-v="c"].scanning .orb .wave{animation:wave 1.8s ease-out infinite}
+  .mini[data-v="c"].scanning .orb .wave:nth-of-type(2){animation-delay:.6s}
+  .mini[data-v="c"].scanning .orb .wave:nth-of-type(3){animation-delay:1.2s}
+  /* Blur only the stale content; the orb has to stay crisp to read as a focal point. */
+  .mini[data-v="c"].scanning .body,
+  .mini[data-v="c"].scanning .topbar,
+  .mini[data-v="c"].scanning .spark{filter:blur(1.6px);opacity:.45}
+  .mini[data-v="c"] .body,
+  .mini[data-v="c"] .topbar,
+  .mini[data-v="c"] .spark{transition:filter .3s ease,opacity .3s ease}
+  .mini[data-v="c"] .orb{position:absolute;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;
+    transition:opacity .25s}
+  .mini[data-v="c"].scanning .orb{opacity:1}
+  .mini[data-v="c"] .orb .core{width:74px;height:74px;border-radius:50%;border:2px solid var(--accent);
+    display:grid;place-items:center;font-size:11px;font-weight:600;color:var(--accent);background:var(--card);
+    position:relative;z-index:2;letter-spacing:.5px}
+  .mini[data-v="c"] .orb .wave{position:absolute;width:74px;height:74px;border-radius:50%;border:1px solid var(--accent);
+    opacity:0}
+  .mini[data-v="c"].scanning .orb .wave{animation:wave 1.8s ease-out infinite}
+  .mini[data-v="c"].scanning .orb .wave:nth-child(2){animation-delay:.6s}
+  .mini[data-v="c"].scanning .orb .wave:nth-child(3){animation-delay:1.2s}
+  @keyframes wave{0%{transform:scale(1);opacity:.55}100%{transform:scale(2.1);opacity:0}}
+  .mini[data-v="c"].scanning .body{transform:scale(.985);transition:transform .4s}
+  .mini[data-v="c"].done .body{animation:enter .5s cubic-bezier(.22,1,.36,1)}
+  @keyframes enter{0%{transform:translateY(12px) scale(.97);opacity:.4}100%{transform:none;opacity:1}}
+  .mini[data-v="c"].done .tile{animation:enter .45s cubic-bezier(.22,1,.36,1) backwards}
+  .mini[data-v="c"].done .tile:nth-child(1){animation-delay:.06s}
+  .mini[data-v="c"].done .tile:nth-child(2){animation-delay:.12s}
+  .mini[data-v="c"].done .tile:nth-child(3){animation-delay:.18s}
+  .mini[data-v="c"].done .tile:nth-child(4){animation-delay:.24s}
+  .mini[data-v="c"].done .spark .line{stroke-dasharray:520;stroke-dashoffset:520;animation:draw .62s linear forwards}
+  .mini[data-v="c"].done .spark .head{opacity:1;transition:opacity .2s .55s}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:6px}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .swatch{width:9px;height:9px;border-radius:3px;background:var(--accent)}
+  .cost{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--muted)}
+  .bars{display:inline-flex;gap:2px}
+  .bars i{width:6px;height:10px;border-radius:2px;background:var(--track)}
+  .bars i.on{background:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+  <header class="page">
+    <div>
+      <div class="brand"><span class="mark"></span>AirNet</div>
+      <h1>动效方案对比</h1>
+      <p class="lead">三版可点、可循环的动效稿。每一版都是「检测中 → 检测完成」的完整过程，用的就是应用里的色板、字号与卡片布局。
+        点「重播」逐版对比，选一版我再落到 Avalonia 里。</p>
+    </div>
+    <div class="controls">
+      <button class="primary" id="replayAll">全部重播</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="variant">
+      <div class="vhead"><h2>A · 仪表扫描</h2><span class="tag">强度中</span></div>
+      <p class="desc">扫描期间一条高光带自上而下扫过页面，环变成旋进的弧。完成后高光淡出，环与数字归位。
+        <b>像仪器在进行测量</b>，不打断阅读。</p>
+      <div class="stage" data-mount="a"></div>
+      <div class="legend">
+        <span><span class="swatch"></span>扫描带 1.6s 循环</span>
+        <span>环旋进 1.15s/圈</span>
+        <span>归位 550ms</span>
+      </div>
+      <div class="cost">实现成本 <span class="bars"><i class="on"></i><i></i><i></i></span> 低（1 个 overlay 层 + 环的 indeterminate 模式）</div>
+      <button data-replay="a">重播 A</button>
+    </section>
+
+    <section class="variant">
+      <div class="vhead"><h2>B · 数字涌入</h2><span class="tag">强度中高</span></div>
+      <p class="desc">扫描期间数值真实地在跳、曲线边画边推进，指标准实时刷新。完成瞬间每块指标闪一下锁定，环轻微过冲后回稳。
+        <b>把"在测"变成"在读数"</b>。</p>
+      <div class="stage" data-mount="b"></div>
+      <div class="legend">
+        <span>数值 180ms/跳</span>
+        <span>曲线连续描画</span>
+        <span>锁定闪 450ms · 过冲 1.035</span>
+      </div>
+      <div class="cost">实现成本 <span class="bars"><i class="on"></i><i class="on"></i><i></i></span> 中（探针要按样本流式上报）</div>
+      <button data-replay="b">重播 B</button>
+    </section>
+
+    <section class="variant">
+      <div class="vhead"><h2>C · 剧场</h2><span class="tag">强度高</span></div>
+      <p class="desc">开始时整页模糊退后，中央出现呼吸的检测球。完成瞬间球收起，内容从下方浮入、环画出、指标依次进场。
+        <b>有过场感</b>，也最容易显得慢。</p>
+      <div class="stage" data-mount="c"></div>
+      <div class="legend">
+        <span>模糊 1.6px · 0.45 不透明</span>
+        <span>波纹 1.8s 循环</span>
+        <span>入场 500ms 错峰 60ms</span>
+      </div>
+      <div class="cost">实现成本 <span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i></span> 高（全屏 overlay + 模糊特效）</div>
+      <button data-replay="c">重播 C</button>
+    </section>
+  </div>
+
+  <footer class="note">
+    <p><b>怎么选</b>：A 最安全，任何机器上都稳，连续测十次也不烦；B 的信息密度最高，但要求把探针改成逐样本回传（现在是一轮结束后一次性出结果），
+      是这里面唯一需要动内核的一版；C 第一眼最抓人，代价是每次检测都要占用整个界面 2 秒，高频使用时容易变成负担。</p>
+    <p>三版都不改布局，只改透明度、描边进度与位移——这也是 <span class="kbd">Features.Motion</span> 能一键关掉的原因（截图与 CI 用）。</p>
+  </footer>
+</main>
+
+<script>
+const SPARK_PATH = "M2,40 L26,34 L50,37 L74,26 L98,31 L122,22 L146,30 L170,18 L194,33 L218,27 L242,14 L266,24 L290,20";
+const AREA_PATH = SPARK_PATH + " L290,52 L2,52 Z";
+
+function mount(v){
+  const host = document.querySelector(`[data-mount="${v}"]`);
+  host.innerHTML = `
+  <div class="mini" data-v="${v}">
+    <div class="topbar">
+      <span class="dot"></span>
+      <span class="phase">网络状态优秀</span>
+      <span class="elapsed">2.4 s</span>
+    </div>
+    <div class="body">
+      <div>
+        <div class="ringwrap">
+          <svg width="96" height="96" viewBox="0 0 96 96">
+            <circle class="track" cx="48" cy="48" r="42"></circle>
+            <circle class="prog" cx="48" cy="48" r="42"></circle>
+          </svg>
+          <div class="score">93</div>
+          <div class="grade">优秀</div>
+        </div>
+      </div>
+      <div>
+        <p class="verdict">网络状态优秀</p>
+        <p class="summary">延迟低、抖动小，无线信号 56%，距离一远会先掉速。</p>
+        <div class="tiles">
+          <div class="tile"><b>23.1<i>ms</i></b><span>延迟</span></div>
+          <div class="tile"><b>2.2<i>ms</i></b><span>抖动</span></div>
+          <div class="tile"><b>0.0<i>%</i></b><span>丢包</span></div>
+          <div class="tile"><b>384<i>Mbps</i></b><span>下载</span></div>
+        </div>
+      </div>
+    </div>
+    <svg class="spark" viewBox="0 0 292 52" preserveAspectRatio="none">
+      <path class="area" d="${AREA_PATH}"></path>
+      <path class="line" d="${SPARK_PATH}"></path>
+      <circle class="head" cx="290" cy="20" r="3.4"></circle>
+    </svg>
+    <div class="scanbar"><i></i></div>
+    <div class="sweep"></div>
+    <div class="orb"><div class="core">检测中</div>${''}</div>
+  </div>`;
+  const orb = host.querySelector('.orb');
+  orb.insertAdjacentHTML('beforeend', '<div class="wave"></div><div class="wave"></div><div class="wave"></div>');
+  return host.querySelector('.mini');
+}
+
+const FINAL = {score:93, tiles:[23.1, 2.2, 0.0, 384]};
+const PHASES_A = ['识别网卡','ICMP 丢包探测','TCP 握手计时','首包四段分解','网关与链路','评分与归因'];
+const PHASES_B = ['TCP 握手计时','首包四段分解','网关与链路'];
+const PHASES_C = ['识别网卡','TCP 握手计时','评分归因'];
+
+function easeOut(t){ return 1 - Math.pow(1 - t, 3); }
+
+/** Writes into the element's first text node so the unit span (<i>) survives the counting. */
+function setNumber(el, text){
+  if (el.firstChild && el.firstChild.nodeType === 3){
+    el.firstChild.nodeValue = text;
+  } else {
+    el.insertBefore(document.createTextNode(text), el.firstChild);
+  }
+}
+
+function animateNumber(el, from, to, ms, decimals){
+  const start = performance.now();
+  function frame(now){
+    const t = Math.min(1, (now - start) / ms);
+    const v = from + (to - from) * easeOut(t);
+    setNumber(el, decimals ? v.toFixed(1) : String(Math.round(v)));
+    if (t < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+function resetRing(prog){
+  // Kill the transition for the reset, otherwise the ring visibly unwinds before each scan.
+  const prev = prog.style.transition;
+  prog.style.transition = 'none';
+  prog.style.strokeDashoffset = '264';
+  prog.style.transform = 'rotate(0deg)';
+  void prog.getBoundingClientRect();
+  prog.style.transition = prev;
+}
+
+function play(el){
+  const v = el.dataset.v;
+  const score = el.querySelector('.score');
+  const prog = el.querySelector('.prog');
+  const phase = el.querySelector('.phase');
+  const elapsed = el.querySelector('.elapsed');
+  const bar = el.querySelector('.scanbar i');
+  const tiles = [...el.querySelectorAll('.tile b')];
+
+  el.classList.remove('scanning','done');
+  void el.offsetWidth;
+  resetRing(prog);
+  el.classList.add('scanning');
+
+  // A has no live numbers (the ring alone carries it), B ticks, C keeps the last result
+  // visible under the blur — showing 0 in A/C reads as a broken gauge.
+  if (v === 'a') setNumber(score, '—');
+  if (v === 'b') setNumber(score, '0');
+
+  bar.style.transition = 'none';
+  bar.style.width = '4%';
+  void bar.getBoundingClientRect();
+  bar.style.transition = '.25s linear';
+  elapsed.textContent = '0.0 s';
+
+  const phases = v === 'a' ? PHASES_A : v === 'b' ? PHASES_B : PHASES_C;
+  let i = 0;
+  phase.textContent = '正在检测 · ' + phases[0];
+
+  const total = 2400;
+  const start = performance.now();
+  const tick = setInterval(() => {
+    const p = Math.min(1, (performance.now() - start) / total);
+    elapsed.textContent = ((performance.now() - start) / 1000).toFixed(1) + ' s';
+    bar.style.width = (4 + p * 92) + '%';
+    const idx = Math.min(phases.length - 1, Math.floor(p * phases.length));
+    if (idx !== i){ i = idx; phase.textContent = '正在检测 · ' + phases[i]; }
+
+    if (v === 'b'){
+      setNumber(score, String(Math.round(58 + Math.random() * 40)));
+      setNumber(tiles[0], (14 + Math.random() * 30).toFixed(1));
+      setNumber(tiles[1], (0.4 + Math.random() * 5).toFixed(1));
+      setNumber(tiles[2], Math.random() < .8 ? '0.0' : (Math.random() * 1.4).toFixed(1));
+      setNumber(tiles[3], String(Math.round(300 + Math.random() * 120)));
+    }
+  }, v === 'b' ? 180 : 140);
+
+  setTimeout(() => {
+    clearInterval(tick);
+    el.classList.remove('scanning');
+    el.classList.add('done');
+    phase.textContent = '网络状态优秀';
+    bar.style.width = '100%';
+
+    // 93 of 100 points on a 264-long circumference
+    prog.style.strokeDashoffset = String(264 * (1 - 0.93));
+
+    // Count from whatever is on screen (a ticked value in B, the last result in A/C).
+    const scoreFrom = parseFloat(score.firstChild.nodeValue) || 0;
+    animateNumber(score, scoreFrom, FINAL.score, 520, 0);
+    tiles.forEach((tile, n) => {
+      const decimals = n === 3 ? 0 : 1;
+      const from = parseFloat(tile.firstChild.nodeValue) || 0;
+      animateNumber(tile, from, FINAL.tiles[n], 560, decimals);
+    });
+  }, total);
+}
+
+const minis = ['a','b','c'].map(mount);
+minis.forEach(m => { play(m); });
+
+document.getElementById('replayAll').addEventListener('click', () => minis.forEach(play));
+document.querySelectorAll('[data-replay]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const el = document.querySelector(`.mini[data-v="${btn.dataset.replay}"]`);
+    play(el);
+  });
+});
+</script>
+</body>
+</html>

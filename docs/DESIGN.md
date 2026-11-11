@@ -180,9 +180,12 @@ MonoFontFamily    : Cascadia Mono, Consolas, SF Mono, Menlo, monospace     ← I
 
 规则：**只有最上面一张写内容**。后排纸一旦露出被裁切的文字，会读成渲染错误（第一版就是这样，已改为纯纸 + 索引条）。
 
-## 10. 动效（M2 已实现）
+## 10. 动效（M2 已实现，可选方案见 [motion.html](motion.html)）
 
 统一开关 `Features.Motion`：截图导出与 CI 会关掉它，保证截图确定；将来"减少动态"偏好也挂在同一处。
+
+> 当前实装的是**克制版**（下表）。另有三版升級方案在 [motion.html](motion.html) 里可点可循环对比：
+> A 仪表扫描 / B 数字涌入 / C 剧场。静态预览：[扫描中](motion-scanning.png) · [完成后](motion-done.png)。
 
 | 场景 | 实现 | 参数 |
 | --- | --- | --- |
