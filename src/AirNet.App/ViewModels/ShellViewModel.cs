@@ -179,6 +179,7 @@ public partial class ShellViewModel : ObservableObject
             Overview.Refresh(View);
             Monitor.Apply(View);
             Path.RefreshFromSnapshot();
+            Settings.RefreshDnsPlan();
             StatusMessage = $"检测完成 · 评分 {View.Score} / {View.GradeLabel}";
 
             // Only real measurements are persisted; the sample snapshot stays ephemeral.
@@ -208,6 +209,20 @@ public partial class ShellViewModel : ObservableObject
     {
         _scanCts?.Cancel();
         StatusMessage = "正在停止…";
+    }
+
+    /// <summary>Writes the self-contained HTML report and returns the path it used.</summary>
+    public async Task<string> WriteReportAsync(string path)
+    {
+        var html = Core.Reporting.ReportBuilder.Build(
+            Snapshot,
+            Path.Attribution,
+            Path.LastMtu,
+            maskAddresses: true);
+
+        await File.WriteAllTextAsync(path, html, System.Text.Encoding.UTF8).ConfigureAwait(true);
+        StatusMessage = $"报告已导出：{System.IO.Path.GetFileName(path)}";
+        return path;
     }
 
     public void PublishSpeed(double downloadMbps, double uploadMbps, string message)

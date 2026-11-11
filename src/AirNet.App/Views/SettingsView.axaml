@@ -176,14 +176,52 @@
             </StackPanel>
           </Border>
 
-          <Border Classes="tile" Padding="14,12">
-            <StackPanel Spacing="4">
-              <TextBlock Text="设计说明" Classes="eyebrow" FontSize="10" />
-              <TextBlock Text="纸张色板与字号阶梯沿用 AirPDF；青色代表健康链路，陶土色只在降级与告警时出现。"
+          <Border Classes="card" Padding="18,16">
+            <StackPanel Spacing="9">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <Path Classes="icon small accent" Data="{StaticResource IconGlobe}" Width="15" Height="15" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="DNS 优化" Classes="h3" FontSize="13.5" Margin="7,0,0,0" VerticalAlignment="Center" />
+                <Border Grid.Column="2" Classes="pill" Padding="8,2">
+                  <TextBlock Text="{Binding DnsCurrentText}" Classes="micro" FontSize="9.5" />
+                </Border>
+              </Grid>
+              <TextBlock Text="{Binding DnsPlan.Headline}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding DnsPlan.Rationale}"
                          Classes="caption"
                          FontSize="10"
-                         LineHeight="16"
+                         LineHeight="15"
                          TextWrapping="Wrap" />
+              <Border Background="{DynamicResource SurfaceAltBrush}"
+                      BorderBrush="{DynamicResource BorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      Padding="10,8"
+                      IsVisible="{Binding CanApplyDns}">
+                <SelectableTextBlock Text="{Binding DnsCommandText}"
+                                     Classes="mono"
+                                     FontSize="9.5"
+                                     TextWrapping="Wrap" />
+              </Border>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Classes="mini"
+                        Content="复制命令"
+                        Click="OnCopyDnsCommandClick"
+                        IsVisible="{Binding CanApplyDns}" />
+                <Button Classes="mini"
+                        Content="应用（需管理员）"
+                        Command="{Binding ApplyDnsCommand}"
+                        IsVisible="{Binding CanApplyDns}" />
+                <Button Classes="mini"
+                        Content="还原"
+                        Command="{Binding RestoreDnsCommand}"
+                        IsVisible="{Binding HasDnsBackup}" />
+              </StackPanel>
+              <TextBlock Text="{Binding DnsStatusText}" Classes="micro" FontSize="10" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding DnsBackupText}"
+                         Classes="micro"
+                         FontSize="9.5"
+                         TextWrapping="Wrap"
+                         IsVisible="{Binding HasDnsBackup}" />
             </StackPanel>
           </Border>
 

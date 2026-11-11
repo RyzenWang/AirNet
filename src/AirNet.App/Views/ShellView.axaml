@@ -142,7 +142,8 @@
                   Height="28"
                   MinHeight="28"
                   Padding="10,0"
-                  FontSize="11.5">
+                  FontSize="11.5"
+                  Click="OnExportReportClick">
             <StackPanel Orientation="Horizontal" Spacing="6">
               <Path Classes="icon small muted" Data="{StaticResource IconReport}" />
               <TextBlock Text="导出报告" FontSize="11.5" VerticalAlignment="Center" />
@@ -271,7 +272,7 @@
           <Border Width="1" Height="12" Background="{DynamicResource BorderBrush}" />
           <TextBlock Text="{Binding FooterTimestampText}" Classes="caption tertiary" FontSize="11" />
           <Border Width="1" Height="12" Background="{DynamicResource BorderBrush}" />
-          <TextBlock Text="AIRNET 0.1.0" Classes="micro" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" />
+          <TextBlock Text="AIRNET 0.2.0" Classes="micro" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" />
         </StackPanel>
       </Grid>
     </Border>

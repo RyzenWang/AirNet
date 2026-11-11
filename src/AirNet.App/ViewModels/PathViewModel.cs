@@ -45,6 +45,9 @@ public partial class PathViewModel : ObservableObject
 
     public ShellViewModel Shell { get; }
 
+    /// <summary>Last MTU measurement, reused by the report exporter.</summary>
+    public MtuResult LastMtu { get; private set; } = MtuResult.Unavailable("尚未测量");
+
     [ObservableProperty]
     private Attribution _attribution;
 
@@ -139,6 +142,7 @@ public partial class PathViewModel : ObservableObject
 
     private void Apply(TraceResult trace, MtuResult mtu)
     {
+        LastMtu = mtu;
         Attribution = AttributionEngine.FromTrace(Shell.Snapshot, trace, mtu);
         Segments = BuildSegments(Attribution);
         Hops = BuildHops(trace);

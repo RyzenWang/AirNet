@@ -34,6 +34,13 @@ public partial class App : Application
                 return;
             }
 
+            // Headless report: one HTML file from a real scan, for CI and for sharing.
+            if (ReadStringArgument(desktop.Args, "--report") is { } htmlPath)
+            {
+                _ = RunReportAsync(htmlPath, desktop);
+                return;
+            }
+
             var shell = new ShellViewModel();
             var window = new MainWindow { DataContext = shell };
             desktop.MainWindow = window;
@@ -181,6 +188,18 @@ public partial class App : Application
 
             var attribution = Core.Diagnostics.AttributionEngine.FromTrace(snapshot, trace, mtu);
             report.AppendLine($"culprit={attribution.Culprit} precise={attribution.IsPrecise} headline={attribution.Headline}");
+
+            // Report rendering and the DNS plan are deterministic; CI asserts on these lines.
+            var html = Core.Reporting.ReportBuilder.Build(snapshot, attribution, mtu);
+            report.AppendLine($"reportChars={html.Length}");
+            report.AppendLine($"reportHasSvg={html.Contains("<svg", StringComparison.Ordinal)}");
+            report.AppendLine($"reportHasScore={html.Contains("class=\"score\"", StringComparison.Ordinal)}");
+            report.AppendLine($"reportMasked={Core.Reporting.ReportBuilder.Mask("192.168.1.42", true)}");
+
+            var dnsPlan = Core.Diagnostics.DnsAdvisor.Plan(snapshot.Interface, snapshot.Timing);
+            report.AppendLine($"dnsWorthChanging={dnsPlan.IsWorthChanging} dnsProposed={dnsPlan.ProposedDns}");
+            report.AppendLine($"dnsApply={dnsPlan.ApplyCommand.Replace(Environment.NewLine, " && ")}");
+            report.AppendLine($"dnsRestore={dnsPlan.RestoreCommand}");
         }
         catch (Exception ex)
         {
@@ -188,6 +207,35 @@ public partial class App : Application
         }
 
         await File.WriteAllTextAsync(reportPath, report.ToString()).ConfigureAwait(false);
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
+    }
+
+    /// <summary>One real scan plus route discovery, rendered straight to an HTML report.</summary>
+    private static async Task RunReportAsync(
+        string htmlPath,
+        IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        try
+        {
+            var snapshot = await new Core.Probes.MeasurementRunner().RunAsync().ConfigureAwait(true);
+            var trace = await Core.Probes.TraceProbe.TraceAsync("223.5.5.5").ConfigureAwait(true);
+            var mtu = await Core.Probes.MtuProbe.MeasureAsync("223.5.5.5").ConfigureAwait(true);
+            var attribution = Core.Diagnostics.AttributionEngine.FromTrace(snapshot, trace, mtu);
+
+            var html = Core.Reporting.ReportBuilder.Build(snapshot, attribution, mtu);
+            var directory = Path.GetDirectoryName(Path.GetFullPath(htmlPath));
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            await File.WriteAllTextAsync(htmlPath, html, System.Text.Encoding.UTF8).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            await File.WriteAllTextAsync(htmlPath, "report failed: " + ex).ConfigureAwait(false);
+        }
+
         Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
     }
 }
