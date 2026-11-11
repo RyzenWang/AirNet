@@ -24,15 +24,24 @@ public partial class ShellViewModel : ObservableObject
 {
     private readonly MeasurementRunner _runner = new();
     private readonly HistoryStore _history = new();
+    private readonly Avalonia.Threading.DispatcherTimer _scanTicker;
     private CancellationTokenSource? _scanCts;
     private SnapshotView _view;
     private int _pageIndex;
     private ThemeMode _theme = ThemeMode.Light;
+    private double _scanTarget;
+    private DateTimeOffset _scanStartedAt;
 
     public ShellViewModel()
     {
         var snapshot = DemoSnapshotFactory.CreateSnapshot();
         _view = new SnapshotView(snapshot);
+
+        // Eases the progress bar toward the phase target so it glides instead of stepping.
+        _scanTicker = new Avalonia.Threading.DispatcherTimer(
+            TimeSpan.FromMilliseconds(120),
+            Avalonia.Threading.DispatcherPriority.Normal,
+            (_, _) => OnScanTick());
 
         Overview = new OverviewViewModel(this);
         Monitor = new MonitorViewModel(this);
@@ -106,6 +115,30 @@ public partial class ShellViewModel : ObservableObject
     [ObservableProperty]
     private string _statusMessage = "示例数据 · 点击「开始检测」运行真实测量";
 
+    [ObservableProperty]
+    private string _scanPhaseText = string.Empty;
+
+    [ObservableProperty]
+    private string _scanStatusText = string.Empty;
+
+    [ObservableProperty]
+    private string _scanElapsedText = "0.0 s";
+
+    [ObservableProperty]
+    private double _scanFraction;
+
+    private void OnScanTick()
+    {
+        ScanElapsedText = $"{(DateTimeOffset.Now - _scanStartedAt).TotalSeconds:0.0} s";
+
+        // Ease toward the phase target; snap when close so the last percent actually lands.
+        ScanFraction += (_scanTarget - ScanFraction) * 0.22;
+        if (Math.Abs(_scanTarget - ScanFraction) < 0.004)
+        {
+            ScanFraction = _scanTarget;
+        }
+    }
+
     public string ConnectionChip => View.InterfaceChip;
     public string LastScanText => $"上次检测 {View.CapturedAtText}";
     public string FooterLatencyText => $"延迟 {View.LatencyAvgText} ms";
@@ -166,13 +199,28 @@ public partial class ShellViewModel : ObservableObject
 
         IsScanning = true;
         StatusMessage = "正在采集探针包…";
+        _scanStartedAt = DateTimeOffset.Now;
+        _scanTarget = 0;
+        ScanFraction = 0;
+        ScanPhaseText = "识别网卡";
+        ScanStatusText = "正在检测 · 识别网卡";
+        ScanElapsedText = "0.0 s";
+        _scanTicker.Start();
         Navigate("Monitor");
+
+        var progress = new Progress<ScanProgress>(report =>
+        {
+            _scanTarget = report.Fraction;
+            ScanPhaseText = report.Phase;
+            ScanStatusText = report.Phase == "完成" ? "检测完成" : $"正在检测 · {report.Phase}";
+        });
 
         try
         {
             var snapshot = await _runner.RunAsync(
                 Speed.DownloadMbps,
                 Speed.UploadMbps,
+                progress,
                 _scanCts.Token).ConfigureAwait(true);
 
             View = new SnapshotView(snapshot);
@@ -200,6 +248,9 @@ public partial class ShellViewModel : ObservableObject
         }
         finally
         {
+            _scanTicker.Stop();
+            ScanFraction = 1;
+            ScanStatusText = string.Empty;
             IsScanning = false;
         }
     }

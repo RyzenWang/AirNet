@@ -69,6 +69,30 @@ public partial class MainWindow : Window
         Close();
     }
 
+    /// <summary>
+    /// Captures the window mid-scan. The scanning state only exists for a couple of seconds, so
+    /// this is the only way to review it (and to smoke-test the progress strip).
+    /// </summary>
+    public async Task CaptureScanningAsync(string path, int scale = 1)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path) ?? ".");
+        if (DataContext is not ShellViewModel viewModel)
+        {
+            return;
+        }
+
+        viewModel.NavigateCommand.Execute("Monitor");
+        await Task.Delay(400);
+
+        var scan = viewModel.RunScanCommand.ExecuteAsync(null);
+        await Task.Delay(1200);
+        Capture(path, scale);
+
+        await scan;
+        await Task.Delay(300);
+        Close();
+    }
+
     private void Capture(string path, int scale)
     {
         var width = (int)Math.Round(Bounds.Width);

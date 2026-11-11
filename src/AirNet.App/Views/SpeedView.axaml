@@ -57,11 +57,13 @@
                                         TrackBrush="{DynamicResource TrackBrush}"
                                         ProgressBrush="{DynamicResource AccentBrush}" />
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                      <TextBlock Text="{Binding DownloadText}"
-                                 FontSize="38"
-                                 FontWeight="SemiBold"
-                                 LetterSpacing="-2"
-                                 HorizontalAlignment="Center" />
+                      <controls:AnimatedNumber Value="{Binding DownloadMbps}"
+                                               Decimals="0"
+                                               FontSize="38"
+                                               FontWeight="SemiBold"
+                                               LetterSpacing="-2"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               HorizontalAlignment="Center" />
                       <TextBlock Text="Mbps" Classes="eyebrow" FontSize="8" HorizontalAlignment="Center" Margin="0,-1,0,0" />
                     </StackPanel>
                   </Grid>
@@ -82,11 +84,13 @@
                                         TrackBrush="{DynamicResource TrackBrush}"
                                         ProgressBrush="{DynamicResource GoodBrush}" />
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                      <TextBlock Text="{Binding UploadText}"
-                                 FontSize="38"
-                                 FontWeight="SemiBold"
-                                 LetterSpacing="-2"
-                                 HorizontalAlignment="Center" />
+                      <controls:AnimatedNumber Value="{Binding UploadMbps}"
+                                               Decimals="1"
+                                               FontSize="38"
+                                               FontWeight="SemiBold"
+                                               LetterSpacing="-2"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               HorizontalAlignment="Center" />
                       <TextBlock Text="Mbps" Classes="eyebrow" FontSize="8" HorizontalAlignment="Center" Margin="0,-1,0,0" />
                     </StackPanel>
                   </Grid>

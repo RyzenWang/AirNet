@@ -19,6 +19,11 @@ public sealed class MetricTile
 {
     public required string Label { get; init; }
     public required string Value { get; init; }
+
+    /// <summary>The raw number, so the tile can count up instead of snapping.</summary>
+    public double Number { get; init; }
+
+    public int Decimals { get; init; } = 1;
     public required string Unit { get; init; }
     public required string Foot { get; init; }
     public bool IsGood { get; init; }
@@ -175,6 +180,8 @@ public sealed class SnapshotView
             {
                 Label = "延迟 / LATENCY",
                 Value = Fmt.Fixed(latency),
+                Number = latency,
+                Decimals = 1,
                 Unit = "ms",
                 Foot = $"P95 {Fmt.Fixed(s.Latency.P95Ms)} ms",
                 IsGood = latency <= 40,
@@ -185,6 +192,8 @@ public sealed class SnapshotView
             {
                 Label = "抖动 / JITTER",
                 Value = Fmt.Fixed(jitter),
+                Number = jitter,
+                Decimals = 1,
                 Unit = "ms",
                 Foot = "相邻包差均值",
                 IsGood = jitter <= 5,
@@ -195,6 +204,8 @@ public sealed class SnapshotView
             {
                 Label = "丢包 / LOSS",
                 Value = Fmt.Fixed(loss),
+                Number = loss,
+                Decimals = 1,
                 Unit = "%",
                 Foot = $"{s.Latency.Received}/{s.Latency.Sent} 已返回",
                 IsGood = loss <= 0.5,
@@ -205,6 +216,8 @@ public sealed class SnapshotView
             {
                 Label = "下载 / DOWNLOAD",
                 Value = Fmt.Compact(down),
+                Number = down,
+                Decimals = down >= 100 ? 0 : 1,
                 Unit = "Mbps",
                 Foot = $"上行 {Fmt.Compact(s.UploadMbps)} Mbps",
                 IsGood = down >= 100,

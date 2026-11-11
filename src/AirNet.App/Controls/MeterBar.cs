@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using AirNet.App.Features;
 
 namespace AirNet.App.Controls;
 
@@ -22,6 +23,22 @@ public class MeterBar : Control
     static MeterBar()
     {
         AffectsRender<MeterBar>(ValueProperty, TrackBrushProperty, FillBrushProperty, MinFillProperty);
+    }
+
+    public MeterBar()
+    {
+        if (Motion.Enabled)
+        {
+            Transitions = new Avalonia.Animation.Transitions
+            {
+                new Avalonia.Animation.DoubleTransition
+                {
+                    Property = ValueProperty,
+                    Duration = TimeSpan.FromMilliseconds(520),
+                    Easing = new Avalonia.Animation.Easings.CubicEaseOut(),
+                },
+            };
+        }
     }
 
     public double Value

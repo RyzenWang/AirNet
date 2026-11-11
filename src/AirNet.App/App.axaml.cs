@@ -25,6 +25,9 @@ public partial class App : Application
             {
                 Environment.SetEnvironmentVariable(
                     "AIRNET_DATA_DIR", Path.Combine(Path.GetTempPath(), "airnet-export-data"));
+
+                // Static captures: no counting numbers, no sweeping charts, no fading pages.
+                Features.Motion.Enabled = false;
             }
 
             // Headless measurement run, used to verify the probe stack without a window.
@@ -41,9 +44,22 @@ public partial class App : Application
                 return;
             }
 
+            // Developer aid: capture the window while a real scan is in flight.
+            var scanShotPath = ReadStringArgument(desktop.Args, "--scan-shot");
+
             var shell = new ShellViewModel();
             var window = new MainWindow { DataContext = shell };
             desktop.MainWindow = window;
+
+            if (scanShotPath is not null)
+            {
+                window.WindowStartupLocation = WindowStartupLocation.Manual;
+                window.Position = new PixelPoint(-4200, -4200);
+                window.ShowInTaskbar = false;
+                window.Show();
+                _ = window.CaptureScanningAsync(scanShotPath);
+                return;
+            }
 
             if (exportDirectory is { } directory)
             {

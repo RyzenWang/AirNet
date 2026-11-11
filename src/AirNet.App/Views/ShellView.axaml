@@ -117,39 +117,70 @@
     <Border Grid.Row="1"
             Background="{DynamicResource ToolbarBackgroundBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="0,0,0,1"
-            Padding="14,0">
-      <Grid ColumnDefinitions="Auto,*,Auto">
-        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-          <Ellipse Width="7" Height="7" Fill="{DynamicResource GoodBrush}" VerticalAlignment="Center" />
-          <TextBlock Text="{Binding View.Verdict}"
-                     FontSize="12"
-                     FontWeight="SemiBold"
-                     VerticalAlignment="Center" />
-          <Border Width="1" Height="14" Background="{DynamicResource BorderBrush}" />
-          <TextBlock Text="{Binding LastScanText}" Classes="caption" VerticalAlignment="Center" />
-          <Border Width="1" Height="14" Background="{DynamicResource BorderBrush}" />
-          <TextBlock Text="{Binding View.SampleCountText}" Classes="micro" VerticalAlignment="Center" />
-          <Border Width="1" Height="14" Background="{DynamicResource BorderBrush}" />
-          <TextBlock Text="{Binding View.PeakText}" Classes="micro" VerticalAlignment="Center" />
-        </StackPanel>
+            BorderThickness="0,0,0,1">
+      <Grid RowDefinitions="*,3">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="14,0">
+          <StackPanel Orientation="Horizontal"
+                      Spacing="10"
+                      VerticalAlignment="Center"
+                      IsVisible="{Binding !IsScanning}">
+            <Ellipse Width="7" Height="7" Fill="{DynamicResource GoodBrush}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding View.Verdict}"
+                       FontSize="12"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center" />
+            <Border Width="1" Height="14" Background="{DynamicResource BorderBrush}" />
+            <TextBlock Text="{Binding LastScanText}" Classes="caption" VerticalAlignment="Center" />
+            <Border Width="1" Height="14" Background="{DynamicResource BorderBrush}" />
+            <TextBlock Text="{Binding View.SampleCountText}" Classes="micro" VerticalAlignment="Center" />
+            <Border Width="1" Height="14" Background="{DynamicResource BorderBrush}" />
+            <TextBlock Text="{Binding View.PeakText}" Classes="micro" VerticalAlignment="Center" />
+          </StackPanel>
 
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7" HorizontalAlignment="Right" VerticalAlignment="Center">
-          <TextBlock Text="自动刷新" Classes="caption" VerticalAlignment="Center" />
-          <ToggleButton Classes="switch" IsChecked="True" VerticalAlignment="Center" />
-          <Border Width="1" Height="14" Background="{DynamicResource BorderBrush}" Margin="6,0" />
-          <Button Classes="ghost"
-                  Height="28"
-                  MinHeight="28"
-                  Padding="10,0"
-                  FontSize="11.5"
-                  Click="OnExportReportClick">
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <Path Classes="icon small muted" Data="{StaticResource IconReport}" />
-              <TextBlock Text="导出报告" FontSize="11.5" VerticalAlignment="Center" />
-            </StackPanel>
-          </Button>
-        </StackPanel>
+          <!-- While scanning the strip tells you what it is doing, not what it last found. -->
+          <StackPanel Orientation="Horizontal"
+                      Spacing="8"
+                      VerticalAlignment="Center"
+                      IsVisible="{Binding IsScanning}">
+            <Ellipse Classes="scanDot" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding ScanStatusText}"
+                       FontSize="12"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource AccentTextBrush}"
+                       VerticalAlignment="Center" />
+            <Border Width="1" Height="14" Background="{DynamicResource BorderBrush}" />
+            <TextBlock Text="{Binding ScanElapsedText}" Classes="mono" FontSize="10.5" VerticalAlignment="Center" />
+          </StackPanel>
+
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <TextBlock Text="自动刷新" Classes="caption" VerticalAlignment="Center" />
+            <ToggleButton Classes="switch" IsChecked="True" VerticalAlignment="Center" />
+            <Border Width="1" Height="14" Background="{DynamicResource BorderBrush}" Margin="6,0" />
+            <Button Classes="ghost"
+                    Height="28"
+                    MinHeight="28"
+                    Padding="10,0"
+                    FontSize="11.5"
+                    Click="OnExportReportClick">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Path Classes="icon small muted" Data="{StaticResource IconReport}" />
+                <TextBlock Text="导出报告" FontSize="11.5" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Grid>
+
+        <ProgressBar Grid.Row="1"
+                     Minimum="0"
+                     Maximum="1"
+                     Value="{Binding ScanFraction}"
+                     Height="3"
+                     MinHeight="3"
+                     Margin="0"
+                     Padding="0"
+                     CornerRadius="0"
+                     Background="Transparent"
+                     IsVisible="{Binding IsScanning}" />
       </Grid>
     </Border>
 
@@ -235,20 +266,20 @@
         </Grid>
       </Border>
 
-      <Panel Grid.Column="1">
-        <Border IsVisible="{Binding IsOverviewSelected}">
+      <Panel x:Name="PageHost" Grid.Column="1">
+        <Border Classes="pageHost" IsVisible="{Binding IsOverviewSelected}" Classes.scanning="{Binding IsScanning}">
           <views:OverviewView DataContext="{Binding Overview}" />
         </Border>
-        <Border IsVisible="{Binding IsMonitorSelected}">
+        <Border Classes="pageHost" IsVisible="{Binding IsMonitorSelected}" Classes.scanning="{Binding IsScanning}">
           <views:MonitorView DataContext="{Binding Monitor}" />
         </Border>
-        <Border IsVisible="{Binding IsSpeedSelected}">
+        <Border Classes="pageHost" IsVisible="{Binding IsSpeedSelected}">
           <views:SpeedView DataContext="{Binding Speed}" />
         </Border>
-        <Border IsVisible="{Binding IsPathSelected}">
+        <Border Classes="pageHost" IsVisible="{Binding IsPathSelected}">
           <views:PathView DataContext="{Binding Path}" />
         </Border>
-        <Border IsVisible="{Binding IsSettingsSelected}">
+        <Border Classes="pageHost" IsVisible="{Binding IsSettingsSelected}">
           <views:SettingsView DataContext="{Binding Settings}" />
         </Border>
       </Panel>

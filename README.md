@@ -33,6 +33,7 @@
 | **一键 DNS + 还原**（Windows 提权） | ✅ M2 命令先展示，还原记录落盘 |
 | 裁剪 + R2R 单文件发布 | ✅ 40.6MB / 0.9–1.1s / 154MB |
 | CI（构建 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
+| **动效**（扫描进度、环/条填充、数字滚动、曲线扫入、页面淡入） | ✅ M2，截图模式可关闭 |
 | 双栈、邻区扫描、游戏/会议模式 | ⬜ 见 [技术方案](docs/TECH_PLAN.md) |
 
 程序启动时展示**确定性样例数据**（右上角标"示例数据"），点"开始检测"即切换为真实测量并写入历史。
@@ -46,7 +47,9 @@ git clone <repo> ; cd AirNet
 
 dotnet run --project src/AirNet.App                              # 启动应用
 dotnet run --project src/AirNet.App -- --selftest out.txt        # 跑一轮真实探测 + 历史往返，输出报告
-dotnet run --project src/AirNet.App -- --export docs/shots       # 重新生成全部截图
+dotnet run --project src/AirNet.App -- --report report.html      # 真测一轮并导出 HTML 报告
+dotnet run --project src/AirNet.App -- --export docs/shots       # 重新生成全部截图（动效自动关闭）
+dotnet run --project src/AirNet.App -- --scan-shot scan.png      # 抓一张"检测中"的界面（动效开启）
 
 powershell -File packaging/publish.ps1                           # 裁剪单文件发布 + 实测启动/内存
 ```

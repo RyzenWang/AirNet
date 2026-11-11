@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Threading;
+using AirNet.App.Features;
 
 namespace AirNet.App.Controls;
 
@@ -12,6 +14,52 @@ namespace AirNet.App.Controls;
 public class Sparkline : Control
 {
     private const double Inset = 4;
+
+    private readonly DispatcherTimer _revealTimer;
+    private double _reveal = 1;
+    private double _revealElapsed;
+
+    public Sparkline()
+    {
+        _revealTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(16), DispatcherPriority.Render, OnRevealTick);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == SeriesProperty)
+        {
+            StartReveal();
+        }
+    }
+
+    /// <summary>Sweeps the line in from the left so a new measurement reads as "just measured".</summary>
+    private void StartReveal()
+    {
+        if (!Motion.Enabled)
+        {
+            _reveal = 1;
+            _revealTimer.Stop();
+            return;
+        }
+
+        _reveal = 0;
+        _revealElapsed = 0;
+        _revealTimer.Start();
+    }
+
+    private void OnRevealTick(object? sender, EventArgs e)
+    {
+        _revealElapsed += 16;
+        _reveal = Math.Clamp(_revealElapsed / Motion.Reveal.TotalMilliseconds, 0, 1);
+        if (_reveal >= 1)
+        {
+            _revealTimer.Stop();
+        }
+
+        InvalidateVisual();
+    }
 
     public static readonly StyledProperty<IReadOnlyList<double>?> SeriesProperty =
         AvaloniaProperty.Register<Sparkline, IReadOnlyList<double>?>(nameof(Series));
@@ -181,8 +229,9 @@ public class Sparkline : Control
         }
 
         var step = width / (series.Count - 1);
-        var points = new Point[series.Count];
-        for (var i = 0; i < series.Count; i++)
+        var visible = Math.Clamp((int)Math.Ceiling(series.Count * _reveal), 2, series.Count);
+        var points = new Point[visible];
+        for (var i = 0; i < visible; i++)
         {
             points[i] = new Point(left + (step * i), MapY(series[i]));
         }
@@ -222,7 +271,7 @@ public class Sparkline : Control
             var pen = new Pen(strokeBrush, StrokeThickness, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round);
             context.DrawGeometry(null, pen, line);
 
-            if (ShowEndDot)
+            if (ShowEndDot && _reveal >= 0.99)
             {
                 var last = points[^1];
                 context.DrawEllipse(strokeBrush, null, last, 3.2, 3.2);

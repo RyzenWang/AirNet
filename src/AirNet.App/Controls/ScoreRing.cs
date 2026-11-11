@@ -1,11 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using AirNet.App.Features;
 
 namespace AirNet.App.Controls;
 
 /// <summary>
-/// A 270° gauge arc with rounded caps. The value text is laid over it in XAML so the same
+/// A 360° gauge arc with rounded caps. The value text is laid over it in XAML so the same
 /// control serves the health score, the speed gauges and the stat rings without variants.
 /// </summary>
 public class ScoreRing : Control
@@ -39,6 +40,24 @@ public class ScoreRing : Control
         AffectsRender<ScoreRing>(
             ValueProperty, MaximumProperty, ThicknessProperty, StartAngleProperty,
             SweepAngleProperty, TrackBrushProperty, ProgressBrushProperty, ShowTipProperty);
+    }
+
+    public ScoreRing()
+    {
+        // The arc eases to its new value instead of snapping: on first load it draws itself in,
+        // and after a re-scan the ring and the numbers move together.
+        if (Motion.Enabled)
+        {
+            Transitions = new Avalonia.Animation.Transitions
+            {
+                new Avalonia.Animation.DoubleTransition
+                {
+                    Property = ValueProperty,
+                    Duration = Motion.Fill,
+                    Easing = new Avalonia.Animation.Easings.CubicEaseOut(),
+                },
+            };
+        }
     }
 
     public double Value

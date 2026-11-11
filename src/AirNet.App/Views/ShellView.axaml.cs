@@ -1,16 +1,79 @@
+using System.ComponentModel;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
+using AirNet.App.Features;
 using AirNet.App.ViewModels;
 
 namespace AirNet.App.Views;
 
 public partial class ShellView : UserControl
 {
+    private ShellViewModel? _shell;
+
     public ShellView()
     {
         InitializeComponent();
+    }
+
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+
+        if (_shell is not null)
+        {
+            _shell.PropertyChanged -= OnShellPropertyChanged;
+        }
+
+        _shell = DataContext as ShellViewModel;
+        if (_shell is not null)
+        {
+            _shell.PropertyChanged += OnShellPropertyChanged;
+        }
+    }
+
+    private void OnShellPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ShellViewModel.PageIndex))
+        {
+            AnimateActivePage();
+        }
+    }
+
+    /// <summary>
+    /// Fades the incoming page instead of cutting to it. Only opacity is animated: a slide would
+    /// fight the layout on the wider pages and makes a tool feel slower than it is.
+    /// </summary>
+    private void AnimateActivePage()
+    {
+        if (!Motion.Enabled || PageHost is null)
+        {
+            return;
+        }
+
+        var page = PageHost.Children.OfType<Control>().FirstOrDefault(c => c.IsVisible);
+        if (page is null)
+        {
+            return;
+        }
+
+        page.Transitions = null;
+        page.Opacity = 0;
+        page.Transitions = new Transitions
+        {
+            new DoubleTransition
+            {
+                Property = OpacityProperty,
+                Duration = Motion.Page,
+                Easing = new CubicEaseOut(),
+            },
+        };
+
+        Dispatcher.UIThread.Post(() => page.Opacity = 1, DispatcherPriority.Render);
     }
 
     private Window? Host => TopLevel.GetTopLevel(this) as Window;

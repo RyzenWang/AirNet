@@ -18,7 +18,13 @@
                        LetterSpacing="0.8" />
           </StackPanel>
           <StackPanel Orientation="Horizontal" Spacing="0">
-            <TextBlock Text="{Binding Value}" Classes="value" FontSize="21" />
+            <controls:AnimatedNumber Value="{Binding Number}"
+                                     Decimals="{Binding Decimals}"
+                                     FontSize="21"
+                                     FontWeight="SemiBold"
+                                     LetterSpacing="-0.7"
+                                     Foreground="{DynamicResource TextPrimaryBrush}"
+                                     VerticalAlignment="Bottom" />
             <TextBlock Text="{Binding Unit}" Classes="unit" />
           </StackPanel>
           <TextBlock Text="{Binding Foot}"
@@ -71,11 +77,13 @@
                                     TrackBrush="{DynamicResource TrackBrush}"
                                     ProgressBrush="{DynamicResource GoodBrush}" />
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                  <TextBlock Text="{Binding View.ScoreText}"
-                             FontSize="38"
-                             FontWeight="SemiBold"
-                             LetterSpacing="-1.8"
-                             HorizontalAlignment="Center" />
+                  <controls:AnimatedNumber Value="{Binding View.Score}"
+                                           Decimals="0"
+                                           FontSize="38"
+                                           FontWeight="SemiBold"
+                                           LetterSpacing="-1.8"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           HorizontalAlignment="Center" />
                   <TextBlock Text="{Binding View.GradeLabel}"
                              Classes="eyebrow"
                              FontSize="10"
