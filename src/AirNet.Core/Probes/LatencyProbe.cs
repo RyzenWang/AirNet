@@ -6,10 +6,15 @@ using System.Net.Sockets;
 namespace AirNet.Core.Probes;
 
 /// <summary>
-/// Collects a latency series against a host. ICMP is tried first; when the network (or a
-/// captive firewall) drops echo requests, a TCP connect to a common port is used instead.
-/// Both are unprivileged on Windows and fall back cleanly on other platforms.
+/// Collects latency series. ICMP is tried first; when the network (or a captive firewall) drops
+/// echo requests, TCP connect times are used instead.
 /// </summary>
+/// <remarks>
+/// ICMP through <see cref="Ping"/> only reports whole milliseconds, so a 20-packet run often
+/// comes back as twenty identical values and the jitter reads as zero. TCP handshakes are timed
+/// with <see cref="Stopwatch"/>, which keeps sub-millisecond resolution; that series is what the
+/// jitter and P95 numbers are built from.
+/// </remarks>
 public static class LatencyProbe
 {
     public static async Task<IReadOnlyList<double?>> MeasureIcmpAsync(
@@ -29,7 +34,7 @@ public static class LatencyProbe
             {
                 var reply = await ping.SendPingAsync(host, timeoutMs).ConfigureAwait(false);
                 samples.Add(reply.Status == IPStatus.Success
-                    ? Math.Round((double)reply.RoundtripTime, 1)
+                    ? Math.Round((double)reply.RoundtripTime, 2)
                     : null);
             }
             catch (Exception ex) when (ex is PingException or SocketException or InvalidOperationException)
@@ -46,22 +51,102 @@ public static class LatencyProbe
         return samples;
     }
 
-    /// <summary>TCP connect time to a port; used when ICMP is filtered.</summary>
+    /// <summary>
+    /// A series of fresh TCP handshakes. Each sample opens its own socket, so every number is a
+    /// real SYN → SYN/ACK round trip rather than a cached connection.
+    /// </summary>
+    public static async Task<IReadOnlyList<double?>> MeasureTcpSeriesAsync(
+        string host,
+        int port = 53,
+        int count = 12,
+        int intervalMs = 80,
+        int timeoutMs = 1200,
+        CancellationToken cancellationToken = default)
+    {
+        var samples = new List<double?>(count);
+
+        IPAddress? address;
+        try
+        {
+            var resolved = await Dns.GetHostAddressesAsync(host, cancellationToken).ConfigureAwait(false);
+            address = resolved.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork)
+                      ?? resolved.FirstOrDefault();
+        }
+        catch (Exception ex) when (ex is SocketException or OperationCanceledException)
+        {
+            address = null;
+        }
+
+        if (address is null)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                samples.Add(null);
+            }
+
+            return samples;
+        }
+
+        var endpoint = new IPEndPoint(address, port);
+
+        for (var i = 0; i < count; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            samples.Add(await MeasureTcpConnectAsync(endpoint, timeoutMs, cancellationToken).ConfigureAwait(false));
+
+            if (i < count - 1)
+            {
+                await Task.Delay(intervalMs, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        return samples;
+    }
+
+    /// <summary>One handshake, returns milliseconds or null on failure.</summary>
     public static async Task<double?> MeasureTcpAsync(
         string host,
         int port = 443,
         int timeoutMs = 1200,
         CancellationToken cancellationToken = default)
     {
-        using var client = new TcpClient();
+        try
+        {
+            var resolved = await Dns.GetHostAddressesAsync(host, cancellationToken).ConfigureAwait(false);
+            var address = resolved.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork)
+                          ?? resolved.FirstOrDefault();
+            if (address is null)
+            {
+                return null;
+            }
+
+            return await MeasureTcpConnectAsync(new IPEndPoint(address, port), timeoutMs, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is SocketException or OperationCanceledException)
+        {
+            return null;
+        }
+    }
+
+    private static async Task<double?> MeasureTcpConnectAsync(
+        IPEndPoint endpoint,
+        int timeoutMs,
+        CancellationToken cancellationToken)
+    {
+        using var socket = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
+        {
+            NoDelay = true,
+        };
+
         var stopwatch = Stopwatch.StartNew();
         try
         {
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeout.CancelAfter(timeoutMs);
-            await client.ConnectAsync(host, port, timeout.Token).ConfigureAwait(false);
+            await socket.ConnectAsync(endpoint, timeout.Token).ConfigureAwait(false);
             stopwatch.Stop();
-            return Math.Round(stopwatch.Elapsed.TotalMilliseconds, 1);
+            return Math.Round(stopwatch.Elapsed.TotalMilliseconds, 2);
         }
         catch (Exception ex) when (ex is SocketException or OperationCanceledException)
         {

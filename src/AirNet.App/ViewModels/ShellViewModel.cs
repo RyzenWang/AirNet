@@ -1,5 +1,6 @@
 using AirNet.Core.Demo;
 using AirNet.Core.Diagnostics;
+using AirNet.Core.History;
 using AirNet.Core.Probes;
 using Avalonia;
 using Avalonia.Styling;
@@ -22,6 +23,7 @@ public enum ThemeMode
 public partial class ShellViewModel : ObservableObject
 {
     private readonly MeasurementRunner _runner = new();
+    private readonly HistoryStore _history = new();
     private CancellationTokenSource? _scanCts;
     private SnapshotView _view;
     private int _pageIndex;
@@ -40,12 +42,16 @@ public partial class ShellViewModel : ObservableObject
         Overview.Refresh(_view);
         Monitor.Apply(_view);
         ApplyTheme(ThemeMode.Light);
+
+        _ = Overview.LoadHistoryAsync();
     }
 
     public OverviewViewModel Overview { get; }
     public MonitorViewModel Monitor { get; }
     public SpeedViewModel Speed { get; }
     public SettingsViewModel Settings { get; }
+
+    public HistoryStore History => _history;
 
     public NetworkSnapshot Snapshot => _view.Source;
 
@@ -165,6 +171,14 @@ public partial class ShellViewModel : ObservableObject
             Overview.Refresh(View);
             Monitor.Apply(View);
             StatusMessage = $"检测完成 · 评分 {View.Score} / {View.GradeLabel}";
+
+            // Only real measurements are persisted; the sample snapshot stays ephemeral.
+            if (!snapshot.IsSample)
+            {
+                await _history.AppendAsync(snapshot).ConfigureAwait(true);
+                await Overview.LoadHistoryAsync().ConfigureAwait(true);
+                await Settings.RefreshHistoryCountAsync().ConfigureAwait(true);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -195,7 +209,15 @@ public partial class ShellViewModel : ObservableObject
                 new MeasurementResult(
                     Snapshot.Interface,
                     Snapshot.Latency,
-                    Snapshot.DnsMs,
+                    Snapshot.ProbeMode,
+                    new ProbeDiagnostics(
+                        Snapshot.ProbeMode == ProbeMode.Icmp,
+                        true,
+                        Snapshot.Latency.Sent,
+                        Snapshot.Latency.Received,
+                        Snapshot.Latency.Sent,
+                        Snapshot.Latency.Received),
+                    Snapshot.Timing,
                     Snapshot.LatencySeries,
                     Snapshot.Hops,
                     Snapshot.EgressAddress,

@@ -120,22 +120,43 @@ public partial class App : Application
             report.AppendLine($"captured={snapshot.CapturedAt:O}");
             report.AppendLine($"interface={snapshot.Interface.Name}");
             report.AppendLine($"kind={snapshot.Interface.Kind}");
+            report.AppendLine($"ssid={snapshot.Interface.Ssid}");
+            report.AppendLine($"signal={snapshot.Interface.SignalPercent}");
+            report.AppendLine($"rssi={snapshot.Interface.RssiDbm}");
+            report.AppendLine($"linkMbps={snapshot.Interface.LinkSpeedMbps}");
             report.AppendLine($"local={snapshot.Interface.LocalAddress}");
             report.AppendLine($"gateway={snapshot.Interface.Gateway}");
             report.AppendLine($"dns={snapshot.Interface.DnsServer}");
+            report.AppendLine($"probeMode={snapshot.ProbeMode}");
             report.AppendLine($"avg={snapshot.Latency.AverageMs}");
             report.AppendLine($"p95={snapshot.Latency.P95Ms}");
             report.AppendLine($"jitter={snapshot.Latency.JitterMs}");
             report.AppendLine($"loss={snapshot.Latency.LossPercent}");
             report.AppendLine($"sent={snapshot.Latency.Sent}");
             report.AppendLine($"received={snapshot.Latency.Received}");
-            report.AppendLine($"dnsLookupMs={snapshot.DnsMs}");
+            report.AppendLine($"timingHost={snapshot.Timing.Host}");
+            report.AppendLine($"dnsLookupMs={snapshot.Timing.DnsMs}");
+            report.AppendLine($"tcpMs={snapshot.Timing.TcpMs}");
+            report.AppendLine($"tlsMs={snapshot.Timing.TlsMs}");
+            report.AppendLine($"ttfbMs={snapshot.Timing.TtfbMs}");
+            report.AppendLine($"timingOk={snapshot.Timing.Succeeded}");
+            report.AppendLine($"timingNote={snapshot.Timing.FailureNote}");
             report.AppendLine($"score={snapshot.Score}");
             report.AppendLine($"grade={snapshot.GradeLabel}");
             report.AppendLine($"verdict={snapshot.Verdict}");
             report.AppendLine($"hops={snapshot.Hops.Count}");
             report.AppendLine($"findings={snapshot.Findings.Count}");
             report.AppendLine($"samples={snapshot.LatencySeries.Count}");
+
+            // The store must survive trimming: source-generated JSON is the only reason it does.
+            var store = new Core.History.HistoryStore(
+                Path.Combine(Path.GetTempPath(), "airnet-selftest-history"));
+            await store.ClearAsync().ConfigureAwait(true);
+            await store.AppendAsync(Core.Demo.DemoSnapshotFactory.CreateSnapshot()).ConfigureAwait(true);
+            var reloaded = await store.LoadAsync(5).ConfigureAwait(true);
+            report.AppendLine($"historyRoundTrip={(reloaded.Count == 1 && reloaded[0].Score > 0)}");
+            report.AppendLine($"historyScore={reloaded.FirstOrDefault()?.Score}");
+            await store.ClearAsync().ConfigureAwait(true);
         }
         catch (Exception ex)
         {

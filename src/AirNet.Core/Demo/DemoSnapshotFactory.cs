@@ -19,9 +19,11 @@ public static class DemoSnapshotFactory
 
         var nic = new InterfaceInfo(
             Name: "Wi-Fi (Intel AX211)",
-            Kind: "Wi-Fi 5 GHz",
+            Kind: "Wi-Fi 6",
             IsWireless: true,
             SignalPercent: 56,
+            RssiDbm: -72,
+            Ssid: "AIRNET-5G",
             LinkSpeedMbps: 1201,
             LocalAddress: "192.0.2.24",
             Gateway: "192.168.1.1",
@@ -30,15 +32,32 @@ public static class DemoSnapshotFactory
         IReadOnlyList<HopReading> hops =
         [
             new("家庭网关", "192.168.1.1", 1.8, true),
-            new("运营商接入", "10.32.0.1", 7.4, true),
             new("骨干节点", "198.51.100.9", 9.6, true),
             new("参考主机", ReferenceHost, Math.Round(stats.MedianMs, 1), true, IsTerminal: true),
         ];
 
+        var timing = new LayerTiming(
+            Host: "www.baidu.com",
+            DnsMs: 8.1,
+            TcpMs: 12.4,
+            TlsMs: 38.2,
+            TtfbMs: 46.9,
+            Succeeded: true);
+
+        var diagnostics = new ProbeDiagnostics(
+            IcmpAnswered: true,
+            TcpAnswered: true,
+            IcmpSent: 20,
+            IcmpReceived: 20,
+            TcpSent: 12,
+            TcpReceived: 12);
+
         return new MeasurementResult(
             nic,
             stats,
-            DnsMs: 8.1,
+            ProbeMode.Icmp,
+            diagnostics,
+            timing,
             series,
             hops,
             EgressAddress: "203.0.113.42",

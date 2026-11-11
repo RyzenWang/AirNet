@@ -101,12 +101,11 @@
         <StackPanel Margin="0,26,0,0" Spacing="8" MaxWidth="498" HorizontalAlignment="Left">
           <Grid ColumnDefinitions="*,Auto">
             <TextBlock Text="最近检测" Classes="eyebrow" VerticalAlignment="Center" />
-            <Button Grid.Column="1"
-                    Classes="link"
-                    Content="清空"
-                    Foreground="{DynamicResource TextTertiaryBrush}"
-                    FontWeight="Medium"
-                    Padding="4,0" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding RecentCaption}"
+                       Classes="micro"
+                       FontSize="10"
+                       VerticalAlignment="Center" />
           </Grid>
           <ItemsControl ItemsSource="{Binding RecentRuns}">
             <ItemsControl.ItemTemplate>

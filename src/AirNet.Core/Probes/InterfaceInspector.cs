@@ -5,9 +5,9 @@ using AirNet.Core.Diagnostics;
 namespace AirNet.Core.Probes;
 
 /// <summary>
-/// Reads the currently active interface through <see cref="NetworkInterface"/>. This needs no
-/// elevation and no driver, which is what keeps AirNet portable. Radio signal strength is not
-/// exposed by the BCL; the platform layer fills it in on Windows via wlanapi (see TECH_PLAN.md).
+/// Reads the currently active interface through <see cref="NetworkInterface"/> and, when that
+/// interface is wireless, enriches it with the association details from wlanapi. No elevation
+/// and no driver, which is what keeps AirNet portable.
 /// </summary>
 public static class InterfaceInspector
 {
@@ -42,15 +42,42 @@ public static class InterfaceInspector
             .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork)?.ToString() ?? "-";
 
         var wireless = nic.NetworkInterfaceType == NetworkInterfaceType.Wireless80211;
+        var linkSpeed = nic.Speed > 0 ? Math.Round(nic.Speed / 1_000_000d, 0) : 0;
+
+        // Queried even on wired machines: it keeps the interop path exercised on every run and
+        // costs about a millisecond.
+        var radio = WlanRadio.TryRead();
+
+        if (!wireless)
+        {
+            return new InterfaceInfo(
+                nic.Name, "有线以太网", false, null, null, string.Empty,
+                linkSpeed, ipv4, gateway, dns);
+        }
+
+        if (radio is null)
+        {
+            return new InterfaceInfo(
+                nic.Name, "Wi-Fi", true, null, null, string.Empty,
+                linkSpeed, ipv4, gateway, dns);
+        }
+
+        // Signal quality (0-100) maps to dBm on a fixed curve; it is an estimate because
+        // Windows only exposes the real RSSI through the BSS list.
+        var rssi = (int)Math.Round((radio.SignalPercent / 2d) - 100);
+        var rate = radio.RxRateKbps > 0 ? Math.Round(radio.RxRateKbps / 1000d, 0) : linkSpeed;
+
         return new InterfaceInfo(
-            Name: nic.Name,
-            Kind: wireless ? "Wi-Fi" : "有线以太网",
-            IsWireless: wireless,
-            SignalPercent: null,
-            LinkSpeedMbps: nic.Speed > 0 ? Math.Round(nic.Speed / 1_000_000d, 0) : 0,
-            LocalAddress: ipv4,
-            Gateway: gateway,
-            DnsServer: dns);
+            nic.Name,
+            radio.PhyLabel,
+            true,
+            radio.SignalPercent,
+            rssi,
+            radio.Ssid,
+            rate,
+            ipv4,
+            gateway,
+            dns);
     }
 
     /// <summary>

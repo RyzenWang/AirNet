@@ -7,27 +7,30 @@ namespace AirNet.Core.Diagnostics;
 /// </summary>
 public static class DiagnosisEngine
 {
+    private const int MaxFindings = 4;
+
     public static NetworkSnapshot Evaluate(
         MeasurementResult raw,
         double downloadMbps,
         double uploadMbps)
     {
         var latency = raw.Latency;
-        var score = Score(latency, raw.Interface);
+        var score = Score(latency, raw.Interface, raw.Timing);
         var grade = GradeOf(score);
         var scenarios = Scenarios(latency, downloadMbps, uploadMbps);
-        var findings = Findings(latency, raw.Interface, raw.DnsMs);
+        var findings = Findings(latency, raw.Interface, raw.Timing, raw.Diagnostics);
 
         return new NetworkSnapshot(
             score,
             grade,
             GradeLabel(grade),
             VerdictOf(grade),
-            SummaryOf(latency, raw.Interface, downloadMbps),
+            SummaryOf(latency, raw.Interface, raw.Timing, downloadMbps),
             raw.Interface,
             raw.EgressAddress,
             latency,
-            raw.DnsMs,
+            raw.ProbeMode,
+            raw.Timing,
             raw.LatencySeries,
             raw.Hops,
             scenarios,
@@ -61,18 +64,21 @@ public static class DiagnosisEngine
         _ => "网络状态较差",
     };
 
-    private static int Score(LatencyStats stats, InterfaceInfo nic)
+    private static int Score(LatencyStats stats, InterfaceInfo nic, LayerTiming timing)
     {
         // Each penalty is capped so one bad dimension cannot zero the whole score; the
-        // weights follow what users feel: loss > jitter > latency > radio strength.
+        // weights follow what users feel: loss > jitter > latency > radio > app layer.
         var latencyPenalty = Clamp((stats.AverageMs - 12) * 0.42, 0, 26);
         var jitterPenalty = Clamp((stats.JitterMs - 1.5) * 1.1, 0, 14);
         var lossPenalty = Clamp(stats.LossPercent * 9, 0, 38);
         var radioPenalty = nic.IsWireless && nic.SignalPercent is { } signal
             ? Clamp((70 - signal) * 0.12, 0, 12)
             : 0;
+        var appPenalty = timing.Succeeded
+            ? Clamp((timing.TtfbMs - 400) * 0.012, 0, 6) + Clamp((timing.TlsMs - 400) * 0.004, 0, 3)
+            : 0;
 
-        var raw = 100 - latencyPenalty - jitterPenalty - lossPenalty - radioPenalty;
+        var raw = 100 - latencyPenalty - jitterPenalty - lossPenalty - radioPenalty - appPenalty;
         return (int)Math.Round(Clamp(raw, 0, 100), MidpointRounding.AwayFromZero);
     }
 
@@ -97,7 +103,11 @@ public static class DiagnosisEngine
         ];
     }
 
-    private static IReadOnlyList<Finding> Findings(LatencyStats s, InterfaceInfo nic, double dnsMs)
+    private static IReadOnlyList<Finding> Findings(
+        LatencyStats s,
+        InterfaceInfo nic,
+        LayerTiming timing,
+        ProbeDiagnostics diagnostics)
     {
         var list = new List<Finding>();
 
@@ -122,7 +132,7 @@ public static class DiagnosisEngine
             list.Add(new Finding(Severity.Warn, $"抖动 {s.JitterMs:0.0} ms 偏高",
                 "相邻包延迟差过大，实时语音与游戏会明显抖动。", "查看建议"));
         }
-        else if (s.JitterMs >= 8)
+        else if (s.JitterMs >= 6)
         {
             list.Add(new Finding(Severity.Info, $"抖动 {s.JitterMs:0.0} ms",
                 "轻微抖动，会议通话尚可，竞技游戏建议有线连接。", "查看建议"));
@@ -130,25 +140,56 @@ public static class DiagnosisEngine
 
         if (nic.IsWireless && nic.SignalPercent is { } signal && signal < 62)
         {
+            var rssi = nic.RssiDbm is { } dbm ? $"，约 {dbm} dBm" : string.Empty;
             list.Add(new Finding(Severity.Warn, "无线信号偏弱",
-                $"信号强度约 {signal}%，隔墙后速率会明显下降。靠近路由器或改用 6 GHz 可显著改善。", "优化信号"));
+                $"信号强度 {signal}%{rssi}，隔墙后速率会明显下降。靠近路由器或改用 6 GHz 可显著改善。",
+                "优化信号"));
         }
 
-        if (dnsMs > 0 && dnsMs >= 25)
+        if (!diagnostics.IcmpAnswered && diagnostics.TcpAnswered)
         {
-            list.Add(new Finding(Severity.Warn, $"DNS 解析 {dnsMs:0.0} ms",
-                "解析偏慢会拖慢每个新连接的首包时间。", "优化 DNS"));
-        }
-        else if (dnsMs > 0)
-        {
-            list.Add(new Finding(Severity.Info, $"DNS 解析 {dnsMs:0.0} ms",
-                "解析正常；启用本地缓存仍可再省 3–5 ms。", "优化 DNS"));
+            list.Add(new Finding(Severity.Info, "ICMP 被拦截",
+                $"Echo 无应答，延迟改由 {diagnostics.TcpReceived} 次 TCP 握手计时，结果依然可信。"));
         }
 
-        return list;
+        if (timing.Succeeded)
+        {
+            if (timing.DnsMs >= 25)
+            {
+                list.Add(new Finding(Severity.Warn, $"DNS 解析 {timing.DnsMs:0.0} ms",
+                    "解析偏慢会拖慢每个新连接的首包时间，建议改用低延迟公共 DNS。", "优化 DNS"));
+            }
+            else
+            {
+                list.Add(new Finding(Severity.Ok, $"DNS 解析 {timing.DnsMs:0.0} ms",
+                    $"首包共 {timing.TotalMs:0} ms：TCP {timing.TcpMs:0} · TLS {timing.TlsMs:0} · 等待 {timing.TtfbMs:0}。"));
+            }
+
+            if (timing.TtfbMs >= 600 || timing.TlsMs >= 400)
+            {
+                list.Add(new Finding(Severity.Warn, $"首包 {timing.TtfbMs:0} ms",
+                    $"TLS 握手 {timing.TlsMs:0} ms、等待首字节 {timing.TtfbMs:0} ms，服务端或线路存在排队。",
+                    "查看建议"));
+            }
+        }
+        else if (!string.IsNullOrEmpty(timing.FailureNote))
+        {
+            list.Add(new Finding(Severity.Info, "首包分解不可用", timing.FailureNote));
+        }
+
+        return list
+            .OrderBy(f => f.Severity switch
+            {
+                Severity.Bad => 0,
+                Severity.Warn => 1,
+                Severity.Info => 2,
+                _ => 3,
+            })
+            .Take(MaxFindings)
+            .ToList();
     }
 
-    private static string SummaryOf(LatencyStats s, InterfaceInfo nic, double down)
+    private static string SummaryOf(LatencyStats s, InterfaceInfo nic, LayerTiming timing, double down)
     {
         var link = nic.IsWireless ? "无线链路" : "有线链路";
         if (s.LossPercent >= 2)
@@ -159,6 +200,11 @@ public static class DiagnosisEngine
         if (nic.IsWireless && nic.SignalPercent is { } signal && signal < 62)
         {
             return $"延迟与丢包表现良好，但无线信号只有 {signal}%，距离一远会先掉速。";
+        }
+
+        if (timing.Succeeded && timing.DnsMs >= 25)
+        {
+            return $"链路本身正常，DNS 解析花了 {timing.DnsMs:0} ms，换一个解析器就能提速。";
         }
 
         if (s.AverageMs <= 35 && s.JitterMs <= 6 && s.LossPercent <= 0.5)

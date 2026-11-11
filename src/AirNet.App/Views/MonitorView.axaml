@@ -46,7 +46,7 @@
           <Border Classes="pill" Padding="9,3">
             <StackPanel Orientation="Horizontal" Spacing="5">
               <Ellipse Width="5" Height="5" Fill="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
-              <TextBlock Text="ICMP + TCP 双探测" FontSize="10" />
+              <TextBlock Text="{Binding View.ProbeModeText}" FontSize="10" />
             </StackPanel>
           </Border>
           <Button Classes="ghost" Height="30" MinHeight="30" Padding="11,0" Command="{Binding Shell.RunScanCommand}">
@@ -105,7 +105,7 @@
                     </StackPanel>
                   </Border>
                   <Border Classes="pill" Padding="8,3">
-                    <TextBlock Text="{Binding View.InterfaceChip}" FontSize="10" />
+                    <TextBlock Text="{Binding View.SsidText}" FontSize="10" />
                   </Border>
                   <Border Classes="pill" Padding="8,3">
                     <TextBlock Text="{Binding View.EgressChip}" Classes="mono" FontSize="10" />
@@ -298,6 +298,38 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
+
+              <!-- First-byte breakdown: the four segments add up to the number on the right. -->
+              <Border Classes="hairline" Margin="0,2" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="首包分解" Classes="micro" FontSize="9.5" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding View.TimingTotalText}"
+                           Classes="mono"
+                           FontSize="9.5" />
+              </Grid>
+              <StackPanel Orientation="Horizontal" Spacing="2" Height="5" Margin="0,1,0,0">
+                <ItemsControl ItemsSource="{Binding View.TimingSegments}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <StackPanel Orientation="Horizontal" Spacing="2" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TimingSegment">
+                      <Border Width="{Binding Width}"
+                              Height="5"
+                              CornerRadius="2.5"
+                              Background="{DynamicResource AccentBrush}"
+                              Opacity="{Binding Opacity}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+              <TextBlock Text="{Binding View.TimingLegendText}"
+                         Classes="micro"
+                         FontSize="9"
+                         TextTrimming="CharacterEllipsis" />
             </StackPanel>
           </Border>
         </StackPanel>

@@ -78,6 +78,14 @@ public sealed class SpeedHistoryBar
     public bool IsLatest { get; init; }
 }
 
+/// <summary>One segment of the first-byte bar; widths are in device-independent pixels.</summary>
+public sealed class TimingSegment
+{
+    public required string Label { get; init; }
+    public required double Width { get; init; }
+    public required double Opacity { get; init; }
+}
+
 /// <summary>
 /// Immutable projection of a snapshot into display strings. Keeping formatting here means the
 /// XAML stays free of converters, which keeps the visual layer reviewable.
@@ -124,7 +132,7 @@ public sealed class SnapshotView
 
     public string InterfaceChip => Source.Interface.Kind;
     public string SignalChip => Source.Interface.SignalPercent is { } signal
-        ? $"{signal}% 信号"
+        ? Source.Interface.RssiDbm is { } dbm ? $"{signal}% · {dbm} dBm" : $"{signal}% 信号"
         : Source.Interface.IsWireless ? "无线" : "有线";
     public string EgressChip => $"出口 {Source.EgressText}";
     public string EgressText => Source.EgressText;
@@ -132,6 +140,21 @@ public sealed class SnapshotView
     public string GatewayAddress => Source.Interface.Gateway;
     public string DnsServer => Source.Interface.DnsServer;
     public double SignalPercent => Source.Interface.SignalPercent ?? (Source.Interface.IsWireless ? 0 : 100);
+
+    public string ProbeModeText => Source.ProbeModeText;
+    public string SsidText => string.IsNullOrEmpty(Source.Interface.Ssid)
+        ? Source.Interface.Kind
+        : $"{Source.Interface.Kind} · {Source.Interface.Ssid}";
+
+    // App-layer breakdown -------------------------------------------------
+    public bool HasTiming => Source.Timing.Succeeded;
+    public string TimingHostText => Source.Timing.Host;
+    public string TimingTotalText => Source.Timing.Succeeded ? $"{Source.Timing.TotalMs:0} ms" : "未测";
+    public string TimingLegendText => Source.Timing.Succeeded
+        ? $"DNS {Source.Timing.DnsMs:0} · TCP {Source.Timing.TcpMs:0} · TLS {Source.Timing.TlsMs:0} · 等待 {Source.Timing.TtfbMs:0}"
+        : Source.Timing.FailureNote ?? string.Empty;
+
+    public IReadOnlyList<TimingSegment> TimingSegments => BuildTimingSegments(Source.Timing);
 
     public bool IsSample => Source.IsSample;
 
@@ -216,6 +239,38 @@ public sealed class SnapshotView
             Bar = hop.Responded ? Math.Clamp(hop.LatencyMs / longest, 0.06, 1) : 0.06,
             IsTerminal = hop.IsTerminal,
         }).ToList();
+    }
+
+    /// <summary>
+    /// Lays the four segments out proportionally across a fixed 284px track (the width of the
+    /// link card's inner area). A minimum width keeps a fast segment visible.
+    /// </summary>
+    private static IReadOnlyList<TimingSegment> BuildTimingSegments(LayerTiming timing)
+    {
+        const double trackWidth = 284;
+        if (!timing.Succeeded)
+        {
+            return [];
+        }
+
+        var total = Math.Max(timing.TotalMs, 1);
+        (string Label, double Ms, double Opacity)[] parts =
+        [
+            ("DNS", timing.DnsMs, 1.0),
+            ("TCP", timing.TcpMs, 0.8),
+            ("TLS", timing.TlsMs, 0.6),
+            ("等待", timing.TtfbMs, 0.42),
+        ];
+
+        return parts
+            .Where(p => p.Ms > 0)
+            .Select(p => new TimingSegment
+            {
+                Label = p.Label,
+                Width = Math.Max(4, Math.Round(trackWidth * (p.Ms / total), 1)),
+                Opacity = p.Opacity,
+            })
+            .ToList();
     }
 
     private static IReadOnlyList<FindingRow> BuildFindings(NetworkSnapshot s)

@@ -163,6 +163,10 @@ MonoFontFamily    : Cascadia Mono, Consolas, SF Mono, Menlo, monospace     ← I
 | `MeterBar` | `Value(0-1)/TrackBrush/FillBrush` | 场景分数、逐跳耗时 | 高 3–5，圆角半高，短值时保证最小可见宽度 |
 | `SignalBars` | `Percent/FillBrush/EmptyBrush` | 无线信号 | 4 根 3px 柱（4/7/10/13 高），按 25% 阶梯点亮 |
 
+**首包分解条**（M1 新增，位于"链路"卡片底部）：把 DNS / TCP / TLS / 等待首字节四段按耗时占比画成一条
+284px 的堆叠条，同一色系四档透明度（1.0 / 0.72 / 0.46 / 0.24）递减，下方图例给出毫秒数，右侧是总首包时间。
+用同一主色的透明度阶梯而不是四种颜色，是因为四段是同一条路径上的阶段，不是四类不同的事物。
+
 规则：**图表只用主色 + 参考线灰**；出现告警色时整页最多一处，避免"仪表盘花屏"。
 
 ## 9. 首页插画：纸叠
