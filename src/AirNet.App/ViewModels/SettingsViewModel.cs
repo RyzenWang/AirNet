@@ -55,7 +55,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _dnsBackupText = string.Empty;
 
-    public string VersionText => "0.2.0 · M2";
+    public string VersionText => "0.2.1 · M2";
     public string RuntimeText => ".NET 10 · Avalonia 11.3 · Windows / macOS / Linux";
     public string FootprintText => "冷启动 0.9 s · 内存 154 MB · 40 MB";
     public string PrivacyText => "所有测量在本机完成，不上传任何字段。历史记录仅保存在本地。";
