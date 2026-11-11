@@ -1,0 +1,202 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AirNet.App.ViewModels"
+             xmlns:controls="using:AirNet.App.Controls"
+             x:Class="AirNet.App.Views.PathView"
+             x:DataType="vm:PathViewModel">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <Grid MaxWidth="1160" Margin="24,18,24,26" RowDefinitions="Auto,*" RowSpacing="12">
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="1">
+          <TextBlock Text="链路路径" Classes="h3" />
+          <TextBlock Text="{Binding StatusText}" Classes="caption" FontSize="10.5" TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Classes="primary"
+                Height="32"
+                MinHeight="32"
+                Padding="14,0"
+                Command="{Binding RunTraceCommand}"
+                IsEnabled="{Binding !IsTracing}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Path Data="{StaticResource IconTarget}"
+                  Width="14"
+                  Height="14"
+                  Stroke="{DynamicResource AccentOnBrush}"
+                  StrokeThickness="1.8"
+                  StrokeLineCap="Round"
+                  StrokeJoin="Round"
+                  Stretch="Uniform"
+                  VerticalAlignment="Center" />
+            <TextBlock Text="开始追踪" FontSize="12" FontWeight="SemiBold" />
+          </StackPanel>
+        </Button>
+      </Grid>
+
+      <Grid Grid.Row="1" ColumnDefinitions="*,320" ColumnSpacing="12">
+        <StackPanel Spacing="12">
+          <!-- Verdict -->
+          <Border Classes="card" Padding="20,16">
+            <StackPanel Spacing="10">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse Classes="sevDot"
+                         Classes.warn="{Binding IsWarn}"
+                         Margin="0,0,0,0"
+                         Width="8"
+                         Height="8" />
+                <TextBlock Text="{Binding Verdict}" Classes="h2" />
+              </StackPanel>
+              <TextBlock Text="{Binding VerdictDetail}"
+                         Classes="caption"
+                         LineHeight="19"
+                         MaxWidth="640"
+                         TextWrapping="Wrap" />
+              <Border Classes="hairline" Margin="0,2" />
+              <ItemsControl ItemsSource="{Binding Segments}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <UniformGrid Columns="3" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:SegmentRow">
+                    <StackPanel Spacing="3" Margin="0,0,12,0">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Ellipse Classes="sevDot"
+                                 Classes.warn="{Binding IsWarn}"
+                                 Classes.bad="{Binding IsBad}"
+                                 Classes.info="{Binding IsInfo}" />
+                        <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                      </StackPanel>
+                      <TextBlock Text="{Binding LatencyText}" Classes="value" FontSize="21" />
+                      <TextBlock Text="{Binding DeltaText}"
+                                 Classes="micro"
+                                 FontSize="9.5"
+                                 TextTrimming="CharacterEllipsis" />
+                      <TextBlock Text="{Binding Note}"
+                                 Classes="caption"
+                                 FontSize="10"
+                                 LineHeight="15"
+                                 TextWrapping="Wrap" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <!-- Hops -->
+          <Border Classes="card" Padding="18,14">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="逐跳" Classes="h3" FontSize="13" />
+                <TextBlock Grid.Column="1" Text="最多 16 跳 · DF/ICMP" Classes="micro" FontSize="10" VerticalAlignment="Center" />
+              </Grid>
+
+              <StackPanel IsVisible="{Binding !HasHops}" Spacing="6" Margin="0,10,0,6">
+                <TextBlock Text="还没有逐跳数据" FontSize="12" FontWeight="SemiBold" />
+                <TextBlock Text="点击右上角「开始追踪」，会用系统 traceroute 跑一次（约 8–20 秒，期间可切换页面）。"
+                           Classes="caption"
+                           FontSize="10.5"
+                           TextWrapping="Wrap"
+                           MaxWidth="520" />
+              </StackPanel>
+
+              <ItemsControl ItemsSource="{Binding Hops}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:TraceHopRow">
+                    <Grid RowDefinitions="Auto,Auto" Margin="0,1">
+                      <Grid ColumnDefinitions="24,*,64,10">
+                        <TextBlock Text="{Binding IndexText}"
+                                   Classes="mono"
+                                   FontSize="9.5"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Address}"
+                                   Classes="mono"
+                                   FontSize="10"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding LatencyText}"
+                                   Classes="mono"
+                                   FontSize="10"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center" />
+                        <Ellipse Grid.Column="3"
+                                 Classes="sevDot"
+                                 Classes.warn="{Binding IsSpike}"
+                                 Width="6"
+                                 Height="6"
+                                 IsVisible="{Binding IsSpike}" />
+                      </Grid>
+                      <controls:MeterBar Grid.Row="1"
+                                         Height="3"
+                                         Margin="24,4,0,3"
+                                         Value="{Binding Bar}"
+                                         Classes.spike="{Binding IsSpike}"
+                                         Classes.timeout="{Binding IsTimeout}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Spacing="12">
+          <Border Classes="card" Padding="16,14">
+            <StackPanel Spacing="9">
+              <TextBlock Text="路径摘要" Classes="eyebrow" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="目标" Classes="caption" FontSize="10.5" />
+                <TextBlock Grid.Column="1" Text="{Binding TargetText}" Classes="mono" FontSize="10" />
+              </Grid>
+              <Border Classes="hairline" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="到达" Classes="caption" FontSize="10.5" />
+                <TextBlock Grid.Column="1" Text="{Binding ReachedText}" FontSize="11" FontWeight="SemiBold" />
+              </Grid>
+              <Border Classes="hairline" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="突变跳" Classes="caption" FontSize="10.5" />
+                <TextBlock Grid.Column="1" Text="{Binding SpikeText}" FontSize="11" FontWeight="SemiBold" />
+              </Grid>
+              <Border Classes="hairline" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="判定依据" Classes="caption" FontSize="10.5" />
+                <TextBlock Grid.Column="1" Text="{Binding TraceModeText}" Classes="micro" FontSize="10" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="16,14">
+            <StackPanel Spacing="8">
+              <TextBlock Text="MTU" Classes="eyebrow" />
+              <StackPanel Orientation="Horizontal" Spacing="3">
+                <TextBlock Text="{Binding MtuText}" Classes="value" FontSize="28" />
+                <TextBlock Text="B" Classes="unit" />
+              </StackPanel>
+              <TextBlock Text="{Binding MtuNote}"
+                         Classes="caption"
+                         FontSize="10"
+                         LineHeight="15"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="tile" Padding="14,12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="怎么读" Classes="eyebrow" FontSize="10" />
+              <TextBlock Text="灰色跳 = 节点不响应 TTL 探测，属正常；琥珀标记 = 延迟突变点。追踪使用系统 traceroute，无需管理员权限。"
+                         Classes="caption"
+                         FontSize="9.5"
+                         LineHeight="15"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

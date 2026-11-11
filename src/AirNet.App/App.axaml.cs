@@ -157,6 +157,22 @@ public partial class App : Application
             report.AppendLine($"historyRoundTrip={(reloaded.Count == 1 && reloaded[0].Score > 0)}");
             report.AppendLine($"historyScore={reloaded.FirstOrDefault()?.Score}");
             await store.ClearAsync().ConfigureAwait(true);
+
+            // Route discovery: the parser must survive a localized traceroute.
+            var trace = await Core.Probes.TraceProbe.TraceAsync("223.5.5.5").ConfigureAwait(true);
+            report.AppendLine($"traceOk={trace.Succeeded} hops={trace.Hops.Count} reached={trace.ReachedHop} spike={trace.SpikeIndex}");
+            foreach (var hop in trace.Hops)
+            {
+                report.AppendLine($"  hop{hop.Index} {hop.Address} {(hop.Responded ? $"{hop.LatencyMs:0.0}ms" : "timeout")}");
+            }
+
+            report.AppendLine($"traceNote={trace.Note}");
+
+            var mtu = await Core.Probes.MtuProbe.MeasureAsync("223.5.5.5").ConfigureAwait(true);
+            report.AppendLine($"mtu={mtu.MtuBytes} payload={mtu.PayloadBytes} mtuOk={mtu.Succeeded} note={mtu.Note}");
+
+            var attribution = Core.Diagnostics.AttributionEngine.FromTrace(snapshot, trace, mtu);
+            report.AppendLine($"culprit={attribution.Culprit} precise={attribution.IsPrecise} headline={attribution.Headline}");
         }
         catch (Exception ex)
         {

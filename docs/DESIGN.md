@@ -125,6 +125,7 @@ MonoFontFamily    : Cascadia Mono, Consolas, SF Mono, Menlo, monospace     ← I
 │  总览    │
 │  实时检测│
 │  带宽测速│
+│  链路路径│   ← M2 新增：归因 + 逐跳 + MTU
 │  设置    │
 │ 本机链路 │
 │ 轻量模式 │
@@ -221,6 +222,7 @@ src/AirNet.App/
 | 总览 | ![总览浅色](shots/01-overview-light.png) | ![总览深色](shots/01-overview-dark.png) |
 | 实时检测 | ![仪表盘浅色](shots/02-monitor-light.png) | ![仪表盘深色](shots/02-monitor-dark.png) |
 | 带宽测速 | ![测速浅色](shots/03-speed-light.png) | ![测速深色](shots/03-speed-dark.png) |
-| 设置 | ![设置浅色](shots/04-settings-light.png) | ![设置深色](shots/04-settings-dark.png) |
+| 链路路径 | ![路径浅色](shots/04-path-light.png) | ![路径深色](shots/04-path-dark.png) |
+| 设置 | ![设置浅色](shots/05-settings-light.png) | ![设置深色](shots/05-settings-dark.png) |
 
 截图由 `AirNet.exe --export <目录> --scale 1` 生成：程序在屏幕外真实渲染窗口后逐页抓取，与最终运行时像素一致。

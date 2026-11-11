@@ -8,24 +8,29 @@
 
 ![实时检测（浅色）](docs/shots/02-monitor-light.png)
 
+![链路路径（浅色）](docs/shots/04-path-light.png)
+
 ---
 
 ## 当前状态
 
-**M1 测量内核已完成**：四页界面、评分与诊断、真实探测（含亚毫秒抖动）、历史落盘、裁剪单文件发布都已跑通。
-报告导出与一键优化仍是占位。
+**M2 进行中**：五页界面、评分与诊断、真实探测（含亚毫秒抖动）、三段归因、逐跳路径、MTU、历史落盘、
+裁剪单文件发布都已跑通。报告导出与一键 DNS 仍是占位。
 
 | 部分 | 状态 |
 | --- | --- |
-| 视觉系统（四页 × 深浅色） | ✅ M0 |
+| 视觉系统（五页 × 深浅色） | ✅ M0/M2 |
 | 真实探测：ICMP 丢包 / TCP 计时 / DNS·TCP·TLS·TTFB | ✅ M1 |
 | 亚毫秒抖动（`Stopwatch` 计时 TCP 握手） | ✅ 本机实测 2.6ms（原先恒为 0） |
 | Wi-Fi 信号 / 速率 / PHY（wlanapi） | ✅ 代码完成，未在真实无线网卡上验证 |
 | 评分、场景估计、规则诊断 | ✅ M1 |
 | 历史（JSONL，30 天，裁剪安全） | ✅ M1 |
 | 带宽测速（单流） | ✅ |
+| **三段归因**（局域网 / 运营商 / 对端） | ✅ M2 粗定位 + 逐跳定位 |
+| **逐跳路径**（系统 traceroute，本地化无关解析） | ✅ M2 实测 14 跳 / 17s |
+| **MTU**（DF 二分） | ✅ M2 实测 1480（PPPoE） |
 | 裁剪 + R2R 单文件发布 | ✅ 40.2MB / 0.8–1.0s / 152MB |
-| 逐跳、MTU、报告导出、一键优化 | ⬜ 见 [技术方案](docs/TECH_PLAN.md) |
+| 报告导出、一键 DNS、双栈 | ⬜ 见 [技术方案](docs/TECH_PLAN.md) |
 
 程序启动时展示**确定性样例数据**（右上角标"示例数据"），点"开始检测"即切换为真实测量并写入历史。
 
@@ -50,25 +55,31 @@ interface=以太网      local=192.168.1.2   gateway=192.168.1.1
 probeMode=Tcp         avg=38.6  p95=41.9  jitter=2.6  loss=0  sent=20  received=20
 dnsLookupMs=15.8  tcpMs=5.1  tlsMs=53.8  ttfbMs=8.5   timingOk=True
 score=88  grade=良好  hops=2  findings=2  historyRoundTrip=True
+traceOk=True hops=14 reached=14     mtu=1480 payload=1452
+culprit=无 precise=True headline=整条路径没有明显瓶颈
 ```
 
 ## 目录
 
 ```
 src/AirNet.Core/         探测与诊断内核（无 UI 依赖）
-  Probes/                InterfaceInspector · LatencyProbe · ThroughputProbe · MeasurementRunner
+  Probes/                InterfaceInspector · LatencyProbe · ThroughputProbe
+                         ApplicationTimingProbe · TraceProbe · MtuProbe · WlanRadio · MeasurementRunner
   Diagnostics/           NetworkSnapshot · LatencyAnalyzer · DiagnosisEngine
+                         AttributionEngine（三段归因）· PathAnalysis（逐跳/MTU 模型）
+  History/               JSONL 历史（裁剪安全，源生成序列化）
   Demo/                  确定性样例数据
 src/AirNet.App/          Avalonia 应用
   Styles/                Colors(token) · Icons · Controls(字号/按钮/卡片/开关)
   Controls/              ScoreRing · Sparkline · MeterBar · SignalBars（全部自绘）
-  Views/                 ShellView + Overview / Monitor / Speed / Settings
-  ViewModels/            Shell（导航与扫描生命周期）· 四个页面 VM · SnapshotView（展示投影）
+  Views/                 ShellView + Overview / Monitor / Speed / Path / Settings
+  ViewModels/            Shell（导航与扫描生命周期）· 五个页面 VM · SnapshotView（展示投影）
+packaging/publish.ps1    裁剪 + R2R 发布，并打印体积/启动/内存
 docs/
   DESIGN.md              视觉规范：色板、字号、组件、图表、动效、无障碍
   TECH_PLAN.md           技术方案：架构、探针、评分与归因、性能预算、里程碑
   FEATURES.md            功能清单（P0/P1/P2 + 验收口径）
-  shots/                 浅色/深色共 8 张截图
+  shots/                 浅色/深色共 10 张截图
 ```
 
 ## 设计要点

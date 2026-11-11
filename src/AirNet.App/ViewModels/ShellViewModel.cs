@@ -37,6 +37,7 @@ public partial class ShellViewModel : ObservableObject
         Overview = new OverviewViewModel(this);
         Monitor = new MonitorViewModel(this);
         Speed = new SpeedViewModel(this);
+        Path = new PathViewModel(this);
         Settings = new SettingsViewModel(this);
 
         Overview.Refresh(_view);
@@ -49,6 +50,7 @@ public partial class ShellViewModel : ObservableObject
     public OverviewViewModel Overview { get; }
     public MonitorViewModel Monitor { get; }
     public SpeedViewModel Speed { get; }
+    public PathViewModel Path { get; }
     public SettingsViewModel Settings { get; }
 
     public HistoryStore History => _history;
@@ -83,6 +85,7 @@ public partial class ShellViewModel : ObservableObject
                 OnPropertyChanged(nameof(IsOverviewSelected));
                 OnPropertyChanged(nameof(IsMonitorSelected));
                 OnPropertyChanged(nameof(IsSpeedSelected));
+                OnPropertyChanged(nameof(IsPathSelected));
                 OnPropertyChanged(nameof(IsSettingsSelected));
             }
         }
@@ -91,7 +94,11 @@ public partial class ShellViewModel : ObservableObject
     public bool IsOverviewSelected => PageIndex == 0;
     public bool IsMonitorSelected => PageIndex == 1;
     public bool IsSpeedSelected => PageIndex == 2;
-    public bool IsSettingsSelected => PageIndex == 3;
+    public bool IsPathSelected => PageIndex == 3;
+    public bool IsSettingsSelected => PageIndex == 4;
+
+    /// <summary>The echo/TCP target, also used as the trace destination.</summary>
+    public string ReferenceHost => _runner.ReferenceHost;
 
     [ObservableProperty]
     private bool _isScanning;
@@ -126,7 +133,8 @@ public partial class ShellViewModel : ObservableObject
             "Overview" => 0,
             "Monitor" => 1,
             "Speed" => 2,
-            "Settings" => 3,
+            "Path" => 3,
+            "Settings" => 4,
             _ => PageIndex,
         };
     }
@@ -170,6 +178,7 @@ public partial class ShellViewModel : ObservableObject
             View = new SnapshotView(snapshot);
             Overview.Refresh(View);
             Monitor.Apply(View);
+            Path.RefreshFromSnapshot();
             StatusMessage = $"检测完成 · 评分 {View.Score} / {View.GradeLabel}";
 
             // Only real measurements are persisted; the sample snapshot stays ephemeral.
@@ -228,6 +237,7 @@ public partial class ShellViewModel : ObservableObject
             View = new SnapshotView(updated);
             Overview.Refresh(View);
             Monitor.Apply(View);
+            Path.RefreshFromSnapshot();
         }
 
         StatusMessage = message;

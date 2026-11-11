@@ -180,6 +180,12 @@
                   <TextBlock Classes="navLabel" Text="带宽测速" FontSize="12.5" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
+              <Button Classes="nav" Classes.active="{Binding IsPathSelected}" Command="{Binding NavigateCommand}" CommandParameter="Path">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Path Classes="navIcon" Data="{StaticResource IconTarget}" />
+                  <TextBlock Classes="navLabel" Text="链路路径" FontSize="12.5" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
               <Button Classes="nav" Classes.active="{Binding IsSettingsSelected}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Path Classes="navIcon" Data="{StaticResource IconSliders}" />
@@ -237,6 +243,9 @@
         </Border>
         <Border IsVisible="{Binding IsSpeedSelected}">
           <views:SpeedView DataContext="{Binding Speed}" />
+        </Border>
+        <Border IsVisible="{Binding IsPathSelected}">
+          <views:PathView DataContext="{Binding Path}" />
         </Border>
         <Border IsVisible="{Binding IsSettingsSelected}">
           <views:SettingsView DataContext="{Binding Settings}" />

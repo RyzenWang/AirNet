@@ -36,7 +36,8 @@ public partial class MainWindow : Window
             ("Overview", "01-overview"),
             ("Monitor", "02-monitor"),
             ("Speed", "03-speed"),
-            ("Settings", "04-settings"),
+            ("Path", "04-path"),
+            ("Settings", "05-settings"),
         };
 
         await Task.Delay(800);
@@ -49,7 +50,15 @@ public partial class MainWindow : Window
             foreach (var (command, file) in pages)
             {
                 viewModel.NavigateCommand.Execute(command);
-                await Task.Delay(500);
+                await Task.Delay(400);
+
+                // The route page is empty until a trace runs; capture it with real data.
+                if (command == "Path" && viewModel.Path.RunTraceCommand.CanExecute(null))
+                {
+                    await viewModel.Path.RunTraceCommand.ExecuteAsync(null);
+                    await Task.Delay(400);
+                }
+
                 Capture(Path.Combine(directory, $"{file}-{suffix}.png"), scale);
             }
         }

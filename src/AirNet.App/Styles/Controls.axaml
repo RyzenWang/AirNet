@@ -519,4 +519,10 @@
     <Setter Property="TrackBrush" Value="{DynamicResource TrackBrush}" />
     <Setter Property="FillBrush" Value="{DynamicResource AccentBrush}" />
   </Style>
+  <Style Selector="controls|MeterBar.spike">
+    <Setter Property="FillBrush" Value="{DynamicResource WarnBrush}" />
+  </Style>
+  <Style Selector="controls|MeterBar.timeout">
+    <Setter Property="FillBrush" Value="{DynamicResource BorderStrongBrush}" />
+  </Style>
 </Styles>
