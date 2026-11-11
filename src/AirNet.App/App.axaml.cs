@@ -18,6 +18,15 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var exportDirectory = ReadExportDirectory(desktop.Args);
+
+            // Screenshots must not depend on (or leak) the local measurement history.
+            if (exportDirectory is not null)
+            {
+                Environment.SetEnvironmentVariable(
+                    "AIRNET_DATA_DIR", Path.Combine(Path.GetTempPath(), "airnet-export-data"));
+            }
+
             // Headless measurement run, used to verify the probe stack without a window.
             if (ReadStringArgument(desktop.Args, "--selftest") is { } reportPath)
             {
@@ -29,7 +38,6 @@ public partial class App : Application
             var window = new MainWindow { DataContext = shell };
             desktop.MainWindow = window;
 
-            var exportDirectory = ReadExportDirectory(desktop.Args);
             if (exportDirectory is { } directory)
             {
                 // Off-screen capture mode: the window is real (so layout, resources and DPI are

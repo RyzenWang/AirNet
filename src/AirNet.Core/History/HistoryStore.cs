@@ -44,8 +44,11 @@ public sealed class HistoryStore
 
     public HistoryStore(string? directory = null)
     {
-        var root = directory ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AirNet");
+        // AIRNET_DATA_DIR lets the screenshot pipeline (and tests) use an isolated, empty store
+        // instead of inheriting the developer's real measurements.
+        var root = directory
+            ?? Environment.GetEnvironmentVariable("AIRNET_DATA_DIR")
+            ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AirNet");
         Directory.CreateDirectory(root);
         FilePath = Path.Combine(root, "history.jsonl");
     }

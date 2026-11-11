@@ -225,14 +225,14 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 | 指标 | 预算 | 实测（Release，trim + R2R 单文件） | 手段 |
 | --- | --- | --- | --- |
-| 解压体积 | ≤ 45MB | **40.2MB**（exe 24.3 + Skia 9.0 + ANGLE 5.2 + HarfBuzz 1.7） | `PublishSingleFile` + `TrimMode=partial` + 压缩；原生图形库无法再压 |
-| 冷启动 | ≤ 1000ms | **765–976ms** 到窗口可见 | R2R（去掉 R2R 体积降到 30.5MB，但启动劣化到 2053ms，不值得） |
-| 运行内存 | ≤ 160MB | **152MB** 工作集 / 186MB 私有 | 图表只保留 60 点、不缓存位图；内存主要来自运行时与 Skia，与 AirPDF 同量级 |
+| 解压体积 | ≤ 45MB | **40.6MB**（exe 24.6 + Skia 9.0 + ANGLE 5.2 + HarfBuzz 1.7） | `PublishSingleFile` + `TrimMode=partial` + 压缩；原生图形库无法再压 |
+| 冷启动 | ≤ 1200ms | **0.9–1.1s** 到窗口可见（发布后首次 1.9s，文件缓存/杀软扫描；去掉 R2R 会劣化到 2053ms） | R2R |
+| 运行内存 | ≤ 160MB | **154MB** 工作集 / 186MB 私有 | 图表只保留 60 点、不缓存位图；内存主要来自运行时与 Skia，与 AirPDF 同量级 |
 | 安装包 | ≤ 25MB | 待 Velopack 压缩实测 | 手写 `packaging/publish.ps1` 出目录，Velopack 打包时再压 |
 | 扫描 CPU | < 3% | 未测 | 探针 110ms 间隔；UI 250ms 合并刷新 |
 
-> 结论：**裁剪/R2R 的目标在 M1 达成**——体积与启动都可接受，代价是 R2R 多出约 10MB。
-> 内存 152MB 是 Avalonia + Skia + Inter 的固定成本，砍不动，也不该用"内存 46MB"这种数字做宣传。
+> 结论：**裁剪/R2R 的目标在 M1/M2 达成**——体积与启动都可接受，代价是 R2R 多出约 10MB。
+> 内存 154MB 是 Avalonia + Skia + Inter 的固定成本，砍不动，也不该用"内存 46MB"这种数字做宣传。
 > 复现：`powershell -File packaging/publish.ps1`（会打印上表数字）。
 
 ## 9. 跨平台矩阵
