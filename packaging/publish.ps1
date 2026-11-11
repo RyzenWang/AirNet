@@ -1,4 +1,4 @@
-# Publishes AirNet as a trimmed, ReadyToRun, single-file Windows build and reports
+﻿# Publishes AirNet as a trimmed, ReadyToRun, single-file Windows build and reports
 # the numbers the README claims. Run from the repo root:
 #
 #   pwsh packaging/publish.ps1                 # win-x64, R2R

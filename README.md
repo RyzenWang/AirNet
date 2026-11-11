@@ -31,7 +31,7 @@
 | **MTU**（DF 二分） | ✅ M2 实测 1480（PPPoE） |
 | **报告导出**（自包含 HTML，可打印 PDF） | ✅ M2 7.8KB / 零脚本 / 地址掩码 |
 | **一键 DNS + 还原**（Windows 提权） | ✅ M2 命令先展示，还原记录落盘 |
-| 裁剪 + R2R 单文件发布 | ✅ 40.6MB / 0.9–1.1s / 154MB |
+| 裁剪 + R2R 单文件发布 | ✅ 40.7MB / 0.9–1.3s / 150–170MB |
 | CI（构建 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | **动效**（扫描进度、环/条填充、数字滚动、曲线扫入、页面淡入） | ✅ M2，截图模式可关闭 |
 | 双栈、邻区扫描、游戏/会议模式 | ⬜ 见 [技术方案](docs/TECH_PLAN.md) |
@@ -52,7 +52,11 @@ dotnet run --project src/AirNet.App -- --export docs/shots       # 重新生成�
 dotnet run --project src/AirNet.App -- --scan-shot scan.png      # 抓一张"检测中"的界面（动效开启）
 
 powershell -File packaging/publish.ps1                           # 裁剪单文件发布 + 实测启动/内存
+powershell -File packaging/pack-portable.ps1                     # 打本地验证包（免安装便携版）
 ```
+
+本地验证只出**免安装便携版**：`artifacts/packages/AirNet-<version>-win-x64-portable.zip`，
+解压后双击 `AirNet.exe` 即可，内含 `使用说明.txt`。安装包（Velopack Setup.exe）只在 CI 打标签时产出。
 
 `--selftest` 的输出示例（本机，有线 1000M）：
 
@@ -100,7 +104,7 @@ docs/
 ## 已知限制
 
 - **Wi-Fi 采样未在硬件上验证**：本机是有线连接，`wlanapi` 分支只走通了"无无线关联 → 返回 null"的降级路径；插上 Wi-Fi 后才算真正验收。
-- 内存 154MB、启动 0.9–1.1s：这是 Avalonia + Skia + Inter 的固定成本，与 AirPDF 同量级；"轻"体现在无驱动、无后台常驻、40MB 解压体积，不是内存数字。
+- 内存 150–170MB、启动 0.9–1.3s：这是 Avalonia + Skia + Inter 的固定成本，与 AirPDF 同量级；"轻"体现在无驱动、无后台常驻、40MB 解压体积，不是内存数字。
 - 截图导出必须用 `--scale 1`：Avalonia 的 `RenderTargetBitmap` 在 2× DPI 下会复用 1× 字形缓存，文字发糊（已记录，未绕开）。
 - TCP 握手 RTT 比 ICMP 高 3–5ms（多一层本地协议栈），评分阈值已按此校准；TCP 也观测不到丢包，所以丢包仍由 ICMP 给出。
 - 报告导出、一键优化、快捷键、动效均为占位。
