@@ -270,7 +270,7 @@
         <Border Classes="pageHost" IsVisible="{Binding IsOverviewSelected}" Classes.scanning="{Binding IsScanning}">
           <views:OverviewView DataContext="{Binding Overview}" />
         </Border>
-        <Border Classes="pageHost" IsVisible="{Binding IsMonitorSelected}" Classes.scanning="{Binding IsScanning}">
+        <Border Classes="pageHost" IsVisible="{Binding IsMonitorSelected}">
           <views:MonitorView DataContext="{Binding Monitor}" />
         </Border>
         <Border Classes="pageHost" IsVisible="{Binding IsSpeedSelected}">

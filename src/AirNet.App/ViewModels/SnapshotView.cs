@@ -24,6 +24,10 @@ public sealed class MetricTile
     public double Number { get; init; }
 
     public int Decimals { get; init; } = 1;
+
+    /// <summary>True when there is no number yet; the tile shows <see cref="Value"/> instead.</summary>
+    public bool IsPlaceholder { get; init; }
+
     public required string Unit { get; init; }
     public required string Foot { get; init; }
     public bool IsGood { get; init; }
@@ -106,6 +110,15 @@ public sealed class SnapshotView
         Hops = BuildHops(snapshot);
         Findings = BuildFindings(snapshot);
     }
+
+    /// <summary>Placeholder tiles before the first measurement lands.</summary>
+    public static IReadOnlyList<MetricTile> DemoTiles() =>
+    [
+        new MetricTile { Label = "延迟 / LATENCY", Value = "—", Unit = "ms", Foot = "等待测量", IsPlaceholder = true, IsGood = true },
+        new MetricTile { Label = "抖动 / JITTER", Value = "—", Unit = "ms", Foot = "等待测量", IsPlaceholder = true, IsGood = true },
+        new MetricTile { Label = "丢包 / LOSS", Value = "—", Unit = "%", Foot = "等待测量", IsPlaceholder = true, IsGood = true },
+        new MetricTile { Label = "下载 / DOWNLOAD", Value = "—", Unit = "Mbps", Foot = "未测速", IsPlaceholder = true, IsGood = true },
+    ];
 
     public NetworkSnapshot Source { get; }
 
@@ -248,7 +261,9 @@ public sealed class SnapshotView
         {
             Label = hop.Label,
             Address = hop.Address,
-            LatencyText = hop.Responded ? $"{Fmt.Fixed(hop.LatencyMs)} ms" : "超时",
+            LatencyText = hop.Responded
+                ? hop.LatencyMs < 1 ? "<1 ms" : $"{Fmt.Fixed(hop.LatencyMs)} ms"
+                : "超时",
             Bar = hop.Responded ? Math.Clamp(hop.LatencyMs / longest, 0.06, 1) : 0.06,
             IsTerminal = hop.IsTerminal,
         }).ToList();

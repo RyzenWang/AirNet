@@ -72,8 +72,8 @@ XAML 里不写转换器，视觉评审时只读 XAML 就能看懂。
 | --- | --- | --- | --- | --- |
 | 接口清单 | `NetworkInterface.GetAllNetworkInterfaces()` + 网关/掩码/MTU | 无 | <10ms | 无 |
 | 网关探测 | ICMP 网关地址 ×4 | 无 | ~300ms | TCP 连网关常用端口 |
-| 参考主机 ICMP | `Ping.SendPingAsync` ×20，间隔 110ms | 无 | ~2.2s | ICMP 全丢 → TCP 握手计时 ×12 |
-| TCP 握手 | `Socket.ConnectAsync` + `Stopwatch` | 无 | 每包 20–1200ms | — |
+| 参考主机 ICMP | `Ping.SendPingAsync` ×15，间隔 90ms | 无 | ~1.4s | ICMP 全丢 → TCP 握手计时 |
+| TCP 握手 | `Socket.ConnectAsync` + `Stopwatch` ×10，间隔 70ms | 无 | ~0.8s | — |
 | DNS 解析 | `Dns.GetHostAddressesAsync` 计时 ×3 | 无 | ~100ms | 直连 53/UDP 查询绕开缓存 |
 | TLS 握手 | `SslStream.AuthenticateAsClientAsync` 计时 | 无 | ~200ms | 跳过 |
 | HTTP 首字节 | `HttpClient` + `ResponseHeadersRead` | 无 | ~200ms | 跳过 |
@@ -319,7 +319,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 报告导出（自包含 HTML，可打印 PDF） | ✅ M2，7.8KB，零脚本 |
 | 一键 DNS + 还原（Windows 提权，UAC 可取消） | ✅ M2，实测命令生成与还原记录；**提权执行未自动化验证** |
 | CI（构建 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
-| 动效（扫描进度、环/条填充、数字滚动、曲线扫入、页面淡入） | ✅ M2，截图模式可一键关闭 |
+| 动效（A 扫描带 + B 实时读数 + 落地过冲/高亮） | ✅ M2，样本真实回传，截图模式可关闭 |
 | 双栈、邻区扫描、游戏/会议模式 | ⬜ M3 |
 
 > 原型以**确定性样例数据**启动（右上角标注"示例数据"），点"开始检测"即切换为真实测量并写入历史；

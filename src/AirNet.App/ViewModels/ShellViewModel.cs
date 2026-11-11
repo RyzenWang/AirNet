@@ -215,12 +215,17 @@ public partial class ShellViewModel : ObservableObject
             ScanStatusText = report.Phase == "完成" ? "检测完成" : $"正在检测 · {report.Phase}";
         });
 
+        // Every probe sample drives the live tiles and the live curve.
+        var live = new Progress<LiveSample>(sample => Monitor.PushLive(sample));
+        Monitor.BeginLive();
+
         try
         {
             var snapshot = await _runner.RunAsync(
                 Speed.DownloadMbps,
                 Speed.UploadMbps,
                 progress,
+                live,
                 _scanCts.Token).ConfigureAwait(true);
 
             View = new SnapshotView(snapshot);
@@ -241,10 +246,12 @@ public partial class ShellViewModel : ObservableObject
         catch (OperationCanceledException)
         {
             StatusMessage = "检测已取消";
+            Monitor.Apply(View);
         }
         catch (Exception ex)
         {
             StatusMessage = $"检测失败：{ex.Message}";
+            Monitor.Apply(View);
         }
         finally
         {

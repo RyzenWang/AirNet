@@ -37,10 +37,11 @@ public class Sparkline : Control
     /// <summary>Sweeps the line in from the left so a new measurement reads as "just measured".</summary>
     private void StartReveal()
     {
-        if (!Motion.Enabled)
+        if (!Motion.Enabled || !AnimateReveal)
         {
             _reveal = 1;
             _revealTimer.Stop();
+            InvalidateVisual();
             return;
         }
 
@@ -91,12 +92,26 @@ public class Sparkline : Control
     public static readonly StyledProperty<bool> ShowEndDotProperty =
         AvaloniaProperty.Register<Sparkline, bool>(nameof(ShowEndDot), true);
 
+    /// <summary>
+    /// When greater than the series length, the line grows into a fixed slot count instead of
+    /// stretching across the whole width. Used while samples are still arriving.
+    /// </summary>
+    public static readonly StyledProperty<int> CapacityProperty =
+        AvaloniaProperty.Register<Sparkline, int>(nameof(Capacity));
+
+    /// <summary>
+    /// False while samples are streaming in: the line should extend, not sweep in from the left
+    /// again on every point.
+    /// </summary>
+    public static readonly StyledProperty<bool> AnimateRevealProperty =
+        AvaloniaProperty.Register<Sparkline, bool>(nameof(AnimateReveal), true);
+
     static Sparkline()
     {
         AffectsRender<Sparkline>(
             SeriesProperty, StrokeProperty, FillProperty, StrokeThicknessProperty, ShowGuidesProperty,
             GuideValueProperty, GuideBrushProperty, GridLinesProperty, GridLineBrushProperty,
-            ShowEndDotProperty);
+            ShowEndDotProperty, CapacityProperty);
     }
 
     public IReadOnlyList<double>? Series
@@ -157,6 +172,18 @@ public class Sparkline : Control
     {
         get => GetValue(ShowEndDotProperty);
         set => SetValue(ShowEndDotProperty, value);
+    }
+
+    public bool AnimateReveal
+    {
+        get => GetValue(AnimateRevealProperty);
+        set => SetValue(AnimateRevealProperty, value);
+    }
+
+    public int Capacity
+    {
+        get => GetValue(CapacityProperty);
+        set => SetValue(CapacityProperty, value);
     }
 
     public override void Render(DrawingContext context)
@@ -228,7 +255,7 @@ public class Sparkline : Control
             context.DrawLine(guidePen, new Point(left, guideY), new Point(left + width, guideY));
         }
 
-        var step = width / (series.Count - 1);
+        var step = width / (Math.Max(Capacity, series.Count) - 1);
         var visible = Math.Clamp((int)Math.Ceiling(series.Count * _reveal), 2, series.Count);
         var points = new Point[visible];
         for (var i = 0; i < visible; i++)

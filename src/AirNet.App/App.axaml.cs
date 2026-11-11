@@ -57,7 +57,10 @@ public partial class App : Application
                 window.Position = new PixelPoint(-4200, -4200);
                 window.ShowInTaskbar = false;
                 window.Show();
-                _ = window.CaptureScanningAsync(scanShotPath);
+                _ = window.CaptureScanningAsync(
+                    scanShotPath,
+                    ReadIntArgument(desktop.Args, "--scale") ?? 1,
+                    ReadIntArgument(desktop.Args, "--shot-delay") ?? 1200);
                 return;
             }
 

@@ -22,7 +22,8 @@ public static class LatencyProbe
         int count = 20,
         int intervalMs = 120,
         int timeoutMs = 1200,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Action<double?>? onSample = null)
     {
         var samples = new List<double?>(count);
         using var ping = new Ping();
@@ -30,17 +31,21 @@ public static class LatencyProbe
         for (var i = 0; i < count; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            double? sample;
             try
             {
                 var reply = await ping.SendPingAsync(host, timeoutMs).ConfigureAwait(false);
-                samples.Add(reply.Status == IPStatus.Success
+                sample = reply.Status == IPStatus.Success
                     ? Math.Round((double)reply.RoundtripTime, 2)
-                    : null);
+                    : null;
             }
             catch (Exception ex) when (ex is PingException or SocketException or InvalidOperationException)
             {
-                samples.Add(null);
+                sample = null;
             }
+
+            samples.Add(sample);
+            onSample?.Invoke(sample);
 
             if (i < count - 1)
             {
@@ -61,7 +66,8 @@ public static class LatencyProbe
         int count = 12,
         int intervalMs = 80,
         int timeoutMs = 1200,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Action<double?>? onSample = null)
     {
         var samples = new List<double?>(count);
 
@@ -92,7 +98,9 @@ public static class LatencyProbe
         for (var i = 0; i < count; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            samples.Add(await MeasureTcpConnectAsync(endpoint, timeoutMs, cancellationToken).ConfigureAwait(false));
+            var sample = await MeasureTcpConnectAsync(endpoint, timeoutMs, cancellationToken).ConfigureAwait(false);
+            samples.Add(sample);
+            onSample?.Invoke(sample);
 
             if (i < count - 1)
             {

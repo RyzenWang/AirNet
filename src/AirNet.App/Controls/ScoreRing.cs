@@ -35,6 +35,15 @@ public class ScoreRing : Control
     public static readonly StyledProperty<bool> ShowTipProperty =
         AvaloniaProperty.Register<ScoreRing, bool>(nameof(ShowTip));
 
+    public static readonly StyledProperty<bool> IsIndeterminateProperty =
+        AvaloniaProperty.Register<ScoreRing, bool>(nameof(IsIndeterminate));
+
+    private readonly Avalonia.Threading.DispatcherTimer _spinTimer;
+    private double _spinAngle;
+    private double _pulse = 1;
+    private double _pulseElapsed;
+    private bool _pulsing;
+
     static ScoreRing()
     {
         AffectsRender<ScoreRing>(
@@ -58,6 +67,11 @@ public class ScoreRing : Control
                 },
             };
         }
+
+        _spinTimer = new Avalonia.Threading.DispatcherTimer(
+            TimeSpan.FromMilliseconds(16),
+            Avalonia.Threading.DispatcherPriority.Render,
+            (_, _) => OnFrame());
     }
 
     public double Value
@@ -108,6 +122,75 @@ public class ScoreRing : Control
         set => SetValue(ShowTipProperty, value);
     }
 
+    /// <summary>While true the ring shows a sweeping arc instead of a value.</summary>
+    public bool IsIndeterminate
+    {
+        get => GetValue(IsIndeterminateProperty);
+        set => SetValue(IsIndeterminateProperty, value);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == IsIndeterminateProperty)
+        {
+            if (IsIndeterminate)
+            {
+                if (Motion.Enabled)
+                {
+                    _spinTimer.Start();
+                }
+            }
+            else
+            {
+                _spinTimer.Stop();
+                _spinAngle = 0;
+
+                // Land the value with a small overshoot, so the result reads as "settled".
+                if (Motion.Enabled)
+                {
+                    _pulse = 1;
+                    _pulseElapsed = 0;
+                    _pulsing = true;
+                    _spinTimer.Start();
+                }
+            }
+
+            InvalidateVisual();
+        }
+    }
+
+    private void OnFrame()
+    {
+        if (IsIndeterminate)
+        {
+            _spinAngle = (_spinAngle + 4.6) % 360;   // ~275°/s
+            InvalidateVisual();
+            return;
+        }
+
+        if (!_pulsing)
+        {
+            _spinTimer.Stop();
+            return;
+        }
+
+        _pulseElapsed += 16;
+        const double duration = 600;
+        var t = Math.Clamp(_pulseElapsed / duration, 0, 1);
+        _pulse = 1 + (0.035 * Math.Sin(Math.PI * t));
+
+        if (t >= 1)
+        {
+            _pulse = 1;
+            _pulsing = false;
+            _spinTimer.Stop();
+        }
+
+        InvalidateVisual();
+    }
+
     public override void Render(DrawingContext context)
     {
         var size = Math.Min(Bounds.Width, Bounds.Height);
@@ -126,6 +209,12 @@ public class ScoreRing : Control
         var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
         var sweep = Math.Clamp(SweepAngle, 0, 359.99);
 
+        // Scale about the centre for the settle pulse.
+        var pulseMatrix = Matrix.CreateTranslation(-center.X, -center.Y)
+                          * Matrix.CreateScale(_pulse, _pulse)
+                          * Matrix.CreateTranslation(center.X, center.Y);
+        using var pulseScope = context.PushTransform(pulseMatrix);
+
         if (TrackBrush is { } track)
         {
             // The track is capped flat: a round cap would poke out past the progress arc and
@@ -134,6 +223,18 @@ public class ScoreRing : Control
         }
 
         var ratio = Maximum <= 0 ? 0 : Math.Clamp(Value / Maximum, 0, 1);
+
+        // Indeterminate: a sweeping arc means "measuring", not "scoring".
+        if (IsIndeterminate)
+        {
+            if (ProgressBrush is { } spinning)
+            {
+                DrawArc(context, center, radius, _spinAngle, 78, spinning, thickness, PenLineCap.Round);
+            }
+
+            return;
+        }
+
         if (ProgressBrush is { } progress && ratio > 0)
         {
             var progressSweep = sweep * ratio;

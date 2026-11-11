@@ -6,11 +6,33 @@ namespace AirNet.Core.Probes;
 public sealed record ScanProgress(string Phase, double Fraction);
 
 /// <summary>
+/// One probe result as it lands, with the running statistics over the samples so far. The UI
+/// shows these directly, which is why the numbers during a scan are real measurements rather
+/// than a decorative animation.
+/// </summary>
+public sealed record LiveSample(
+    string Source,
+    double? LatencyMs,
+    double AverageMs,
+    double JitterMs,
+    double LossPercent,
+    int Count);
+
+/// <summary>
 /// Runs the unprivileged probe set end to end and hands the result to the diagnosis engine.
 /// Cancellation is honoured between every probe, so the Stop button reacts immediately.
 /// </summary>
 public sealed class MeasurementRunner
 {
+    /// <summary>
+    /// 15 echo requests at 90ms keeps the ICMP phase near 1.4s; the whole scan stays under the
+    /// three seconds the product promises, while still giving P95 something to stand on.
+    /// </summary>
+    public const int IcmpSampleCount = 15;
+
+    /// <summary>Handshakes are slower than echoes, so fewer are needed for the same confidence.</summary>
+    public const int TcpSampleCount = 10;
+
     public MeasurementRunner(
         string referenceHost = "223.5.5.5",
         int referenceTcpPort = 53,
@@ -34,34 +56,43 @@ public sealed class MeasurementRunner
         double fallbackDownloadMbps = 0,
         double fallbackUploadMbps = 0,
         CancellationToken cancellationToken = default)
-        => await RunAsync(fallbackDownloadMbps, fallbackUploadMbps, progress: null, cancellationToken)
+        => await RunAsync(fallbackDownloadMbps, fallbackUploadMbps, progress: null, live: null, cancellationToken)
             .ConfigureAwait(false);
 
     /// <summary>
-    /// Same scan, but reports which probe is running so the UI can show progress instead of a
-    /// frozen verdict. Reported from the probing thread; <c>Progress&lt;T&gt;</c> marshals it.
+    /// Same scan, but reports which probe is running (and each sample as it lands) so the UI can
+    /// show live progress instead of a frozen verdict.
     /// </summary>
     public async Task<NetworkSnapshot> RunAsync(
         double fallbackDownloadMbps,
         double fallbackUploadMbps,
         IProgress<ScanProgress>? progress,
+        IProgress<LiveSample>? live = null,
         CancellationToken cancellationToken = default)
     {
         progress?.Report(new ScanProgress("识别网卡", 0.05));
         var nic = InterfaceInspector.Inspect();
 
+        var icmpLive = new List<double?>(IcmpSampleCount);
+        var tcpLive = new List<double?>(TcpSampleCount);
+
         progress?.Report(new ScanProgress("ICMP 丢包探测", 0.12));
         var icmpSamples = await LatencyProbe.MeasureIcmpAsync(
-            ReferenceHost, count: 20, intervalMs: 110, cancellationToken: cancellationToken).ConfigureAwait(false);
+            ReferenceHost,
+            count: IcmpSampleCount,
+            intervalMs: 90,
+            cancellationToken: cancellationToken,
+            onSample: sample => ReportLive(live, "ICMP", icmpLive, sample)).ConfigureAwait(false);
         var icmpStats = LatencyAnalyzer.Analyze(icmpSamples);
 
-        progress?.Report(new ScanProgress("TCP 握手计时", 0.38));
+        progress?.Report(new ScanProgress("TCP 握手计时", 0.42));
         var tcpSamples = await LatencyProbe.MeasureTcpSeriesAsync(
             ReferenceHost,
             ReferenceTcpPort,
-            count: 12,
-            intervalMs: 80,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            count: TcpSampleCount,
+            intervalMs: 70,
+            cancellationToken: cancellationToken,
+            onSample: sample => ReportLive(live, "TCP", tcpLive, sample)).ConfigureAwait(false);
         var tcpStats = LatencyAnalyzer.Analyze(tcpSamples);
 
         var diagnostics = new ProbeDiagnostics(
@@ -98,6 +129,22 @@ public sealed class MeasurementRunner
         var snapshot = DiagnosisEngine.Evaluate(measurement, fallbackDownloadMbps, fallbackUploadMbps);
         progress?.Report(new ScanProgress("完成", 1.0));
         return snapshot;
+    }
+
+    private static void ReportLive(
+        IProgress<LiveSample>? live,
+        string source,
+        List<double?> collector,
+        double? sample)
+    {
+        if (live is null)
+        {
+            return;
+        }
+
+        collector.Add(sample);
+        var stats = LatencyAnalyzer.Analyze(collector);
+        live.Report(new LiveSample(source, sample, stats.AverageMs, stats.JitterMs, stats.LossPercent, collector.Count));
     }
 
     /// <summary>

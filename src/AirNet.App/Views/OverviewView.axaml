@@ -56,7 +56,7 @@
           </Border>
         </StackPanel>
 
-        <TextBlock Text="无驱动 · 无常驻进程 · 平均 2.4 秒完成"
+        <TextBlock Text="无驱动 · 无常驻进程 · 平均 3 秒完成"
                    Classes="caption"
                    Margin="1,18,0,0" />
 

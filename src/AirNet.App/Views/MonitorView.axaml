@@ -24,7 +24,13 @@
                                      FontWeight="SemiBold"
                                      LetterSpacing="-0.7"
                                      Foreground="{DynamicResource TextPrimaryBrush}"
-                                     VerticalAlignment="Bottom" />
+                                     VerticalAlignment="Bottom"
+                                     IsVisible="{Binding !IsPlaceholder}" />
+            <TextBlock Text="{Binding Value}"
+                       Classes="value"
+                       FontSize="21"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       IsVisible="{Binding IsPlaceholder}" />
             <TextBlock Text="{Binding Unit}" Classes="unit" />
           </StackPanel>
           <TextBlock Text="{Binding Foot}"
@@ -36,7 +42,8 @@
     </DataTemplate>
   </UserControl.Resources>
 
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+  <Grid>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
     <Grid MaxWidth="1160"
           Margin="24,18,24,26"
           RowDefinitions="Auto,*"
@@ -74,6 +81,7 @@
                                     Height="116"
                                     Thickness="9"
                                     Value="{Binding View.Score}"
+                                    IsIndeterminate="{Binding Shell.IsScanning}"
                                     TrackBrush="{DynamicResource TrackBrush}"
                                     ProgressBrush="{DynamicResource GoodBrush}" />
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -83,23 +91,39 @@
                                            FontWeight="SemiBold"
                                            LetterSpacing="-1.8"
                                            Foreground="{DynamicResource TextPrimaryBrush}"
-                                           HorizontalAlignment="Center" />
+                                           HorizontalAlignment="Center"
+                                           IsVisible="{Binding !Shell.IsScanning}" />
+                  <TextBlock Text="—"
+                             FontSize="34"
+                             FontWeight="SemiBold"
+                             Foreground="{DynamicResource TextTertiaryBrush}"
+                             HorizontalAlignment="Center"
+                             IsVisible="{Binding Shell.IsScanning}" />
                   <TextBlock Text="{Binding View.GradeLabel}"
                              Classes="eyebrow"
                              FontSize="10"
                              HorizontalAlignment="Center"
-                             Margin="0,-2,0,0" />
+                             Margin="0,-2,0,0"
+                             IsVisible="{Binding !Shell.IsScanning}" />
                 </StackPanel>
               </Grid>
 
               <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
-                <TextBlock Text="{Binding View.Verdict}" Classes="h2" />
+                <TextBlock Text="{Binding View.Verdict}" Classes="h2" IsVisible="{Binding !Shell.IsScanning}" />
+                <TextBlock Text="{Binding Shell.ScanStatusText}"
+                           Classes="h2"
+                           Foreground="{DynamicResource AccentTextBrush}"
+                           IsVisible="{Binding Shell.IsScanning}" />
                 <TextBlock Text="{Binding View.Summary}"
                            Classes="caption"
                            LineHeight="18"
                            MaxLines="2"
                            TextWrapping="Wrap"
-                           TextTrimming="CharacterEllipsis" />
+                           TextTrimming="CharacterEllipsis"
+                           IsVisible="{Binding !Shell.IsScanning}" />
+                <TextBlock Text="{Binding MonitorLiveHint}"
+                           Classes="caption"
+                           IsVisible="{Binding IsLive}" />
                 <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2,0,0">
                   <Border Classes="pill" Padding="8,3">
                     <StackPanel Orientation="Horizontal" Spacing="6">
@@ -142,7 +166,9 @@
               <controls:Sparkline Grid.Row="1"
                                   Height="104"
                                   Margin="0,10,0,0"
-                                  Series="{Binding View.Series}"
+                                  Series="{Binding ChartSeries}"
+                                  Capacity="{Binding ChartCapacity}"
+                                  AnimateReveal="{Binding !Shell.IsScanning}"
                                   Stroke="{DynamicResource AccentBrush}"
                                   Fill="{DynamicResource ChartFillBrush}"
                                   GridLines="3"
@@ -227,21 +253,37 @@
         <StackPanel Grid.Column="1" Spacing="12">
           <!-- Metric tiles -->
           <Border Classes="card" Padding="14,12">
-            <StackPanel Spacing="8">
-              <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="关键指标" Classes="eyebrow" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1"
-                           Text="{Binding View.CapturedAtText}"
-                           Classes="micro"
-                           FontSize="10" />
-              </Grid>
-              <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
-                <ContentControl Grid.Row="0" Grid.Column="0" Content="{Binding View.Metrics[0]}" ContentTemplate="{StaticResource MetricTileTemplate}" />
-                <ContentControl Grid.Row="0" Grid.Column="1" Content="{Binding View.Metrics[1]}" ContentTemplate="{StaticResource MetricTileTemplate}" />
-                <ContentControl Grid.Row="1" Grid.Column="0" Content="{Binding View.Metrics[2]}" ContentTemplate="{StaticResource MetricTileTemplate}" />
-                <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding View.Metrics[3]}" ContentTemplate="{StaticResource MetricTileTemplate}" />
-              </Grid>
-            </StackPanel>
+            <Grid>
+              <!-- One short highlight when the numbers land (B's "lock"). -->
+              <Border Classes="flashOverlay"
+                      Classes.blinking="{Binding IsResultFlash}"
+                      Background="{DynamicResource AccentSoftBrush}"
+                      CornerRadius="13"
+                      IsHitTestVisible="False"
+                      Opacity="0" />
+              <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="关键指标" Classes="eyebrow" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1"
+                             Text="{Binding View.CapturedAtText}"
+                             Classes="micro"
+                             FontSize="10"
+                             IsVisible="{Binding !IsLive}" />
+                  <TextBlock Grid.Column="1"
+                             Text="{Binding LiveSourceText}"
+                             Classes="micro"
+                             FontSize="10"
+                             Foreground="{DynamicResource AccentTextBrush}"
+                             IsVisible="{Binding IsLive}" />
+                </Grid>
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                  <ContentControl Grid.Row="0" Grid.Column="0" Content="{Binding LatencyTile}" ContentTemplate="{StaticResource MetricTileTemplate}" />
+                  <ContentControl Grid.Row="0" Grid.Column="1" Content="{Binding JitterTile}" ContentTemplate="{StaticResource MetricTileTemplate}" />
+                  <ContentControl Grid.Row="1" Grid.Column="0" Content="{Binding LossTile}" ContentTemplate="{StaticResource MetricTileTemplate}" />
+                  <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding DownloadTile}" ContentTemplate="{StaticResource MetricTileTemplate}" />
+                </Grid>
+              </StackPanel>
+            </Grid>
           </Border>
 
           <!-- Scenarios -->
@@ -343,5 +385,9 @@
         </StackPanel>
       </Grid>
     </Grid>
-  </ScrollViewer>
+    </ScrollViewer>
+
+    <!-- A: the instrument sweep. An overlay, so it never touches layout. -->
+    <controls:ScanSweep IsActive="{Binding Shell.IsScanning}" />
+  </Grid>
 </UserControl>

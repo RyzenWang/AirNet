@@ -73,7 +73,7 @@ public partial class MainWindow : Window
     /// Captures the window mid-scan. The scanning state only exists for a couple of seconds, so
     /// this is the only way to review it (and to smoke-test the progress strip).
     /// </summary>
-    public async Task CaptureScanningAsync(string path, int scale = 1)
+    public async Task CaptureScanningAsync(string path, int scale = 1, int delayMs = 1200)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path) ?? ".");
         if (DataContext is not ShellViewModel viewModel)
@@ -85,7 +85,7 @@ public partial class MainWindow : Window
         await Task.Delay(400);
 
         var scan = viewModel.RunScanCommand.ExecuteAsync(null);
-        await Task.Delay(1200);
+        await Task.Delay(delayMs);
         Capture(path, scale);
 
         await scan;

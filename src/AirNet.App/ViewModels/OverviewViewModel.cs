@@ -1,5 +1,6 @@
 using System.Globalization;
 using AirNet.Core.History;
+using AirNet.Core.Probes;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AirNet.App.ViewModels;
@@ -114,12 +115,35 @@ public partial class OverviewViewModel : ObservableObject
     }
 }
 
-/// <summary>Live measurement page: score, metrics, timeline, path and findings.</summary>
+/// <summary>
+/// Live measurement page. During a scan it shows the samples as they land (real numbers, not a
+/// decorative ticker), and settles into the result when the scan completes.
+/// </summary>
 public partial class MonitorViewModel : ObservableObject
 {
+    private readonly List<double> _liveSeries = new();
+    private string _liveSource = string.Empty;
+    private readonly Avalonia.Threading.DispatcherTimer _flashTimer;
+
+    private void OnFlashElapsed()
+    {
+        _flashTimer.Stop();
+        IsResultFlash = false;
+    }
+
     public MonitorViewModel(ShellViewModel shell)
     {
         Shell = shell;
+        _flashTimer = new Avalonia.Threading.DispatcherTimer(
+            TimeSpan.FromMilliseconds(480),
+            Avalonia.Threading.DispatcherPriority.Normal,
+            (_, _) => OnFlashElapsed());
+
+        var tiles = SnapshotView.DemoTiles();
+        _latencyTile = tiles[0];
+        _jitterTile = tiles[1];
+        _lossTile = tiles[2];
+        _downloadTile = tiles[3];
     }
 
     public ShellViewModel Shell { get; }
@@ -127,10 +151,132 @@ public partial class MonitorViewModel : ObservableObject
     [ObservableProperty]
     private SnapshotView _view = null!;
 
-    public void Apply(SnapshotView view) => View = view;
+    [ObservableProperty]
+    private MetricTile _latencyTile;
+
+    [ObservableProperty]
+    private MetricTile _jitterTile;
+
+    [ObservableProperty]
+    private MetricTile _lossTile;
+
+    [ObservableProperty]
+    private MetricTile _downloadTile;
+
+    [ObservableProperty]
+    private IReadOnlyList<double> _chartSeries = [];
+
+    /// <summary>Slot count the live curve grows into; 0 means "stretch to fit" for a finished run.</summary>
+    [ObservableProperty]
+    private int _chartCapacity;
+
+    [ObservableProperty]
+    private bool _isLive;
+
+    [ObservableProperty]
+    private bool _isResultFlash;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MonitorLiveHint))]
+    private string _liveSourceText = string.Empty;
+
+    public void Apply(SnapshotView view)
+    {
+        View = view;
+        IsLive = false;
+        _liveSeries.Clear();
+        ChartCapacity = 0;
+
+        var tiles = view.Metrics;
+        LatencyTile = tiles[0];
+        JitterTile = tiles[1];
+        LossTile = tiles[2];
+        DownloadTile = tiles[3];
+        ChartSeries = view.Series;
+
+        // One short highlight so the landed numbers read as "this just updated".
+        if (Features.Motion.Enabled)
+        {
+            IsResultFlash = true;
+            _flashTimer.Stop();
+            _flashTimer.Start();
+        }
+    }
+
+    public void BeginLive()
+    {
+        _liveSeries.Clear();
+        _liveSource = string.Empty;
+        ChartSeries = [];
+        ChartCapacity = MeasurementRunner.IcmpSampleCount;
+        IsLive = true;
+        LiveSourceText = "等待首个样本…";
+    }
+
+    /// <summary>Called for every real probe sample; the numbers below come straight from them.</summary>
+    public void PushLive(LiveSample sample)
+    {
+        if (!IsLive)
+        {
+            return;
+        }
+
+        // ICMP and TCP samples are different measurements; mixing them in one curve would draw a
+        // line that never existed. Each phase starts its own.
+        if (sample.Source != _liveSource)
+        {
+            _liveSource = sample.Source;
+            _liveSeries.Clear();
+            ChartCapacity = sample.Source == "TCP" ? MeasurementRunner.TcpSampleCount : MeasurementRunner.IcmpSampleCount;
+        }
+
+        if (sample.LatencyMs is { } latency)
+        {
+            _liveSeries.Add(latency);
+        }
+
+        ChartSeries = _liveSeries.ToArray();
+        LiveSourceText = $"{sample.Source} · 第 {sample.Count} 个样本";
+
+        LatencyTile = Tile("延迟 / LATENCY", sample.AverageMs, 1, "ms", LiveSourceText,
+            sample.AverageMs <= 40);
+
+        // ICMP reports whole milliseconds, so jitter computed from it is always 0 — showing that
+        // would look like a broken gauge. It appears once the TCP phase starts.
+        JitterTile = sample.Source == "TCP"
+            ? Tile("抖动 / JITTER", sample.JitterMs, 1, "ms", "相邻包差均值", sample.JitterMs <= 5)
+            : Pending("抖动 / JITTER", "ms", "ICMP 分辨率 1ms");
+
+        LossTile = Tile("丢包 / LOSS", sample.LossPercent, 1, "%", $"{sample.Count} 个样本", sample.LossPercent <= 0.5);
+    }
+
+    private static MetricTile Tile(string label, double value, int decimals, string unit, string foot, bool good) => new()
+    {
+        Label = label,
+        Value = value.ToString("F" + decimals, System.Globalization.CultureInfo.InvariantCulture),
+        Number = value,
+        Decimals = decimals,
+        Unit = unit,
+        Foot = foot,
+        IsGood = good,
+        IsWarn = !good,
+    };
+
+    private static MetricTile Pending(string label, string unit, string foot) => new()
+    {
+        Label = label,
+        Value = "—",
+        Unit = unit,
+        Foot = foot,
+        IsPlaceholder = true,
+        IsGood = true,
+    };
 
     public string LiveWindowText => "60 秒窗口";
     public string ScanHintText => Shell.IsScanning ? "采集中…" : $"上次检测 {Shell.View.CapturedAtText}";
+
+    /// <summary>Shown under the headline while samples are streaming in.</summary>
+    public string MonitorLiveHint => $"正在采样：{LiveSourceText}";
 
     public string PathSummary => $"{Shell.View.LocalAddress} → {Shell.View.GatewayAddress} → {Shell.View.DnsServer}";
 }
