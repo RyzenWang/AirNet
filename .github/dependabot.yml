@@ -10,6 +10,14 @@ updates:
         patterns:
           - "Avalonia*"
           - "CommunityToolkit*"
+    ignore:
+      # Avalonia 12 is a major release: it removes the clipboard API we use, changes the theme
+      # templates and the render pipeline. Upgrading needs a dedicated branch, the screenshot
+      # regression and platform re-verification, so it is a decision, not an inbox item.
+      # Patch releases inside 11.x still arrive. See the closed PR #7 for the failure analysis.
+      - dependency-name: "Avalonia*"
+        update-types:
+          - "version-update:semver-major"
   - package-ecosystem: github-actions
     directory: /
     schedule:
