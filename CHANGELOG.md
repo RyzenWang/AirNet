@@ -3,20 +3,30 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
-## [Unreleased]
+## [0.2.4] - 2026-11-12
 
 ### Added
 
-- Proxy and VPN detection. The scan now reports when the measurements pass through a
-  system proxy or a tunnel adapter, because the two distort different things: a proxy
-  only affects the HTTP(S) probes (bandwidth, egress, site latency), while a tunnel
-  carries everything including raw TCP timing. The distinction is in the wording, not
-  just the badge — a proxy is one Info line, a VPN is a Warn.
+- Upload bandwidth measurement. The speed page now times both directions: the
+  downlink is bounded by a 4s budget rather than a byte count, and the uplink
+  streams 4MB from a single buffer. Either direction can fail on its own and the
+  page says "未测出" instead of writing a fake number.
+- IPv4/IPv6 dual-stack comparison. The same host is timed with five TCP handshakes
+  per family, in parallel with the first-byte breakdown, and reported as 均衡 /
+  IPv6 更快 / IPv6 偏慢. A slow IPv6 path raises a diagnosis line, because most
+  stacks try IPv6 first and the fallback delay lands in the first byte. Thresholds
+  (0.9 / 1.3) are unit-tested; a host without IPv6 is reported as "仅 IPv4" and
+  never affects the score.
+- Proxy and VPN detection. The scan reports when measurements pass through a system
+  proxy or a tunnel adapter, because the two distort different things: a proxy only
+  affects the HTTP(S) probes (bandwidth, egress, site latency), while a tunnel
+  carries everything including raw TCP timing. The distinction is in the wording,
+  not just the badge — a proxy is one Info line, a VPN is a Warn.
 - Upload/downlink asymmetry rule. When the downlink is fast but the uplink is under
-  10 Mbps (ratio at least 5x), the diagnosis says which activities will suffer first:
-  meetings, cloud backup and large uploads.
-- `interference=` line in `--selftest`, a warning chip in the health card, and a
-  banner block at the top of the HTML report.
+  10 Mbps, the diagnosis names which activities suffer first: meetings, cloud
+  backup and large uploads.
+- `--speedtest <path>` for a headless both-directions run, `interference=` in
+  `--selftest`, and a 经代理 badge where the numbers are shown.
 
 ### Fixed
 
@@ -31,27 +41,10 @@ project uses semantic versioning for release tags.
   an HTTP CONNECT tunnel through the configured proxy, counts that hop into the TCP
   segment (which is where the path is actually built), and marks the result: the
   sites page shows a 经代理 badge and `--sites` prints `viaProxy=`.
-
-### Added (earlier in this cycle)
-
-- Upload bandwidth measurement. The speed page now times both directions: the
-  downlink is bounded by a 4s budget rather than a byte count, and the uplink
-  streams 4MB from a single buffer. Either direction can fail on its own and the
-  page says "未测出" instead of writing a fake number.
-- IPv4/IPv6 dual-stack comparison. The same host is timed with five TCP
-  handshakes per family, in parallel with the first-byte breakdown, and reported
-  as 均衡 / IPv6 更快 / IPv6 偏慢. A slow IPv6 path now raises a diagnosis line,
-  because most stacks try IPv6 first and the fallback delay lands in the first
-  byte. Thresholds (0.9 / 1.3) are unit-tested, and a host without IPv6 is
-  reported as "仅 IPv4" without affecting the score.
-- `--speedtest <path>` for a headless both-directions run.
-- Dual-stack line in the HTML report and the path page summary.
-
-### Fixed
-
-- Downlink measurement reported 0 Mbps on slow links: the old probe required
-  12MB inside an 8s timeout, so anything under ~12 Mbps timed out. It is now
-  time-bounded and stops reading when the budget expires.
+- Downlink measurement reported 0 Mbps on slow links: the old probe required 12MB
+  inside an 8s timeout, so anything under ~12 Mbps timed out. It is now time-bounded
+  and stops reading when the budget expires. A connection that drops mid-transfer
+  reports the speed of the bytes that did arrive instead of throwing.
 
 ### Verified
 
@@ -63,6 +56,10 @@ project uses semantic versioning for release tags.
   than a scanned RSSI, neighbour/channel advice is not implemented, and the macOS
   (CoreWLAN) and Linux (`/proc/net/wireless`) radio branches do not exist — those
   platforms report "wireless" with no numbers.
+
+### Tests
+
+- 101 unit tests (was 70 at 0.2.3).
 
 ## [0.2.3] - 2026-11-12
 
