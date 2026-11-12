@@ -25,7 +25,8 @@ public sealed record SiteSample(
     bool Success,
     SiteFailureKind FailureKind,
     string? FailureNote,
-    int? HttpStatus = null)
+    int? HttpStatus = null,
+    bool ViaProxy = false)
 {
     public double TotalMs => Math.Round(DnsMs + TcpMs + TlsMs + TtfbMs, 1);
 
@@ -44,7 +45,8 @@ public sealed record SiteSample(
             timing.Succeeded,
             kind,
             note,
-            timing.HttpStatus);
+            timing.HttpStatus,
+            timing.ViaProxy);
     }
 
     public static SiteSample Cancelled() =>
@@ -69,7 +71,8 @@ public sealed record SiteResult(
 public sealed record SiteLatencyReport(
     IReadOnlyList<SiteResult> Results,
     DateTimeOffset StartedAt,
-    TimeSpan Duration)
+    TimeSpan Duration,
+    bool ViaProxy = false)
 {
     public int Succeeded => Results.Count(result =>
         result.Success && result.FailureKind is not (SiteFailureKind.HttpBlocked or SiteFailureKind.HttpServerError));
@@ -102,9 +105,12 @@ public static class SiteLatencyProbe
 
         samplesPerSite = Math.Max(1, samplesPerSite);
         concurrency = Math.Clamp(concurrency, 1, sites.Count);
+        // Same proxy decision the browser would make, so a proxied machine does not get direct-route numbers.
+        var systemProxy = HttpClient.DefaultProxy;
         measure ??= (site, ct) => ApplicationTimingProbe.MeasureAsync(
             site.Host,
             timeoutMs: timeoutMs,
+            proxy: systemProxy,
             cancellationToken: ct);
 
         using var gate = new SemaphoreSlim(concurrency, concurrency);
@@ -131,7 +137,8 @@ public static class SiteLatencyProbe
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
         watch.Stop();
-        return new SiteLatencyReport(results, started, watch.Elapsed);
+        var viaProxy = results.Any(r => r.Samples.Count > 0 && r.Samples.Any(s => s.ViaProxy));
+        return new SiteLatencyReport(results, started, watch.Elapsed, viaProxy);
     }
 
     private static async Task<SiteResult> MeasureSiteAsync(

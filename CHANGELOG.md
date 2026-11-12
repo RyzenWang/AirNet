@@ -18,6 +18,15 @@ project uses semantic versioning for release tags.
 - `interference=` line in `--selftest`, a warning chip in the health card, and a
   banner block at the top of the HTML report.
 
+### Fixed
+
+- Site latency and the first-byte breakdown bypassed the system proxy. The probe used
+  a bare socket, so on a proxied machine it reported numbers for a route the browser
+  never takes — and the interference note claimed the opposite. The probe now opens
+  an HTTP CONNECT tunnel through the configured proxy, counts that hop into the TCP
+  segment (which is where the path is actually built), and marks the result: the
+  sites page shows a 经代理 badge and `--sites` prints `viaProxy=`.
+
 ### Added (earlier in this cycle)
 
 - Upload bandwidth measurement. The speed page now times both directions: the

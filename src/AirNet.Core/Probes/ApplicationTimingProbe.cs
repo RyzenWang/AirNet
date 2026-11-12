@@ -13,6 +13,11 @@ namespace AirNet.Core.Probes;
 /// time-to-first-byte. Doing it on one socket in order is what makes the numbers additive and
 /// lets the diagnosis say "slow DNS" instead of just "slow".
 /// </summary>
+/// <remarks>
+/// When a proxy applies, the TCP segment covers connecting to the proxy and the CONNECT
+/// handshake — the proxy only answers 200 once it has its own connection to the site, so that
+/// span is the real "path established" cost. DNS stays local so the resolver can still be judged.
+/// </remarks>
 public static class ApplicationTimingProbe
 {
     public const string DefaultHost = "www.baidu.com";
@@ -21,10 +26,14 @@ public static class ApplicationTimingProbe
         string host = DefaultHost,
         int port = 443,
         int timeoutMs = 4000,
+        IWebProxy? proxy = null,
         CancellationToken cancellationToken = default)
     {
+        var proxyEndpoint = ProxyTunnel.Choose(proxy, host, port);
+        var viaProxy = proxyEndpoint is not null;
+
         var dnsWatch = Stopwatch.StartNew();
-        IPAddress? address;
+        IPAddress? address = null;
         try
         {
             var resolved = await Dns.GetHostAddressesAsync(host, cancellationToken).ConfigureAwait(false);
@@ -33,18 +42,51 @@ public static class ApplicationTimingProbe
         }
         catch (Exception ex) when (ex is SocketException or OperationCanceledException)
         {
-            return Failed(host, 0, 0, 0, 0, "DNS 解析失败");
+            // A proxied request does not strictly need local DNS; the proxy resolves the name.
+            if (!viaProxy)
+            {
+                return Failed(host, 0, 0, 0, 0, "DNS 解析失败", viaProxy);
+            }
         }
 
         dnsWatch.Stop();
         var dnsMs = Round(dnsWatch.Elapsed.TotalMilliseconds);
 
-        if (address is null)
+        if (!viaProxy && address is null)
         {
-            return Failed(host, dnsMs, 0, 0, 0, "无可用地址");
+            return Failed(host, dnsMs, 0, 0, 0, "无可用地址", viaProxy);
         }
 
-        using var socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
+        // Resolve the proxy host (it is usually a literal, so this is normally instant).
+        EndPoint targetEndPoint;
+        if (proxyEndpoint is not null)
+        {
+            IPAddress? proxyAddress;
+            try
+            {
+                var resolved = await Dns.GetHostAddressesAsync(proxyEndpoint.Host, cancellationToken)
+                    .ConfigureAwait(false);
+                proxyAddress = resolved.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork)
+                               ?? resolved.FirstOrDefault();
+            }
+            catch (Exception ex) when (ex is SocketException or OperationCanceledException)
+            {
+                proxyAddress = null;
+            }
+
+            if (proxyAddress is null)
+            {
+                return Failed(host, dnsMs, 0, 0, 0, "代理地址不可达", viaProxy);
+            }
+
+            targetEndPoint = new IPEndPoint(proxyAddress, proxyEndpoint.Port);
+        }
+        else
+        {
+            targetEndPoint = new IPEndPoint(address!, port);
+        }
+
+        using var socket = new Socket(targetEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
         {
             NoDelay = true,
         };
@@ -54,17 +96,30 @@ public static class ApplicationTimingProbe
         {
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeout.CancelAfter(timeoutMs);
-            await socket.ConnectAsync(new IPEndPoint(address, port), timeout.Token).ConfigureAwait(false);
+            await socket.ConnectAsync(targetEndPoint, timeout.Token).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is SocketException or OperationCanceledException)
         {
-            return Failed(host, dnsMs, Round(tcpWatch.Elapsed.TotalMilliseconds), 0, 0, "TCP 连接失败");
+            var what = viaProxy ? "代理连接失败" : "TCP 连接失败";
+            return Failed(host, dnsMs, Round(tcpWatch.Elapsed.TotalMilliseconds), 0, 0, what, viaProxy);
+        }
+
+        await using var network = new NetworkStream(socket, ownsSocket: false);
+
+        // The CONNECT exchange counts toward the TCP segment: it is where the path is built.
+        if (proxyEndpoint is not null)
+        {
+            using var tunnelTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            tunnelTimeout.CancelAfter(timeoutMs);
+            if (!await ProxyTunnel.EstablishAsync(network, host, port, tunnelTimeout.Token).ConfigureAwait(false))
+            {
+                return Failed(host, dnsMs, Round(tcpWatch.Elapsed.TotalMilliseconds), 0, 0, "代理隧道建立失败", viaProxy);
+            }
         }
 
         tcpWatch.Stop();
         var tcpMs = Round(tcpWatch.Elapsed.TotalMilliseconds);
 
-        await using var network = new NetworkStream(socket, ownsSocket: false);
         using var secure = new SslStream(network, leaveInnerStreamOpen: true);
 
         var tlsWatch = Stopwatch.StartNew();
@@ -82,7 +137,7 @@ public static class ApplicationTimingProbe
         }
         catch (Exception ex) when (ex is AuthenticationException or IOException or OperationCanceledException)
         {
-            return Failed(host, dnsMs, tcpMs, Round(tlsWatch.Elapsed.TotalMilliseconds), 0, "TLS 握手失败");
+            return Failed(host, dnsMs, tcpMs, Round(tlsWatch.Elapsed.TotalMilliseconds), 0, "TLS 握手失败", viaProxy);
         }
 
         tlsWatch.Stop();
@@ -102,7 +157,7 @@ public static class ApplicationTimingProbe
             var read = await secure.ReadAsync(buffer, timeout.Token).ConfigureAwait(false);
             if (read == 0)
             {
-                return Failed(host, dnsMs, tcpMs, tlsMs, 0, "空响应");
+                return Failed(host, dnsMs, tcpMs, tlsMs, 0, "空响应", viaProxy);
             }
 
             ttfbWatch.Stop();
@@ -114,11 +169,12 @@ public static class ApplicationTimingProbe
                 tlsMs,
                 Round(ttfbWatch.Elapsed.TotalMilliseconds),
                 true,
-                HttpStatus: status);
+                HttpStatus: status,
+                ViaProxy: viaProxy);
         }
         catch (Exception ex) when (ex is IOException or OperationCanceledException)
         {
-            return Failed(host, dnsMs, tcpMs, tlsMs, 0, "首包读取失败");
+            return Failed(host, dnsMs, tcpMs, tlsMs, 0, "首包读取失败", viaProxy);
         }
     }
 
@@ -141,8 +197,14 @@ public static class ApplicationTimingProbe
     }
 
     private static LayerTiming Failed(
-        string host, double dnsMs, double tcpMs, double tlsMs, double ttfbMs, string note) =>
-        new(host, dnsMs, tcpMs, tlsMs, ttfbMs, false, note);
+        string host,
+        double dnsMs,
+        double tcpMs,
+        double tlsMs,
+        double ttfbMs,
+        string note,
+        bool viaProxy = false) =>
+        new(host, dnsMs, tcpMs, tlsMs, ttfbMs, false, note, null, viaProxy);
 
     private static double Round(double value) => Math.Round(value, 1);
 }

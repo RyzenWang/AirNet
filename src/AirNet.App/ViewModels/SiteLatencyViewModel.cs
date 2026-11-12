@@ -200,6 +200,10 @@ public partial class SiteLatencyViewModel : ObservableObject
     [ObservableProperty]
     private bool _isTesting;
 
+    /// <summary>True when the last run went through the system proxy, so the segment split is not direct.</summary>
+    [ObservableProperty]
+    private bool _isViaProxy;
+
     [ObservableProperty]
     private string _testStatusText = "还没有测试 · 点「开始测试」跑一轮";
 
@@ -433,6 +437,7 @@ public partial class SiteLatencyViewModel : ObservableObject
                 overall.Token).ConfigureAwait(true);
 
             _lastReport = report;
+            IsViaProxy = report.ViaProxy;
             foreach (var result in report.Results)
             {
                 _results[result.Target.Id] = result;

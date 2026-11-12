@@ -279,7 +279,7 @@ public partial class App : Application
                     + $"{site.HttpStatus?.ToString() ?? "-"}\t{site.FailureNote}");
             }
 
-            report.AppendLine($"succeeded={result.Succeeded}/{result.Results.Count} duration={result.Duration.TotalSeconds:0.0}s");
+            report.AppendLine($"succeeded={result.Succeeded}/{result.Results.Count} duration={result.Duration.TotalSeconds:0.0}s viaProxy={result.ViaProxy}");
             try
             {
                 await new SiteHistoryStore().AppendAsync(result).ConfigureAwait(true);

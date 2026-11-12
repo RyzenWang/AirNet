@@ -130,7 +130,9 @@ public sealed class MeasurementRunner
         // Dual-stack timing runs beside them too, so the comparison costs no extra wall clock.
         var egressTask = EgressProbe.TryGetAsync(cancellationToken);
         var timingTask = ApplicationTimingProbe.MeasureAsync(
-            ApplicationHost, cancellationToken: cancellationToken);
+            ApplicationHost,
+            proxy: HttpClient.DefaultProxy,
+            cancellationToken: cancellationToken);
         var stackTask = DualStackProbe.MeasureAsync(ApplicationHost, cancellationToken: cancellationToken);
 
         await Task.WhenAll(timingTask, stackTask).ConfigureAwait(false);

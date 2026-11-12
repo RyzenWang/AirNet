@@ -75,7 +75,8 @@ public sealed record LayerTiming(
     double TtfbMs,
     bool Succeeded,
     string? FailureNote = null,
-    int? HttpStatus = null)
+    int? HttpStatus = null,
+    bool ViaProxy = false)
 {
     public static LayerTiming None { get; } = new("-", 0, 0, 0, 0, false, "未测量");
 

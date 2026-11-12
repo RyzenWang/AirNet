@@ -33,7 +33,7 @@ public sealed record InterferenceInfo(
             }
 
             return ProxyConfigured
-                ? "HTTP 类测量（带宽、网站延迟、出口地址）经过系统代理；ICMP/TCP 延迟仍走真实链路。"
+                ? "HTTP 类测量（带宽、出口地址、首包分解与网站延迟）经过系统代理；ICMP 丢包与 TCP 握手计时仍走真实链路。"
                 : string.Empty;
         }
     }
