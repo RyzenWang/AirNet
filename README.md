@@ -124,6 +124,7 @@ docs/
   TECH_PLAN.md           技术方案：架构、探针、评分与归因、性能预算、里程碑
   FEATURES.md            功能清单（P0/P1/P2 + 验收口径）
   WEBSITE_LATENCY.md     网站延迟：功能、交互、视觉与实现方案
+  design/                评审用视觉/动效稿（不随应用发布）
   icon-concepts/         已选脉冲图标 + 4 个备选
   shots/                 浅色/深色共 12 张截图
 ```
