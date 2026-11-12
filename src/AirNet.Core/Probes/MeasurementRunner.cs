@@ -56,7 +56,13 @@ public sealed class MeasurementRunner
         double fallbackDownloadMbps = 0,
         double fallbackUploadMbps = 0,
         CancellationToken cancellationToken = default)
-        => await RunAsync(fallbackDownloadMbps, fallbackUploadMbps, progress: null, live: null, cancellationToken)
+        => await RunAsync(
+                fallbackDownloadMbps,
+                fallbackUploadMbps,
+                progress: null,
+                live: null,
+                dualProbe: true,
+                cancellationToken)
             .ConfigureAwait(false);
 
     /// <summary>
@@ -68,6 +74,7 @@ public sealed class MeasurementRunner
         double fallbackUploadMbps,
         IProgress<ScanProgress>? progress,
         IProgress<LiveSample>? live = null,
+        bool dualProbe = true,
         CancellationToken cancellationToken = default)
     {
         progress?.Report(new ScanProgress("识别网卡", 0.05));
@@ -85,14 +92,24 @@ public sealed class MeasurementRunner
             onSample: sample => ReportLive(live, "ICMP", icmpLive, sample)).ConfigureAwait(false);
         var icmpStats = LatencyAnalyzer.Analyze(icmpSamples);
 
-        progress?.Report(new ScanProgress("TCP 握手计时", 0.42));
-        var tcpSamples = await LatencyProbe.MeasureTcpSeriesAsync(
-            ReferenceHost,
-            ReferenceTcpPort,
-            count: TcpSampleCount,
-            intervalMs: 70,
-            cancellationToken: cancellationToken,
-            onSample: sample => ReportLive(live, "TCP", tcpLive, sample)).ConfigureAwait(false);
+        IReadOnlyList<double?> tcpSamples;
+        if (dualProbe)
+        {
+            progress?.Report(new ScanProgress("TCP 握手计时", 0.42));
+            tcpSamples = await LatencyProbe.MeasureTcpSeriesAsync(
+                ReferenceHost,
+                ReferenceTcpPort,
+                count: TcpSampleCount,
+                intervalMs: 70,
+                cancellationToken: cancellationToken,
+                onSample: sample => ReportLive(live, "TCP", tcpLive, sample)).ConfigureAwait(false);
+        }
+        else
+        {
+            progress?.Report(new ScanProgress("TCP 计时已关闭", 0.42));
+            tcpSamples = [];
+        }
+
         var tcpStats = LatencyAnalyzer.Analyze(tcpSamples);
 
         var diagnostics = new ProbeDiagnostics(

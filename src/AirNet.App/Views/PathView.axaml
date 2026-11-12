@@ -4,12 +4,16 @@
              xmlns:controls="using:AirNet.App.Controls"
              x:Class="AirNet.App.Views.PathView"
              x:DataType="vm:PathViewModel">
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+  <Grid>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
     <Grid MaxWidth="1160" Margin="24,18,24,26" RowDefinitions="Auto,*" RowSpacing="12">
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
         <StackPanel Spacing="1">
           <TextBlock Text="链路路径" Classes="h3" />
-          <TextBlock Text="{Binding StatusText}" Classes="caption" FontSize="10.5" TextTrimming="CharacterEllipsis" />
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Ellipse Classes="scanDot" IsVisible="{Binding IsTracing}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding StatusText}" Classes="caption" FontSize="10.5" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
         </StackPanel>
         <Button Grid.Column="1"
                 Classes="primary"
@@ -198,5 +202,7 @@
         </StackPanel>
       </Grid>
     </Grid>
-  </ScrollViewer>
+    </ScrollViewer>
+    <controls:ScanSweep IsActive="{Binding IsTracing}" />
+  </Grid>
 </UserControl>

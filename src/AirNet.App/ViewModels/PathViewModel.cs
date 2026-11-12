@@ -1,5 +1,6 @@
 using AirNet.Core.Diagnostics;
 using AirNet.Core.Probes;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -36,11 +37,18 @@ public sealed class SegmentRow
 /// </summary>
 public partial class PathViewModel : ObservableObject
 {
+    private readonly DispatcherTimer _traceTicker;
+    private DateTimeOffset _traceStartedAt;
+
     public PathViewModel(ShellViewModel shell)
     {
         Shell = shell;
         _attribution = AttributionEngine.FromSnapshot(shell.Snapshot);
         Segments = BuildSegments(_attribution);
+        _traceTicker = new DispatcherTimer(
+            TimeSpan.FromMilliseconds(200),
+            DispatcherPriority.Normal,
+            (_, _) => OnTraceTick());
     }
 
     public ShellViewModel Shell { get; }
@@ -105,6 +113,22 @@ public partial class PathViewModel : ObservableObject
         OnPropertyChanged(nameof(IsWarn));
         OnPropertyChanged(nameof(IsGood));
     }
+
+    partial void OnIsTracingChanged(bool value)
+    {
+        if (value)
+        {
+            _traceStartedAt = DateTimeOffset.Now;
+            _traceTicker.Start();
+        }
+        else
+        {
+            _traceTicker.Stop();
+        }
+    }
+
+    private void OnTraceTick() =>
+        StatusText = $"正在追踪 {TargetText} · {(DateTimeOffset.Now - _traceStartedAt).TotalSeconds:0.0} s（最多 16 跳）";
 
     [RelayCommand]
     private async Task RunTraceAsync()

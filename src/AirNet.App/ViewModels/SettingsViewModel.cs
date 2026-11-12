@@ -16,6 +16,9 @@ public partial class SettingsViewModel : ObservableObject
     public SettingsViewModel(ShellViewModel shell)
     {
         Shell = shell;
+        _autoRefresh = shell.Preferences.AutoRefresh;
+        _dualProbe = shell.Preferences.DualProbe;
+        _keepHistory = shell.Preferences.KeepHistory;
         _dnsPlan = DnsAdvisor.Plan(shell.Snapshot.Interface, shell.Snapshot.Timing);
         _ = InitializeAsync();
     }
@@ -23,16 +26,13 @@ public partial class SettingsViewModel : ObservableObject
     public ShellViewModel Shell { get; }
 
     [ObservableProperty]
-    private bool _autoRefresh = true;
+    private bool _autoRefresh;
 
     [ObservableProperty]
-    private bool _includeSpeed = true;
+    private bool _dualProbe;
 
     [ObservableProperty]
-    private bool _dualProbe = true;
-
-    [ObservableProperty]
-    private bool _keepHistory = true;
+    private bool _keepHistory;
 
     [ObservableProperty]
     private string _historyCountText = "读取中…";
@@ -57,12 +57,32 @@ public partial class SettingsViewModel : ObservableObject
 
     public string VersionText => "0.2.1 · M2";
     public string RuntimeText => ".NET 10 · Avalonia 11.3 · Windows / macOS / Linux";
-    public string FootprintText => "冷启动 0.9 s · 内存 154 MB · 40 MB";
-    public string PrivacyText => "所有测量在本机完成，不上传任何字段。历史记录仅保存在本地。";
+    public string FootprintText => "R2R 单文件 · 无驱动 · 无后台常驻";
+    public string PrivacyText =>
+        "测量在本机完成；出口 IP 查询会访问 3322 / Cloudflare，不上传本地字段。历史记录仅保存在本地。";
 
     public bool CanApplyDns => DnsPlan.IsWorthChanging;
 
     public string DnsCurrentText => $"当前 {DnsPlan.CurrentDns}";
+
+    partial void OnAutoRefreshChanged(bool value)
+    {
+        Shell.Preferences.AutoRefresh = value;
+        Shell.SavePreferences();
+        Shell.ApplyAutoRefreshPreference();
+    }
+
+    partial void OnDualProbeChanged(bool value)
+    {
+        Shell.Preferences.DualProbe = value;
+        Shell.SavePreferences();
+    }
+
+    partial void OnKeepHistoryChanged(bool value)
+    {
+        Shell.Preferences.KeepHistory = value;
+        Shell.SavePreferences();
+    }
 
     public async Task InitializeAsync()
     {

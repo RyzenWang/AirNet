@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using AirNet.App.ViewModels;
 
@@ -17,6 +18,60 @@ public partial class MainWindow : Window
                 Shell.SyncWindowState(WindowState);
             }
         };
+
+        KeyDown += OnKeyDown;
+    }
+
+    /// <summary>
+    /// Window-level shortcuts. Input controls win first, so typing in a text field never starts a
+    /// scan; everything else is deliberately global, matching the shortcuts card in Settings.
+    /// </summary>
+    private void OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (DataContext is not ShellViewModel shell || e.Source is TextBox)
+        {
+            return;
+        }
+
+        var commandKey = e.KeyModifiers.HasFlag(KeyModifiers.Control)
+                         || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
+
+        if (commandKey)
+        {
+            var page = e.Key switch
+            {
+                Key.D1 or Key.NumPad1 => "Overview",
+                Key.D2 or Key.NumPad2 => "Monitor",
+                Key.D3 or Key.NumPad3 => "Speed",
+                Key.D4 or Key.NumPad4 => "Path",
+                Key.D5 or Key.NumPad5 => "Settings",
+                _ => null,
+            };
+
+            if (page is not null)
+            {
+                shell.NavigateCommand.Execute(page);
+                e.Handled = true;
+                return;
+            }
+
+            switch (e.Key)
+            {
+                case Key.R:
+                    shell.RunScanCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                case Key.T:
+                    shell.ToggleThemeCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+            }
+        }
+        else if (e.Key == Key.Escape && shell.IsScanning)
+        {
+            shell.StopScanCommand.Execute(null);
+            e.Handled = true;
+        }
     }
 
     /// <summary>

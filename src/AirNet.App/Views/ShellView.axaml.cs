@@ -4,7 +4,6 @@ using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using AirNet.App.Features;
 using AirNet.App.ViewModels;
@@ -80,28 +79,10 @@ public partial class ShellView : UserControl
 
     private async void OnExportReportClick(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is not ShellViewModel viewModel || TopLevel.GetTopLevel(this) is not { } top)
+        if (DataContext is ShellViewModel viewModel && TopLevel.GetTopLevel(this) is { } top)
         {
-            return;
+            await viewModel.ExportReportWithPickerAsync(top);
         }
-
-        var file = await top.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-        {
-            Title = "导出 AirNet 报告",
-            SuggestedFileName = $"airnet-{DateTime.Now:yyyyMMdd-HHmm}",
-            DefaultExtension = "html",
-            FileTypeChoices =
-            [
-                new FilePickerFileType("HTML 报告") { Patterns = ["*.html"] },
-            ],
-        });
-
-        if (file?.Path is not { } uri)
-        {
-            return;
-        }
-
-        await viewModel.WriteReportAsync(uri.LocalPath);
     }
 
     /// <summary>Keeps the custom chrome in sync with the real window state.</summary>

@@ -1,5 +1,6 @@
 using System.Globalization;
 using AirNet.Core.Probes;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -11,9 +12,16 @@ public partial class SpeedViewModel : ObservableObject
     private const double DownloadScaleMbps = 1000;
     private const double UploadScaleMbps = 200;
 
+    private readonly DispatcherTimer _testTicker;
+    private DateTimeOffset _testStartedAt;
+
     public SpeedViewModel(ShellViewModel shell)
     {
         Shell = shell;
+        _testTicker = new DispatcherTimer(
+            TimeSpan.FromMilliseconds(200),
+            DispatcherPriority.Normal,
+            (_, _) => OnTestTick());
         _ = RefreshHistoryAsync();
     }
 
@@ -33,6 +41,9 @@ public partial class SpeedViewModel : ObservableObject
 
     [ObservableProperty]
     private string _testedAtText = "未测速";
+
+    [ObservableProperty]
+    private string _testStatusText = "正在测速…";
 
     [ObservableProperty]
     private IReadOnlyList<SpeedHistoryBar> _history = [];
@@ -66,7 +77,24 @@ public partial class SpeedViewModel : ObservableObject
         OnPropertyChanged(nameof(HasUpload));
     }
 
-    partial void OnIsTestingChanged(bool value) => OnPropertyChanged(nameof(TestButtonText));
+    partial void OnIsTestingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(TestButtonText));
+
+        if (value)
+        {
+            _testStartedAt = DateTimeOffset.Now;
+            TestStatusText = "正在测速…";
+            _testTicker.Start();
+        }
+        else
+        {
+            _testTicker.Stop();
+        }
+    }
+
+    private void OnTestTick() =>
+        TestStatusText = $"正在测速 · {(DateTimeOffset.Now - _testStartedAt).TotalSeconds:0.0} s";
 
     /// <summary>Latency and jitter are read from the shell snapshot, so refresh them after a scan.</summary>
     public void RefreshFromSnapshot()

@@ -64,8 +64,9 @@ public sealed class FindingRow
     public required string Title { get; init; }
     public required string Detail { get; init; }
     public string? ActionLabel { get; init; }
+    public string? ActionTarget { get; init; }
     public string Glyph { get; init; } = "M20 6L9 17l-5-5";
-    public bool HasAction => !string.IsNullOrEmpty(ActionLabel);
+    public bool HasAction => !string.IsNullOrEmpty(ActionLabel) && ActionTarget is not null;
     public bool IsOk { get; init; }
     public bool IsInfo { get; init; }
     public bool IsWarn { get; init; }
@@ -316,6 +317,12 @@ public sealed class SnapshotView
             Title = finding.Title,
             Detail = finding.Detail,
             ActionLabel = finding.ActionLabel,
+            ActionTarget = finding.ActionLabel switch
+            {
+                "排查链路" => "Path",
+                "优化 DNS" or "优化信号" or "查看建议" => "Settings",
+                _ => null,
+            },
             Glyph = finding.Severity switch
             {
                 Severity.Ok => "M20 6L9 17l-5-5",

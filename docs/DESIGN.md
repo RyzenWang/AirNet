@@ -193,6 +193,7 @@ MonoFontFamily    : Cascadia Mono, Consolas, SF Mono, Menlo, monospace     ← I
 | **检测中 · B 实时读数** | 探针逐样本回传（15 个 ICMP + 10 个 TCP），四块指标卡实时刷新，环变成旋进弧、分数显示「—」 | 环 275°/s |
 | **检测中 · 曲线** | 按 `Capacity` 槽位生长（ICMP 15 / TCP 10 槽），阶段切换时清空重画 | 不重复扫入 |
 | **检测中 · 工具条** | 当前探针 + 计时 + 底部 3px 进度条（向目标缓动） | 120ms 步进，系数 0.22 |
+| **测速 / 追踪 · 检查动画** | 页面级 `ScanSweep` + 脉冲点 + 实时计时；测速显示「正在测速 · x.x s」，追踪显示「正在追踪 · x.x s」 | 200ms 步进；截图模式关闭 |
 | 检测完成 | 环 600ms 过冲到 1.035 再回稳；数字 420ms 滚动；指标卡 480ms 高亮一次；曲线扫入 | `CubicEaseOut` |
 | 页面切换 | 新页面淡入 | 160ms `CubicEaseOut` |
 | 条填充 | `MeterBar.Value` 带 `DoubleTransition` | 520ms `CubicEaseOut` |
@@ -204,6 +205,9 @@ MonoFontFamily    : Cascadia Mono, Consolas, SF Mono, Menlo, monospace     ← I
 **为什么监控页不再整页降透明**：A+B 之后检测中的监控页是「活」的，降透明只留给其它四页——它们确实还是旧数据。
 
 **为什么数字必须来自真实样本**：跳动可以是假的，但假跳动会在"结果落地"的瞬间露出破绽（数字会跳回去）。所有 live 值都直接来自 `IProgress<LiveSample>`。
+
+**为什么测速/追踪也用扫描带**：这两个动作分别要 5–15s 和 8–20s，只改按钮文字会像卡死；
+扫描带 + 脉冲点 + 计时是同一套"正在工作"的语言，且 `ScanSweep` 是覆盖层，不会推动布局。
 
 **未做**：按压微缩放（收益太低）、C 方案的全屏模糊（Skia 大面积 blur 与"轻量"冲突）。
 
@@ -225,10 +229,14 @@ src/AirNet.App/
   Controls/Sparkline.cs    延迟曲线
   Controls/MeterBar.cs     条
   Controls/SignalBars.cs   信号柱
+  Controls/ScanSweep.cs   检测/测速/追踪的扫描带（覆盖层，不参与布局）
+  Features/Motion.cs      动效总开关与时长
+  Services/SettingsStore.cs  settings.json（主题 / 自动刷新 / 双探测 / 保留历史）
   Views/ShellView.axaml    骨架：品牌条 / 状态条 / 侧栏 / 状态栏
   Views/OverviewView.axaml 首页 + 纸叠插画
   Views/MonitorView.axaml  仪表盘
   Views/SpeedView.axaml    测速
+  Views/PathView.axaml     链路路径
   Views/SettingsView.axaml 设置
 ```
 
