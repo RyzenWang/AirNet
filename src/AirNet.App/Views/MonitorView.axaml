@@ -169,7 +169,7 @@
                                   Series="{Binding ChartSeries}"
                                   Capacity="{Binding ChartCapacity}"
                                   AnimateReveal="{Binding !Shell.IsScanning}"
-                                  Stroke="{DynamicResource AccentBrush}"
+                                  Stroke="{DynamicResource GoodBrush}"
                                   Fill="{DynamicResource ChartFillBrush}"
                                   GridLines="3"
                                   GridLineBrush="{DynamicResource GridLineBrush}"
@@ -371,7 +371,7 @@
                       <Border Width="{Binding Width}"
                               Height="5"
                               CornerRadius="2.5"
-                              Background="{DynamicResource AccentBrush}"
+                              Background="{DynamicResource GoodBrush}"
                               Opacity="{Binding Opacity}" />
                     </DataTemplate>
                   </ItemsControl.ItemTemplate>

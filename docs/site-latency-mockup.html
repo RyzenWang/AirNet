@@ -8,7 +8,7 @@
     --bg:#F1EEE7; --title:#F4F0E8; --toolbar:#F9F7F2; --side:#EAE5DC;
     --card:#FBFAF7; --alt:#F6F2EB; --border:#DED7CB; --strong:#C7BEB0;
     --ink:#1D232C; --muted:#69645C; --faint:#9A9286; --track:#E7E0D4;
-    --accent:#2E6F63; --accentHover:#245A50; --accentSoft:#E2EFEB; --accentText:#1F5A50;
+    --accent:#E3563B; --accentHover:#C9482F; --accentSoft:#FBE4DD; --accentText:#A93620; --good:#2E6F63;
     --warn:#A9701A; --warnSoft:#F6EAD4; --bad:#B23A2B; --badSoft:#F8E2DD;
     --mono:"Cascadia Mono","Consolas",monospace;
   }
@@ -73,7 +73,7 @@
   .metric .value{font-size:24px;font-weight:600;letter-spacing:-.6px;line-height:1.05}
   .metric .value small{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:0;margin-left:2px}
   .metric .foot{font-size:9.5px;color:var(--muted)}
-  .metric .good{color:var(--accent)} .metric .warn{color:var(--warn)} .metric .bad{color:var(--bad)}
+  .metric .good{color:var(--good)} .metric .warn{color:var(--warn)} .metric .bad{color:var(--bad)}
   .columns{display:grid;grid-template-columns:minmax(0,1fr) 286px;gap:12px;min-height:0;flex:1;overflow:hidden}
   .card{border:1px solid var(--border);background:var(--card);border-radius:14px}
   .sites{display:flex;flex-direction:column;min-height:0;overflow:hidden}
@@ -97,19 +97,19 @@
   .total small{font-size:8px;color:var(--faint);font-weight:400;margin-left:1px}
   .segbar{height:6px;border-radius:3px;overflow:hidden;display:flex;background:var(--track)}
   .segbar span{display:block;height:100%}
-  .segbar .dns{background:var(--accent)}
+  .segbar .dns{background:var(--good)}
   .segbar .tcp{background:#5d9488}
   .segbar .tls{background:#8ab8ad}
   .segbar .wait{background:#c3dbd5}
   .delta{font-family:var(--mono);font-size:9.5px;text-align:right;color:var(--faint)}
-  .delta.down{color:var(--accent)} .delta.up{color:var(--warn)} .delta.bad{color:var(--bad)}
+  .delta.down{color:var(--good)} .delta.up{color:var(--warn)} .delta.bad{color:var(--bad)}
   .status{width:7px;height:7px;border-radius:50%;justify-self:center}
-  .status.good{background:var(--accent)} .status.warn{background:var(--warn)} .status.bad{background:var(--bad)}
+  .status.good{background:var(--good)} .status.warn{background:var(--warn)} .status.bad{background:var(--bad)}
   .right{display:flex;flex-direction:column;gap:12px;min-height:0;overflow:hidden}
   .judge{padding:14px 15px}
   .judge h3{margin:0 0 7px;font-size:12.5px;font-weight:600}
   .judge p{margin:0;font-size:10px;line-height:16px;color:var(--muted)}
-  .judge .good{color:var(--accentText);font-weight:600}
+  .judge .good{color:var(--good);font-weight:600}
   .judge .bad{color:var(--bad);font-weight:600}
   .judge .divider{height:1px;background:var(--border);margin:10px 0}
   .judge .line{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);line-height:18px}
@@ -273,7 +273,7 @@
           <div class="cardhead">
             <h2>站点延迟</h2>
             <div class="legend">
-              <span><i style="background:var(--accent)"></i>DNS</span>
+              <span><i style="background:var(--good)"></i>DNS</span>
               <span><i style="background:#5d9488"></i>TCP</span>
               <span><i style="background:#8ab8ad"></i>TLS</span>
               <span><i style="background:#c3dbd5"></i>等待</span>
@@ -374,7 +374,7 @@
           <section class="card scope">
             <h3>口径</h3>
             <div class="segments">
-              <span><i style="background:var(--accent)"></i>DNS</span>
+              <span><i style="background:var(--good)"></i>DNS</span>
               <span><i style="background:#5d9488"></i>TCP</span>
               <span><i style="background:#8ab8ad"></i>TLS</span>
               <span><i style="background:#c3dbd5"></i>等待</span>

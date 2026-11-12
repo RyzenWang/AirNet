@@ -64,7 +64,7 @@
                                         Thickness="10"
                                         Value="{Binding DownloadGauge}"
                                         TrackBrush="{DynamicResource TrackBrush}"
-                                        ProgressBrush="{DynamicResource AccentBrush}" />
+                                        ProgressBrush="{DynamicResource GoodBrush}" />
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                       <Grid>
                         <controls:AnimatedNumber Value="{Binding DownloadMbps}"
@@ -166,7 +166,7 @@
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Bottom"
                                 CornerRadius="4,4,2,2"
-                                Background="{DynamicResource AccentBrush}"
+                                Background="{DynamicResource GoodBrush}"
                                 Opacity="0.82" />
                       </Border>
                       <TextBlock Text="{Binding ValueText}"

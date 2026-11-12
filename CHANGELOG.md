@@ -3,6 +3,15 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
+## [Unreleased]
+
+### Changed
+
+- Light theme now follows AirPDF's terracotta accent (`#E3563B`) for brand,
+  primary actions, navigation selection and busy motion. Good status, score rings,
+  charts, and latency segment bars stay on the teal semantic colour; dark theme is
+  unchanged.
+
 ## [0.2.2] - 2026-11-12
 
 ### Added

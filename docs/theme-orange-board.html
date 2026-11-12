@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>AirNet theme proposal board</title>
+<style>
+  :root{--paper:#F1EEE7;--ink:#1D232C;--muted:#69645C;--line:#DED7CB;--surface:#FBFAF7;--accent:#E3563B;--accent-text:#A93620;--good:#2E6F63;--warn:#A9701A;--bad:#B23A2B}
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1760px;height:1000px;background:#E9E3D8;color:var(--ink);font:13px/1.5 Inter,"Segoe UI","Microsoft YaHei UI","Noto Sans CJK SC",sans-serif;-webkit-font-smoothing:antialiased}
+  .board{width:1760px;height:1000px;padding:36px 42px 30px;position:relative;overflow:hidden}
+  .board:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 74% 8%,#F8F2E8 0,#E9E3D8 48%,#E9E3D8 100%);opacity:.8;pointer-events:none}
+  .head{position:relative;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}
+  .kicker{font-size:10px;letter-spacing:2.2px;font-weight:700;color:var(--accent-text);margin-bottom:7px}
+  h1{font-family:Georgia,"Times New Roman","Songti SC","SimSun",serif;font-size:34px;line-height:1.08;letter-spacing:-1px;margin:0;font-weight:600}
+  .sub{font-size:12px;color:var(--muted);margin-top:8px;max-width:760px}
+  .meta{text-align:right;font-family:"Cascadia Mono","SF Mono",Consolas,monospace;font-size:10px;color:#8B8174;line-height:1.8;padding-top:4px}
+  .meta b{color:var(--ink);font-weight:600}
+  .cols{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .panel{min-width:0}
+  .panelhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .panelname{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.4px}
+  .tag{font-size:9px;font-weight:600;padding:3px 7px;border-radius:5px;letter-spacing:.2px}
+  .tag.light{background:#FBE4DD;color:#A93620;border:1px solid #F1C7BB}
+  .tag.dark{background:#202831;color:#ABA49A;border:1px solid #2C343E}
+  .panelnote{font-size:10px;color:#8B8174;margin-bottom:9px}
+  .shot{width:100%;display:block;border:1px solid #CFC6B8;border-radius:8px;box-shadow:0 14px 30px #3F2C181A}
+  .lightshot{background:var(--paper)}
+  .darkshot{background:#13171C}
+  .swatches{position:relative;display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:22px}
+  .swatch{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 9px 7px;box-shadow:0 1px 0 #2D24190A}
+  .swatch .chip{height:24px;border-radius:5px;margin-bottom:6px;border:1px solid #00000008}
+  .swatch b{display:block;font-size:9px;font-weight:700;letter-spacing:.2px}
+  .swatch code{display:block;font:9px/1.5 "Cascadia Mono","SF Mono",Consolas,monospace;color:#8B8174;margin-top:1px}
+  .notes{position:relative;display:grid;grid-template-columns:1.15fr 1fr;gap:18px;margin-top:18px}
+  .note{background:#F7F2EA;border:1px solid #D8CFC1;border-radius:10px;padding:11px 13px;font-size:10.5px;line-height:1.65;color:#5E574D}
+  .note b{color:var(--ink)}
+  .note .orange{color:var(--accent-text);font-weight:700}
+  .divider{height:1px;background:#D8CFC1;margin:20px 0 0}
+  .footer{position:absolute;left:42px;right:42px;bottom:18px;display:flex;justify-content:space-between;font-size:9px;color:#958B7D;letter-spacing:.3px}
+</style>
+</head>
+<body>
+<div class="board">
+  <header class="head">
+    <div>
+      <div class="kicker">AIRNET / THEME PROPOSAL</div>
+      <h1>浅色改用 AirPDF 的暖橙，深色保持现状。</h1>
+      <div class="sub">橙色只负责「品牌、主操作、导航选中、扫描动效」；健康分、良好、告警、异常仍用语义色，避免把“健康”和“警告”混成同一个橙。深色方案完全不动。</div>
+    </div>
+    <div class="meta"><b>v0.2.2</b> · 视觉确认稿<br>2026-11-12 · 浅色 A 方案</div>
+  </header>
+
+  <div class="cols">
+    <section class="panel">
+      <div class="panelhead"><div class="panelname">LIGHT <span class="tag light">PROPOSED</span></div><div class="panelnote">橙色操作 + 青绿语义</div></div>
+      <img class="shot lightshot" src="theme-orange-light.png" alt="Light theme with warm orange accents">
+    </section>
+    <section class="panel">
+      <div class="panelhead"><div class="panelname">DARK <span class="tag dark">UNCHANGED</span></div><div class="panelnote">保持当前深色样式</div></div>
+      <img class="shot darkshot" src="shots/01-overview-dark.png" alt="Current dark theme">
+    </section>
+  </div>
+
+  <div class="swatches">
+    <div class="swatch"><div class="chip" style="background:#E3563B"></div><b>Accent</b><code>#E3563B</code></div>
+    <div class="swatch"><div class="chip" style="background:#C9482F"></div><b>Accent hover</b><code>#C9482F</code></div>
+    <div class="swatch"><div class="chip" style="background:#FBE4DD"></div><b>Accent soft</b><code>#FBE4DD</code></div>
+    <div class="swatch"><div class="chip" style="background:#2E6F63"></div><b>Good semantic</b><code>#2E6F63</code></div>
+    <div class="swatch"><div class="chip" style="background:#A9701A"></div><b>Warn semantic</b><code>#A9701A</code></div>
+    <div class="swatch"><div class="chip" style="background:#69B3A4"></div><b>Dark accent</b><code>#69B3A4</code></div>
+  </div>
+
+  <div class="notes">
+    <div class="note"><b>为什么不全橙：</b>AirNet 的 93 分、良好、延迟正常是<span class="orange">健康语义</span>，不是主操作。若把评分环、良好 badge 也改成橙色，会与「警告/异常」的橙红挤在一起，用户反而读不出好坏。建议只把橙色用于可点击/品牌层。</div>
+    <div class="note"><b>深色保持不变：</b>深色仍用墨蓝底 + 青绿 accent <code>#69B3A4</code>，不引入橙色；切主题时只有浅色变化，视觉记忆更稳定。</div>
+  </div>
+  <div class="divider"></div>
+  <div class="footer"><span>AIRNET / WARM PAPER · TERRACOTTA</span><span>橙色来自 AirPDF 浅色 token：E3563B / C9482F / FBE4DD / A93620</span></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>AirNet theme proposal — warm orange light</title>
+<style>
+  :root{
+    --paper:#F1EEE7; --title:#F4F0E8; --toolbar:#F9F7F2; --sidebar:#EAE5DC;
+    --surface:#FBFAF7; --surface-alt:#F6F2EB; --hover:#EDE7DD;
+    --line:#DED7CB; --line-strong:#C7BEB0;
+    --ink:#1D232C; --ink-2:#69645C; --ink-3:#9A9286;
+    --accent:#E3563B; --accent-hover:#C9482F; --accent-soft:#FBE4DD; --accent-text:#A93620;
+    --good:#2E6F63; --good-soft:#E2EFEB;
+    --warn:#A9701A; --warn-soft:#F6EAD4;
+    --bad:#B23A2B; --bad-soft:#F8E2DD;
+    --mono:"Cascadia Mono","SF Mono","Consolas",monospace;
+    --serif:Georgia,"Times New Roman","Songti SC","SimSun",serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1240px;height:860px;overflow:hidden;background:var(--paper)}
+  body{
+    color:var(--ink);font:12px/1.45 Inter,"Segoe UI","Microsoft YaHei UI","Noto Sans CJK SC",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .window{width:1240px;height:860px;display:flex;flex-direction:column;background:var(--paper);border:1px solid #D7CFC2}
+  .titlebar{height:44px;flex:0 0 44px;background:var(--title);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 12px;gap:12px}
+  .brand{display:flex;align-items:center;gap:8px;width:167px;font-weight:700;font-size:15px;letter-spacing:-.2px}
+  .mark{width:24px;height:24px;border-radius:7px;background:var(--accent);display:grid;place-items:center;box-shadow:0 1px 0 #00000012}
+  .mark svg{width:16px;height:16px}
+  .chips{display:flex;align-items:center;gap:6px}
+  .chip{height:24px;border:1px solid var(--line);background:var(--surface);border-radius:13px;display:flex;align-items:center;gap:5px;padding:0 9px;color:var(--ink-2);font-size:10px}
+  .chip .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .chip.sample{background:var(--surface-alt);color:var(--ink-2)}
+  .spacer{flex:1}
+  .topactions{display:flex;align-items:center;gap:7px}
+  .btn{height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 13px;font:600 11px/1 Inter,"Segoe UI","Microsoft YaHei UI",sans-serif;white-space:nowrap}
+  .btn.primary{background:var(--accent);color:#fff;border:1px solid var(--accent);box-shadow:0 1px 0 #00000012}
+  .btn.primary svg{width:13px;height:13px}
+  .btn.ghost{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+  .btn.icon{width:30px;padding:0;border:1px solid transparent;background:transparent;color:var(--ink-2)}
+  .winbtns{display:flex;align-items:center;gap:10px;margin-left:4px;color:var(--ink-2)}
+  .winbtns span{font-size:14px;line-height:1}
+  .statusbar{height:46px;flex:0 0 46px;background:var(--toolbar);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 14px;gap:14px}
+  .status-left{display:flex;align-items:center;gap:8px;min-width:0}
+  .healthdot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px var(--good-soft)}
+  .status-title{font-size:11px;font-weight:700}
+  .status-meta{font-size:10px;color:var(--ink-2);display:flex;gap:8px;align-items:center}
+  .status-meta .sep{width:1px;height:11px;background:var(--line)}
+  .status-right{margin-left:auto;display:flex;align-items:center;gap:9px}
+  .switch{width:26px;height:15px;border-radius:9px;background:#D8D0C3;position:relative}
+  .switch:after{content:"";position:absolute;width:11px;height:11px;border-radius:50%;background:#fff;top:2px;left:2px;box-shadow:0 1px 2px #0002}
+  .status-label{font-size:10px;color:var(--ink-2)}
+  .body{flex:1;display:flex;min-height:0}
+  .sidebar{width:216px;flex:0 0 216px;background:var(--sidebar);border-right:1px solid var(--line);padding:14px 14px 10px;display:flex;flex-direction:column}
+  .kicker{font-size:8px;letter-spacing:1.6px;font-weight:700;color:var(--ink-3);margin:1px 0 9px 10px}
+  .nav{display:flex;flex-direction:column;gap:3px}
+  .navrow{height:36px;border-radius:8px;display:flex;align-items:center;gap:10px;padding:0 10px;color:var(--ink-2);font-size:12.5px}
+  .navrow svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.86}
+  .navrow.active{background:var(--accent-soft);color:var(--accent-text);font-weight:700}
+  .navrow.active svg{opacity:1;color:var(--accent)}
+  .navdivider{height:1px;background:var(--line);margin:14px 8px 12px}
+  .local{padding:0 10px;font-size:10px;line-height:1.75;color:var(--ink-2)}
+  .local b{display:block;color:var(--ink);font-size:10.5px;margin-bottom:3px}
+  .local .row{display:flex;justify-content:space-between;gap:8px}
+  .local .v{font-family:var(--mono);font-size:9.5px;color:var(--ink-2)}
+  .sidebar-bottom{margin-top:auto}
+  .lightcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 11px;display:flex;gap:9px;align-items:flex-start}
+  .leaf{width:21px;height:21px;border-radius:50%;background:var(--good-soft);display:grid;place-items:center;flex:0 0 auto}
+  .leaf svg{width:13px;height:13px;stroke:var(--good);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .lightcard b{display:block;font-size:10.5px}
+  .lightcard span{display:block;font-size:9px;color:var(--ink-2);line-height:1.5;margin-top:2px}
+  .main{flex:1;min-width:0;padding:22px 24px 18px;position:relative;overflow:hidden}
+  .eyebrow{display:flex;align-items:center;gap:7px;color:var(--accent-text);font-size:9px;letter-spacing:1.6px;font-weight:700;margin-bottom:10px}
+  .eyebrow:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  h1{font-family:var(--serif);font-size:36px;line-height:1.03;letter-spacing:-1.4px;margin:0;font-weight:600}
+  .sub{max-width:510px;margin:13px 0 0;color:var(--ink-2);font-size:12px;line-height:1.7}
+  .cta{display:flex;align-items:center;gap:10px;margin-top:17px}
+  .cta .primary{height:38px;padding:0 15px;font-size:12px;border-radius:9px}
+  .cta .primary svg{width:14px;height:14px}
+  .kbd{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:5px 8px;color:var(--ink-2);font-size:9.5px;font-family:var(--mono)}
+  .verdict{margin-top:20px;max-width:640px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;gap:14px;align-items:center;box-shadow:0 1px 0 #2D24190A}
+  .ring{width:52px;height:52px;border-radius:50%;background:conic-gradient(var(--good) 0 93%,#E6E0D4 93% 100%);display:grid;place-items:center;flex:0 0 auto;position:relative}
+  .ring:before{content:"";position:absolute;inset:5px;background:var(--surface);border-radius:50%}
+  .ring b{position:relative;font-size:17px;color:var(--good);font-weight:700;letter-spacing:-.5px}
+  .verdict .copy{flex:1;min-width:0}
+  .verdict .copy b{font-size:12px;display:block;margin-bottom:4px}
+  .verdict .copy span{font-size:10px;color:var(--ink-2);line-height:1.55}
+  .verdict .time{font-family:var(--mono);font-size:9px;color:var(--ink-3);align-self:flex-start;padding-top:2px}
+  .recent{margin-top:20px;max-width:640px}
+  .recenthead{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:1.3px;font-weight:700;color:var(--ink-2);margin-bottom:3px}
+  .recenthead span{font-weight:400;letter-spacing:.4px;color:var(--ink-3)}
+  .recentrow{display:flex;align-items:center;gap:11px;padding:9px 4px;border-bottom:1px solid var(--line)}
+  .recentrow:last-child{border-bottom:0}
+  .rink{width:28px;height:28px;border-radius:50%;border:1px solid var(--line-strong);display:grid;place-items:center;flex:0 0 auto;background:var(--surface-alt)}
+  .rink svg{width:14px;height:14px;stroke:var(--ink-2);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .rname{font-size:11px;font-weight:600;min-width:0}
+  .rsub{font-size:9px;color:var(--ink-2);margin-top:2px}
+  .rspacer{flex:1}
+  .rscore{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--good);background:var(--good-soft);padding:3px 7px;border-radius:6px}
+  .rtime{font-family:var(--mono);font-size:9px;color:var(--ink-3);width:48px;text-align:right}
+  .hero{position:absolute;right:28px;top:118px;width:350px;height:440px}
+  .hero .halo{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#E4D8C7 0,#F1EEE7 68%,#F1EEE7 70%);left:18px;top:44px;opacity:.9}
+  .paper{position:absolute;background:var(--surface);border:1px solid var(--line);border-radius:5px;box-shadow:0 14px 25px #3F2C181A}
+  .paper.p1{width:282px;height:352px;left:44px;top:78px;transform:rotate(-8deg);background:#EEE8DC}
+  .paper.p2{width:282px;height:352px;left:36px;top:62px;transform:rotate(4deg);background:#F6F2EA}
+  .paper.p3{width:282px;height:352px;left:18px;top:52px;transform:rotate(-1.5deg);padding:22px 23px}
+  .paper .tiny{font-size:7px;letter-spacing:1.6px;color:var(--ink-2);font-weight:700}
+  .paper h2{font-family:var(--serif);font-size:30px;line-height:1.05;letter-spacing:-1px;margin:44px 0 0;font-weight:600}
+  .paper .mini{display:flex;gap:12px;align-items:center;margin-top:18px}
+  .mini .ring{width:58px;height:58px}
+  .mini .ring:before{inset:5px}
+  .mini .ring b{font-size:18px}
+  .mini .mt{font-size:8.5px;color:var(--ink-2);line-height:1.45}
+  .mini .mt b{display:block;color:var(--good);font-size:11px}
+  .spark{position:relative;height:58px;margin-top:16px;border-bottom:1px solid var(--line)}
+  .spark svg{width:100%;height:100%;display:block}
+  .minirow{display:flex;justify-content:space-between;margin-top:13px;padding-top:11px;border-top:1px solid var(--line);font-size:8px;color:var(--ink-2)}
+  .minirow b{display:block;color:var(--ink);font-size:11px;font-family:var(--mono);font-weight:600;margin-bottom:2px}
+  .brandfoot{position:absolute;left:23px;bottom:18px;display:flex;align-items:center;gap:6px;font-size:8px;font-weight:700}
+  .brandfoot .mark{width:17px;height:17px;border-radius:5px}
+  .brandfoot .mark svg{width:12px;height:12px}
+  .brandfoot span{font-weight:400;color:var(--ink-3);margin-left:122px}
+  .footer{height:30px;flex:0 0 30px;background:var(--toolbar);border-top:1px solid var(--line);display:flex;align-items:center;padding:0 14px;gap:9px;color:var(--ink-2);font-size:10px}
+  .footer .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .footer .right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .footer .sep{width:1px;height:11px;background:var(--line)}
+  .footer .mono{font-family:var(--mono);font-size:9px;color:var(--ink-3)}
+  .legend{position:absolute;left:24px;bottom:16px;display:flex;gap:14px;font-size:8px;color:var(--ink-3)}
+  .legend i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+</style>
+</head>
+<body>
+  <div class="window">
+    <header class="titlebar">
+      <div class="brand">
+        <span class="mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M2 12h4l2.2-5.2L11 17l2.8-8L16 12h6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        AirNet
+      </div>
+      <div class="chips">
+        <span class="chip"><span class="dot"></span>Wi-Fi 6</span>
+        <span class="chip sample">示例数据</span>
+      </div>
+      <div class="spacer"></div>
+      <div class="topactions">
+        <button class="btn primary"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg>开始检测</button>
+        <button class="btn icon" aria-label="主题"><svg viewBox="0 0 24 24" width="15" height="15" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="winbtns"><span>—</span><span>□</span><span>✕</span></div>
+    </header>
+
+    <div class="statusbar">
+      <div class="status-left">
+        <span class="healthdot"></span>
+        <span class="status-title">网络状态优秀</span>
+        <span class="status-meta"><span class="sep"></span>上次检测 12:00:22 <span class="sep"></span>60 次采样 <span class="sep"></span>峰值 36 ms</span>
+      </div>
+      <div class="status-right">
+        <span class="status-label">自动刷新</span><span class="switch"></span>
+        <span class="sep" style="width:1px;height:14px;background:var(--line)"></span>
+        <button class="btn ghost" style="height:28px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>导出报告</button>
+      </div>
+    </div>
+
+    <div class="body">
+      <aside class="sidebar">
+        <div class="kicker">WORKSPACE</div>
+        <nav class="nav">
+          <div class="navrow active"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h10M4 19h13"/><circle cx="19" cy="12" r="1.2"/></svg>总览</div>
+          <div class="navrow"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>实时检测</div>
+          <div class="navrow"><svg viewBox="0 0 24 24"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M12 17l4-5"/><circle cx="12" cy="17" r="1"/></svg>带宽测速</div>
+          <div class="navrow"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2 2.5 2 13 0 16M12 4c-2 2.5-2 13 0 16"/></svg>网站延迟</div>
+          <div class="navrow"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 6h5a5 5 0 0 1 0 10H9"/></svg>链路路径</div>
+          <div class="navrow"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="11" cy="17" r="1.5"/></svg>设置</div>
+        </nav>
+        <div class="navdivider"></div>
+        <div class="local">
+          <b>本机链路</b>
+          <div class="row"><span>局域网</span><span class="v">192.0.2.24</span></div>
+          <div class="row"><span>网关</span><span class="v">192.0.2.1</span></div>
+          <div class="row"><span>DNS</span><span class="v">223.5.5.5</span></div>
+          <div class="row"><span>出口</span><span class="v">203.0.113.42</span></div>
+        </div>
+        <div class="sidebar-bottom">
+          <div class="lightcard">
+            <div class="leaf"><svg viewBox="0 0 24 24"><path d="M20 4C12 4 5 7 5 14c0 3 2 5 5 5 7 0 10-7 10-15Z"/><path d="M4 21c2-7 7-10 13-12"/></svg></div>
+            <div><b>轻量模式</b><span>无驱动 · 无后台常驻<br>只在检测时联网</span></div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="eyebrow">NETWORK / DIAGNOSTICS</div>
+        <h1>网络好不好，<br>三秒给答案。</h1>
+        <p class="sub">逐层测量延迟、抖动、丢包与带宽，用一句话说清问题出在路由器、运营商还是对端。</p>
+        <div class="cta">
+          <button class="btn primary"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg>开始检测</button>
+          <span class="kbd">Ctrl R</span>
+        </div>
+
+        <div class="verdict">
+          <div class="ring"><b>93</b></div>
+          <div class="copy"><b>网络状态优秀</b><span>延迟与丢包表现良好，但无线信号只有 56%，距离一远会先掉速。</span></div>
+          <span class="time">12:00:22</span>
+        </div>
+
+        <div class="recent">
+          <div class="recenthead">最近检测 <span>示例</span></div>
+          <div class="recentrow">
+            <div class="rink"><svg viewBox="0 0 24 24"><path d="M4 9a12 12 0 0 1 16 0M7 13a8 8 0 0 1 10 0M10 17a3.5 3.5 0 0 1 4 0"/><circle cx="12" cy="20" r=".8" fill="currentColor"/></svg></div>
+            <div><div class="rname">Wi-Fi 6 · AIRNET-5G · 本次检测</div><div class="rsub">延迟 23.1 ms · 丢包 0.0% · 下行 384 Mbps</div></div>
+            <div class="rspacer"></div><span class="rscore">93</span><span class="rtime">12:00:22</span>
+          </div>
+          <div class="recentrow">
+            <div class="rink"><svg viewBox="0 0 24 24"><path d="M4 9a12 12 0 0 1 16 0M7 13a8 8 0 0 1 10 0M10 17a3.5 3.5 0 0 1 4 0"/><circle cx="12" cy="20" r=".8" fill="currentColor"/></svg></div>
+            <div><div class="rname">Wi-Fi 5 GHz · 昨天晚上</div><div class="rsub">延迟 31.4 ms · 丢包 0.0% · 下行 342 Mbps</div></div>
+            <div class="rspacer"></div><span class="rscore" style="color:var(--warn);background:var(--warn-soft)">88</span><span class="rtime">20:42</span>
+          </div>
+          <div class="recentrow">
+            <div class="rink"><svg viewBox="0 0 24 24"><path d="M5 8h14v10H5zM8 8V5h8v3M3 12h18"/></svg></div>
+            <div><div class="rname">有线以太网 · 11 月 9 日</div><div class="rsub">延迟 9.8 ms · 丢包 0.0% · 下行 941 Mbps</div></div>
+            <div class="rspacer"></div><span class="rscore">97</span><span class="rtime">10:06</span>
+          </div>
+        </div>
+
+        <div class="hero">
+          <div class="halo"></div>
+          <div class="paper p1"></div>
+          <div class="paper p2"></div>
+          <div class="paper p3">
+            <div class="tiny">AIRNET / DIAGNOSTIC</div>
+            <h2>Know your<br>signal.</h2>
+            <div class="mini">
+              <div class="ring"><b>93</b></div>
+              <div class="mt">健康分<b>优秀</b></div>
+            </div>
+            <div class="spark">
+              <svg viewBox="0 0 248 54" preserveAspectRatio="none">
+                <path d="M0 37 L12 34 L24 38 L36 30 L48 33 L60 28 L72 31 L84 25 L96 29 L108 23 L120 27 L132 20 L144 26 L156 18 L168 23 L180 14 L192 19 L204 12 L216 17 L228 10 L240 14 L248 9" fill="none" stroke="#2E6F63" stroke-width="1.6"/>
+                <path d="M0 37 L12 34 L24 38 L36 30 L48 33 L60 28 L72 31 L84 25 L96 29 L108 23 L120 27 L132 20 L144 26 L156 18 L168 23 L180 14 L192 19 L204 12 L216 17 L228 10 L240 14 L248 9 L248 54 L0 54Z" fill="#2E6F63" opacity=".08"/>
+              </svg>
+            </div>
+            <div class="minirow">
+              <div><b>23.1<span style="font-size:7px;font-weight:400"> ms</span></b>延迟</div>
+              <div><b>0.0<span style="font-size:7px;font-weight:400"> %</span></b>丢包</div>
+              <div><b>2.2<span style="font-size:7px;font-weight:400"> ms</span></b>抖动</div>
+            </div>
+            <div class="brandfoot"><span class="mark" style="background:var(--good)"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12h4l2.2-5.2L11 17l2.8-8L16 12h6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>AirNet <span>2026</span></div>
+          </div>
+        </div>
+        <div class="legend"><span><i style="background:var(--accent)"></i>操作 / 导航 / 品牌</span><span><i style="background:var(--good)"></i>健康语义</span><span><i style="background:var(--warn)"></i>告警语义</span></div>
+      </main>
+    </div>
+
+    <footer class="footer">
+      <span class="dot"></span><span>示例数据 · 点击「开始检测」运行真实测量</span>
+      <div class="right"><span>延迟 23.1 ms</span><span class="sep"></span><span>丢包 0.0%</span><span class="sep"></span><span>示例数据</span><span class="sep"></span><span class="mono">AIRNET 0.2.2</span></div>
+    </footer>
+  </div>
+</body>
+</html>

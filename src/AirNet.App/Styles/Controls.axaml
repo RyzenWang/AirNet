@@ -557,13 +557,13 @@
     <Setter Property="Height" Value="128" />
   </Style>
   <Style Selector="controls|Sparkline">
-    <Setter Property="Stroke" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="Stroke" Value="{DynamicResource GoodBrush}" />
     <Setter Property="Fill" Value="{DynamicResource ChartFillBrush}" />
     <Setter Property="StrokeThickness" Value="2" />
   </Style>
   <Style Selector="controls|MeterBar">
     <Setter Property="TrackBrush" Value="{DynamicResource TrackBrush}" />
-    <Setter Property="FillBrush" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="FillBrush" Value="{DynamicResource GoodBrush}" />
   </Style>
   <Style Selector="controls|MeterBar.spike">
     <Setter Property="FillBrush" Value="{DynamicResource WarnBrush}" />

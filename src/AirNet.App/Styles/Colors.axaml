@@ -2,9 +2,9 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <!--
     AirNet shares AirPDF's warm "paper" surfaces, type scale and radii so the two products read
-    as one family. What changes is the signal colour: teal becomes the primary accent because
-    healthy connectivity should look calm, and AirPDF's terracotta is demoted to the alert tone,
-    so a degrading link literally takes on the sibling product's brand colour.
+    as one family. The light theme uses AirPDF's terracotta for brand, primary action, selected
+    navigation and busy motion; health and data charts stay on the teal semantic colour so a
+    warm action never reads as a warning. The dark theme keeps its existing teal accent.
   -->
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Light">
@@ -24,10 +24,10 @@
       <SolidColorBrush x:Key="TextTertiaryBrush" Color="#9A9286" />
       <SolidColorBrush x:Key="InverseTextBrush" Color="#FFFFFF" />
 
-      <SolidColorBrush x:Key="AccentBrush" Color="#2E6F63" />
-      <SolidColorBrush x:Key="AccentHoverBrush" Color="#245A50" />
-      <SolidColorBrush x:Key="AccentSoftBrush" Color="#E2EFEB" />
-      <SolidColorBrush x:Key="AccentTextBrush" Color="#1F5A50" />
+      <SolidColorBrush x:Key="AccentBrush" Color="#E3563B" />
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="#C9482F" />
+      <SolidColorBrush x:Key="AccentSoftBrush" Color="#FBE4DD" />
+      <SolidColorBrush x:Key="AccentTextBrush" Color="#A93620" />
       <SolidColorBrush x:Key="AccentOnBrush" Color="#FFFFFF" />
 
       <SolidColorBrush x:Key="GoodBrush" Color="#2E6F63" />
@@ -57,8 +57,8 @@
       </LinearGradientBrush>
 
       <!-- Fluent bridge keys, so stock controls inherit the palette -->
-      <Color x:Key="SystemAccentColor">#2E6F63</Color>
-      <SolidColorBrush x:Key="SystemAccentColorBrush" Color="#2E6F63" />
+      <Color x:Key="SystemAccentColor">#E3563B</Color>
+      <SolidColorBrush x:Key="SystemAccentColorBrush" Color="#E3563B" />
       <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#1D232C" />
       <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="#69645C" />
       <SolidColorBrush x:Key="TextFillColorTertiaryBrush" Color="#9A9286" />
@@ -67,7 +67,7 @@
       <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FFFFFF" />
       <SolidColorBrush x:Key="TextControlBorderBrush" Color="#DED7CB" />
       <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#C7BEB0" />
-      <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#2E6F63" />
+      <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#E3563B" />
       <SolidColorBrush x:Key="TextControlForeground" Color="#1D232C" />
     </ResourceDictionary>
 
