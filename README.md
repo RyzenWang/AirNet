@@ -78,7 +78,7 @@ macOS 包未签名/未公证；Linux 需要 X11 或 Wayland（XWayland）及常�
 `--selftest` 的输出示例（本机，有线 1000M）：
 
 ```
-interface=以太网      local=192.168.1.2   gateway=192.168.1.1
+interface=以太网      local=192.0.2.10   gateway=192.0.2.1
 egress=203.0.113.42  hasBandwidth=False
 probeMode=Tcp         avg=38.6  p95=41.9  jitter=2.6  loss=0  sent=15  received=15
 dnsLookupMs=15.8  tcpMs=5.1  tlsMs=53.8  ttfbMs=8.5   timingOk=True

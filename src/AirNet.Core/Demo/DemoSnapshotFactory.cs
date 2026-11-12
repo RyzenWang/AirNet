@@ -26,12 +26,12 @@ public static class DemoSnapshotFactory
             Ssid: "AIRNET-5G",
             LinkSpeedMbps: 1201,
             LocalAddress: "192.0.2.24",
-            Gateway: "192.168.1.1",
+            Gateway: "192.0.2.1",
             DnsServer: "223.5.5.5");
 
         IReadOnlyList<HopReading> hops =
         [
-            new("家庭网关", "192.168.1.1", 1.8, true),
+            new("家庭网关", "192.0.2.1", 1.8, true),
             new("骨干节点", "198.51.100.9", 9.6, true),
             new("参考主机", ReferenceHost, Math.Round(stats.MedianMs, 1), true, IsTerminal: true),
         ];
