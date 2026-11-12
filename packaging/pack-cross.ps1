@@ -1,4 +1,4 @@
-﻿﻿﻿# Builds portable macOS and Linux assets from the same source as the Windows zip.
+﻿# Builds portable macOS and Linux assets from the same source as the Windows zip.
 # Cross-publishing works from Windows because every runtime pack is self-contained.
 #
 #   pwsh packaging/pack-cross.ps1
