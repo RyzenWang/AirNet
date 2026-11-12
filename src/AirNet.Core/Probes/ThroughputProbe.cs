@@ -48,14 +48,18 @@ public static class ThroughputProbe
 
                 total += read;
             }
-
-            stopwatch.Stop();
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException)
+        catch (Exception ex) when (ex is HttpRequestException or IOException
+                                       or System.Net.Sockets.SocketException
+                                       or TaskCanceledException or OperationCanceledException)
         {
-            return 0;
+            // A connection dropped mid-transfer still tells us how fast those bytes arrived,
+            // which beats discarding the sample and showing 0.
+            stopwatch.Stop();
+            return SpeedMath.Mbps(total, stopwatch.Elapsed);
         }
 
+        stopwatch.Stop();
         return SpeedMath.Mbps(total, stopwatch.Elapsed);
     }
 
@@ -85,8 +89,11 @@ public static class ThroughputProbe
             sent = content.BytesWritten;
             stopwatch.Stop();
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException)
+        catch (Exception ex) when (ex is HttpRequestException or IOException
+                                       or System.Net.Sockets.SocketException
+                                       or TaskCanceledException or OperationCanceledException)
         {
+            // Upload cannot be salvaged from a partial body: the server rejects it.
             return 0;
         }
 
