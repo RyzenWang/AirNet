@@ -3,6 +3,19 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
+## [Unreleased]
+
+### Verified
+
+- Wi-Fi radio sampling confirmed on a real Windows wireless adapter (2026-11-12):
+  SSID, signal quality, negotiated rate and PHY generation all come through
+  `wlanapi`. This closes the last "written but never run on hardware" path in the
+  probe layer.
+- Still outstanding on that path: dBm is an estimate (`quality / 2 - 100`) rather
+  than a scanned RSSI, neighbour/channel advice is not implemented, and the macOS
+  (CoreWLAN) and Linux (`/proc/net/wireless`) radio branches do not exist — those
+  platforms report "wireless" with no numbers.
+
 ## [0.2.3] - 2026-11-12
 
 ### Changed
