@@ -52,6 +52,21 @@ This creates portable assets under `artifacts/packages`:
 No setup/installer is built. Release assets are attached by the tag CI workflow; do not
 upload local artifacts by hand unless the workflow failed or you are repairing a release.
 
+## Releasing
+
+1. Bump `<Version>` in `src/AirNet.App/AirNet.App.csproj`, plus `VersionText`
+   (`SettingsViewModel`) and the footer string in `ShellView.axaml` — all three are
+   separate literals today.
+2. Move the `[Unreleased]` CHANGELOG entries into `## [x.y.z] - yyyy-mm-dd`.
+3. Re-render screenshots (`AirNet.exe --export docs/shots --scale 1`) — the status bar
+   carries the version, so they go stale the moment it changes.
+4. Tag `vX.Y.Z` and push the tag; CI builds all four platform archives and attaches
+   them to the release.
+
+The release body comes from `docs/release/<tag>.md` when that file exists, otherwise it
+is extracted from the matching CHANGELOG section. Write the override when the audience
+needs a different tone from the changelog.
+
 ## Code style
 
 - Keep `AirNet.Core` free of Avalonia and UI dependencies.

@@ -166,11 +166,47 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      # Hand-written notes win; otherwise the body comes from CHANGELOG.md so a tag can never
+      # publish an empty page. A missing section is not fatal.
+      - name: Extract release notes
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.TrimStart('v')
+          $override = "docs/release/$tag.md"
+
+          if (Test-Path $override) {
+            Copy-Item $override release-notes.md
+            Write-Host "release notes: hand-written ($override)"
+          } else {
+            $lines = Get-Content CHANGELOG.md
+            $start = -1
+            for ($i = 0; $i -lt $lines.Count; $i++) {
+              if ($lines[$i] -match "^##\s+\[$([regex]::Escape($version))\]") { $start = $i; break }
+            }
+
+            $notes = @()
+            if ($start -ge 0) {
+              for ($i = $start + 1; $i -lt $lines.Count; $i++) {
+                if ($lines[$i] -match '^##\s+\[') { break }
+                $notes += $lines[$i]
+              }
+            }
+
+            $body = "## AirNet $version`n" + ($notes -join "`n").TrimEnd()
+            Set-Content -Path release-notes.md -Value $body -Encoding utf8
+            Write-Host "release notes: extracted from CHANGELOG.md"
+          }
+
+          Write-Host "release notes: $((Get-Item release-notes.md).Length) bytes"
+
       # Only portable archives are attached; no setup/installer is produced or uploaded.
       - name: Attach portable assets to tag release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v3
         with:
+          body_path: release-notes.md
           files: |
             artifacts/packages/AirNet-*.zip
             artifacts/packages/AirNet-*.tar.gz
