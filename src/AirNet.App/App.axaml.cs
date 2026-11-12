@@ -200,6 +200,8 @@ public partial class App : Application
             report.AppendLine($"samples={snapshot.LatencySeries.Count}");
             report.AppendLine($"dualStack={snapshot.DualStack.Verdict} v4={snapshot.DualStack.V4Text} "
                               + $"v6={snapshot.DualStack.V6Text} note={snapshot.DualStack.Note}");
+            report.AppendLine($"interference={snapshot.Interference.ChipText} proxy={snapshot.Interference.ProxyText} "
+                              + $"tunnel={snapshot.Interference.TunnelText}");
 
             // The store must survive trimming: source-generated JSON is the only reason it does.
             var store = new Core.History.HistoryStore(

@@ -39,6 +39,7 @@ public static class ReportBuilder
 
         AppendHeader(html, captured);
         AppendHero(html, snapshot, maskAddresses);
+        AppendInterference(html, snapshot);
         AppendMetrics(html, snapshot);
         AppendChart(html, snapshot);
         AppendFindings(html, snapshot);
@@ -51,6 +52,24 @@ public static class ReportBuilder
         AppendFooter(html, maskAddresses);
         html.AppendLine("</main></body></html>");
         return html.ToString();
+    }
+
+    /// <summary>
+    /// A proxy or VPN changes what the numbers mean, so it belongs above the measurements rather
+    /// than in a footnote.
+    /// </summary>
+    private static void AppendInterference(StringBuilder html, NetworkSnapshot snapshot)
+    {
+        if (!snapshot.Interference.IsInterfering)
+        {
+            return;
+        }
+
+        html.AppendLine("<section class=\"card\">");
+        html.AppendLine(
+            $"<p class=\"lead\"><strong>{Encode(snapshot.Interference.ChipText)}</strong> · "
+            + $"{Encode(snapshot.Interference.Note)}</p>");
+        html.AppendLine("</section>");
     }
 
     private static void AppendHeader(StringBuilder html, DateTimeOffset captured)

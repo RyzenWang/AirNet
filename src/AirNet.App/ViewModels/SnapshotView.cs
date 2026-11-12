@@ -178,6 +178,11 @@ public sealed class SnapshotView
     public string DualStackNote => Source.DualStack.Note;
     public bool IsV6Slower => Source.DualStack.IsV6Slower;
 
+    // Proxy / VPN ---------------------------------------------------------
+    public bool IsInterfering => Source.Interference.IsInterfering;
+    public string InterferenceChip => Source.Interference.ChipText;
+    public string InterferenceNote => Source.Interference.Note;
+
     // App-layer breakdown -------------------------------------------------
     public bool HasTiming => Source.Timing.Succeeded;
     public string TimingHostText => Source.Timing.Host;

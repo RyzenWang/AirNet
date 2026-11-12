@@ -79,6 +79,7 @@ public sealed class MeasurementRunner
     {
         progress?.Report(new ScanProgress("识别网卡", 0.05));
         var nic = InterfaceInspector.Inspect();
+        var interference = InterferenceProbe.Detect();
 
         var icmpLive = new List<double?>(IcmpSampleCount);
         var tcpLive = new List<double?>(TcpSampleCount);
@@ -152,7 +153,7 @@ public sealed class MeasurementRunner
         progress?.Report(new ScanProgress("评分与归因", 0.96));
 
         var measurement = new MeasurementResult(
-            nic, stats, mode, diagnostics, timing, dualStack, series, hops, egress, DateTimeOffset.Now);
+            nic, stats, mode, diagnostics, timing, dualStack, interference, series, hops, egress, DateTimeOffset.Now);
 
         var snapshot = DiagnosisEngine.Evaluate(measurement, fallbackDownloadMbps, fallbackUploadMbps);
         progress?.Report(new ScanProgress("完成", 1.0));

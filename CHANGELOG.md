@@ -7,6 +7,19 @@ project uses semantic versioning for release tags.
 
 ### Added
 
+- Proxy and VPN detection. The scan now reports when the measurements pass through a
+  system proxy or a tunnel adapter, because the two distort different things: a proxy
+  only affects the HTTP(S) probes (bandwidth, egress, site latency), while a tunnel
+  carries everything including raw TCP timing. The distinction is in the wording, not
+  just the badge — a proxy is one Info line, a VPN is a Warn.
+- Upload/downlink asymmetry rule. When the downlink is fast but the uplink is under
+  10 Mbps (ratio at least 5x), the diagnosis says which activities will suffer first:
+  meetings, cloud backup and large uploads.
+- `interference=` line in `--selftest`, a warning chip in the health card, and a
+  banner block at the top of the HTML report.
+
+### Added (earlier in this cycle)
+
 - Upload bandwidth measurement. The speed page now times both directions: the
   downlink is bounded by a 4s budget rather than a byte count, and the uplink
   streams 4MB from a single buffer. Either direction can fail on its own and the

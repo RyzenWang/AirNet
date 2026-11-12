@@ -63,6 +63,9 @@ public static class DemoSnapshotFactory
             diagnostics,
             timing,
             dualStack,
+            // The sample deliberately shows no proxy/VPN so the default screenshots stay clean;
+            // the branch is covered by unit tests.
+            InterferenceInfo.None,
             series,
             hops,
             EgressAddress: "203.0.113.42",

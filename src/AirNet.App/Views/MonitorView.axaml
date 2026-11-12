@@ -142,6 +142,17 @@
                   <Border Classes="pill" Padding="8,3">
                     <TextBlock Text="{Binding View.EgressChip}" Classes="mono" FontSize="10" />
                   </Border>
+                  <!-- A proxy or VPN changes what the numbers mean; say so next to them. -->
+                  <Border Classes="pill"
+                          Padding="8,3"
+                          Background="{DynamicResource WarnSoftBrush}"
+                          BorderBrush="{DynamicResource WarnBrush}"
+                          IsVisible="{Binding View.IsInterfering}">
+                    <TextBlock Text="{Binding View.InterferenceChip}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource WarnBrush}" />
+                  </Border>
                 </StackPanel>
               </StackPanel>
             </Grid>

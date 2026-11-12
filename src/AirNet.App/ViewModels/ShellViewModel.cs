@@ -366,6 +366,7 @@ public partial class ShellViewModel : ObservableObject
                     Snapshot.Diagnostics,
                     Snapshot.Timing,
                     Snapshot.DualStack,
+                    Snapshot.Interference,
                     Snapshot.LatencySeries,
                     Snapshot.Hops,
                     Snapshot.EgressAddress,

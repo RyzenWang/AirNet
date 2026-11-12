@@ -18,7 +18,7 @@ public static class DiagnosisEngine
         var score = Score(latency, raw.Interface, raw.Timing);
         var grade = GradeOf(score);
         var scenarios = Scenarios(latency, downloadMbps, uploadMbps);
-        var findings = Findings(latency, raw.Interface, raw.Timing, raw.Diagnostics, raw.DualStack);
+        var findings = Findings(latency, raw.Interface, raw.Timing, raw.Diagnostics, raw.DualStack, raw.Interference, downloadMbps, uploadMbps);
 
         return new NetworkSnapshot(
             score,
@@ -32,6 +32,7 @@ public static class DiagnosisEngine
             raw.ProbeMode,
             raw.Timing,
             raw.DualStack,
+            raw.Interference,
             raw.LatencySeries,
             raw.Hops,
             scenarios,
@@ -115,7 +116,10 @@ public static class DiagnosisEngine
         InterfaceInfo nic,
         LayerTiming timing,
         ProbeDiagnostics diagnostics,
-        DualStackResult dualStack)
+        DualStackResult dualStack,
+        InterferenceInfo interference,
+        double downloadMbps,
+        double uploadMbps)
     {
         var list = new List<Finding>();
 
@@ -183,6 +187,28 @@ public static class DiagnosisEngine
         else if (!string.IsNullOrEmpty(timing.FailureNote))
         {
             list.Add(new Finding(Severity.Info, "首包分解不可用", timing.FailureNote));
+        }
+
+        // A VPN carries every probe, so the numbers describe its exit, not the carrier.
+        // A plain HTTP proxy only touches the HTTP-based probes, which is a narrower caveat.
+        if (interference.TunnelPresent)
+        {
+            list.Add(new Finding(Severity.Warn, "测量经过 VPN",
+                $"{interference.TunnelText} 处于连接状态。{interference.Note}", "查看建议"));
+        }
+        else if (interference.ProxyConfigured)
+        {
+            list.Add(new Finding(Severity.Info, "测量经过系统代理",
+                $"{interference.ProxyText}。{interference.Note}"));
+        }
+
+        // Both directions are measured by a separate action, so this only appears once a speed
+        // test has run; the ratio is what breaks meetings long before the downlink looks bad.
+        if (downloadMbps > 0 && uploadMbps > 0 && uploadMbps < 10 && downloadMbps >= 50)
+        {
+            list.Add(new Finding(Severity.Warn, $"上行只有 {uploadMbps:0.#} Mbps",
+                $"下行 {downloadMbps:0.#} Mbps 是上行的 {downloadMbps / uploadMbps:0} 倍。"
+                + "视频会议、大文件回传和云端备份都会先卡在这一侧。", "查看建议"));
         }
 
         // Only speak up when the IPv6 path is actually worse; "IPv6 unavailable" is normal and

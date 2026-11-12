@@ -58,10 +58,67 @@ public sealed class DiagnosisEngineTests
         Assert.Equal(100, meeting.Score);
     }
 
+    [Fact]
+    public void Lopsided_bandwidth_is_reported_on_the_upload_side()
+    {
+        var snapshot = DiagnosisEngine.Evaluate(
+            Measurement(averageMs: 20, jitterMs: 1, lossPercent: 0), downloadMbps: 400, uploadMbps: 5);
+
+        var finding = Assert.Single(snapshot.Findings, f => f.Title.Contains("上行"));
+        Assert.Equal(Severity.Warn, finding.Severity);
+        Assert.Contains("视频会议", finding.Detail);
+    }
+
+    [Fact]
+    public void Balanced_bandwidth_produces_no_asymmetry_finding()
+    {
+        var snapshot = DiagnosisEngine.Evaluate(
+            Measurement(averageMs: 20, jitterMs: 1, lossPercent: 0), downloadMbps: 300, uploadMbps: 90);
+
+        Assert.DoesNotContain(snapshot.Findings, f => f.Title.Contains("上行"));
+    }
+
+    [Fact]
+    public void A_vpn_is_called_out_before_the_numbers_are_read()
+    {
+        var snapshot = DiagnosisEngine.Evaluate(
+            Measurement(
+                averageMs: 20,
+                jitterMs: 1,
+                lossPercent: 0,
+                interference: InterferenceAnalyzer.Evaluate(false, null, ["WireGuard Tunnel"])),
+            downloadMbps: 0,
+            uploadMbps: 0);
+
+        var finding = Assert.Single(snapshot.Findings, f => f.Title.Contains("VPN"));
+        Assert.Equal(Severity.Warn, finding.Severity);
+        Assert.Contains("WireGuard", finding.Detail);
+    }
+
+    [Fact]
+    public void A_plain_proxy_is_only_an_information_line()
+    {
+        var snapshot = DiagnosisEngine.Evaluate(
+            Measurement(
+                averageMs: 20,
+                jitterMs: 1,
+                lossPercent: 0,
+                interference: InterferenceAnalyzer.Evaluate(true, "127.0.0.1:7890", null)),
+            downloadMbps: 0,
+            uploadMbps: 0);
+
+        var finding = Assert.Single(snapshot.Findings, f => f.Title.Contains("代理"));
+        Assert.Equal(Severity.Info, finding.Severity);
+    }
+
     private static NetworkSnapshot Evaluate(MeasurementResult raw, double down) =>
         DiagnosisEngine.Evaluate(raw, down, 0);
 
-    private static MeasurementResult Measurement(double averageMs, double jitterMs, double lossPercent)
+    private static MeasurementResult Measurement(
+        double averageMs,
+        double jitterMs,
+        double lossPercent,
+        InterferenceInfo? interference = null)
     {
         var nic = new InterfaceInfo(
             "Ethernet", "有线以太网", false, null, null, string.Empty,
@@ -85,6 +142,7 @@ public sealed class DiagnosisEngineTests
             new ProbeDiagnostics(true, true, 10, received, 10, received),
             timing,
             DualStackResult.Unavailable,
+            interference ?? InterferenceInfo.None,
             [averageMs],
             [new HopReading("家庭网关", "192.168.1.1", 1.5, true)],
             "203.0.113.42",
