@@ -1,7 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <!-- Line icons adapted from Lucide (ISC License), drawn on a 24x24 grid at 1.8 stroke. -->
-  <StreamGeometry x:Key="IconPlane">M22 2L2 10.5l7.3 2.2L12 21l4-6.1L22 2Z</StreamGeometry>
+  <StreamGeometry x:Key="IconPulse">M2 13H6L8 6.5L11.5 19L14 11.5H20</StreamGeometry>
   <StreamGeometry x:Key="IconActivity">M22 12h-4l-3 9L9 3l-3 9H2</StreamGeometry>
   <StreamGeometry x:Key="IconWifi">M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01</StreamGeometry>
   <StreamGeometry x:Key="IconGlobe">M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z</StreamGeometry>

@@ -309,13 +309,20 @@
               <Grid Grid.Row="5" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Bottom" Margin="0,10,0,0">
                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                   <Border Width="18" Height="18" CornerRadius="5" Background="#2E6F63">
-                    <Path Data="{StaticResource IconPlane}"
-                          Fill="White"
-                          Width="10"
-                          Height="10"
-                          Stretch="Uniform"
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Center" />
+                    <Viewbox Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+                      <Canvas Width="24" Height="24">
+                        <Path Data="{StaticResource IconPulse}"
+                              Stroke="White"
+                              StrokeThickness="1.8"
+                              StrokeLineCap="Round"
+                              StrokeJoin="Round" />
+                        <Ellipse Canvas.Left="18.8"
+                                 Canvas.Top="10.3"
+                                 Width="2.4"
+                                 Height="2.4"
+                                 Fill="#F2C879" />
+                      </Canvas>
+                    </Viewbox>
                   </Border>
                   <TextBlock Text="AirNet" FontSize="10" FontWeight="Bold" Foreground="#3B352E" VerticalAlignment="Center" />
                 </StackPanel>

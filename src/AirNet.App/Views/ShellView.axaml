@@ -17,13 +17,20 @@
       <Grid ColumnDefinitions="Auto,Auto,*,Auto">
         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
           <Border Width="28" Height="28" CornerRadius="7" Background="{DynamicResource AccentBrush}">
-            <Path Data="{StaticResource IconPlane}"
-                  Fill="White"
-                  Width="15"
-                  Height="15"
-                  Stretch="Uniform"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center" />
+            <Viewbox Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Canvas Width="24" Height="24">
+                <Path Data="{StaticResource IconPulse}"
+                      Stroke="White"
+                      StrokeThickness="1.8"
+                      StrokeLineCap="Round"
+                      StrokeJoin="Round" />
+                <Ellipse Canvas.Left="18.4"
+                         Canvas.Top="9.9"
+                         Width="3.2"
+                         Height="3.2"
+                         Fill="#F2C879" />
+              </Canvas>
+            </Viewbox>
           </Border>
           <TextBlock Text="AirNet"
                      FontSize="14.5"

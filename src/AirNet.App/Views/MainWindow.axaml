@@ -3,6 +3,7 @@
         xmlns:views="using:AirNet.App.Views"
         x:Class="AirNet.App.Views.MainWindow"
         Title="AirNet"
+        Icon="/Assets/AirNet.ico"
         Width="1240"
         Height="860"
         MinWidth="1040"

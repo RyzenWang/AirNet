@@ -5,6 +5,7 @@
     <RootNamespace>AirNet.App</RootNamespace>
     <AssemblyName>AirNet</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\AirNet.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <Version>0.2.1</Version>
     <AssemblyTitle>AirNet</AssemblyTitle>
