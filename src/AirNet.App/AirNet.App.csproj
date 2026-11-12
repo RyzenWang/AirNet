@@ -7,7 +7,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\AirNet.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <Version>0.2.2</Version>
+    <Version>0.2.3</Version>
     <AssemblyTitle>AirNet</AssemblyTitle>
     <Product>AirNet</Product>
     <Description>A feather-light network diagnostics console built with .NET and Avalonia.</Description>

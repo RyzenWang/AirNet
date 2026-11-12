@@ -3,7 +3,7 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
-## [Unreleased]
+## [0.2.3] - 2026-11-12
 
 ### Changed
 
@@ -11,6 +11,7 @@ project uses semantic versioning for release tags.
   primary actions, navigation selection and busy motion. Good status, score rings,
   charts, and latency segment bars stay on the teal semantic colour; dark theme is
   unchanged.
+- Version and footer now report 0.2.3; all screenshots regenerated for the A theme.
 
 ## [0.2.2] - 2026-11-12
 

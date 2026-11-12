@@ -55,7 +55,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _dnsBackupText = string.Empty;
 
-    public string VersionText => "0.2.2 · M2";
+    public string VersionText => "0.2.3 · M2";
     public string RuntimeText => ".NET 10 · Avalonia 11.3 · Windows / macOS / Linux";
     public string FootprintText => "R2R 单文件 · 无驱动 · 无后台常驻";
     public string PrivacyText =>
