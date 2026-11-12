@@ -40,6 +40,7 @@ public class ScanSweep : Control
 
         IsHitTestVisible = false;
         _timer = new DispatcherTimer(TimeSpan.FromMilliseconds(16), DispatcherPriority.Render, OnTick);
+        _timer.Stop();
     }
 
     public bool IsActive

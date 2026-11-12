@@ -102,7 +102,7 @@ jobs:
           if (-not $process.WaitForExit(300000)) { $process.Kill(); throw "export timed out" }
           $count = (Get-ChildItem "$out/*.png" -ErrorAction SilentlyContinue).Count
           Write-Host "screenshots: $count"
-          if ($count -lt 10) { throw "expected 10 screenshots, got $count" }
+          if ($count -lt 12) { throw "expected 12 screenshots, got $count" }
 
       - name: Upload artifacts
         if: always()

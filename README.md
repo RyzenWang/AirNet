@@ -8,33 +8,37 @@
 
 ![实时检测（浅色）](docs/shots/02-monitor-light.png)
 
-![链路路径（浅色）](docs/shots/04-path-light.png)
+![网站延迟（浅色）](docs/shots/04-sites-light.png)
+
+![链路路径（浅色）](docs/shots/05-path-light.png)
 
 ---
 
 ## 当前状态
 
-**M2 已完成**：五页界面、评分与诊断、真实探测（含亚毫秒抖动）、三段归因、逐跳路径、MTU、
-报告导出、一键 DNS（含还原）、历史落盘、出口 IP、设置持久化、快捷键、单元测试、裁剪单文件发布、CI 都已跑通。
+**M2 已完成**：六页界面、评分与诊断、真实探测（含亚毫秒抖动）、三段归因、逐跳路径、MTU、
+网站延迟（含自定义站点）、报告导出、一键 DNS（含还原）、历史落盘、出口 IP、设置持久化、快捷键、
+单元测试、裁剪单文件发布、CI 都已跑通。
 
 | 部分 | 状态 |
 | --- | --- |
-| 视觉系统（五页 × 深浅色） | ✅ M0/M2 |
+| 视觉系统（六页 × 深浅色） | ✅ M0/M2 |
 | 真实探测：ICMP 丢包 / TCP 计时 / DNS·TCP·TLS·TTFB | ✅ M1 |
 | 亚毫秒抖动（`Stopwatch` 计时 TCP 握手） | ✅ 本机实测 2.6ms（原先恒为 0） |
 | Wi-Fi 信号 / 速率 / PHY（wlanapi） | ✅ 代码完成，未在真实无线网卡上验证 |
 | 评分、场景估计、规则诊断 | ✅ M1 |
 | 历史（JSONL，30 天，裁剪安全） | ✅ M1 |
 | 带宽测速（单流下行） | 🟡 只测下行；未测速显示"未测速"，不写假值 |
+| **网站延迟**（11 默认 + 自定义） | ✅ 首字节四段分解，3 次中位数；自定义站点落 `sites.json` |
 | **出口 IP**（Cloudflare / 3322，best-effort） | ✅ 被拦截时显示"未获取"，不阻塞扫描 |
 | **三段归因**（局域网 / 运营商 / 对端） | ✅ M2 粗定位 + 逐跳定位 |
 | **逐跳路径**（系统 traceroute，本地化无关解析） | ✅ M2 实测 14 跳 / 17s；目标未响应时不误判对端 |
 | **MTU**（DF 二分） | ✅ M2 实测 1480（PPPoE） |
 | **报告导出**（自包含 HTML，可打印 PDF） | ✅ M2 7.8KB / 零脚本 / 地址掩码 |
 | **一键 DNS + 还原**（Windows 提权） | ✅ M2 命令先展示，还原记录落盘 |
-| **单元测试**（xUnit） | ✅ 39 项：统计 / 分档 / 解析 / 掩码 / 历史 |
+| **单元测试**（xUnit） | ✅ 59 项：统计 / 分档 / 解析 / 掩码 / 历史 / 站点目录与自定义站点 |
 | **设置**（持久化 / 自动刷新 / 键盘快捷键） | ✅ M2，写入 `settings.json`；60s 自动刷新仅在窗口可见时执行 |
-| 裁剪 + R2R 单文件发布 | ✅ 51.9MB / 0.9–2.3s / ~217MB（本机 2026-11 复测） |
+| 裁剪 + R2R 单文件发布 | ✅ 52.1MB / 0.9–2.3s / ~217MB（本机 2026-11 复测） |
 | CI（构建 + 单元测试 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | **动效**（扫描/测速/追踪扫描带、实时读数、环/条填充、数字滚动、曲线扫入、页面淡入） | ✅ M2，截图模式可关闭 |
 | 双栈、邻区扫描、游戏/会议模式 | ⬜ 见 [技术方案](docs/TECH_PLAN.md) |
@@ -85,21 +89,24 @@ src/AirNet.Core/         探测与诊断内核（无 UI 依赖）
                          ApplicationTimingProbe · TraceProbe · MtuProbe · WlanRadio · MeasurementRunner
   Diagnostics/           NetworkSnapshot · LatencyAnalyzer · DiagnosisEngine
                          AttributionEngine（三段归因）· PathAnalysis（逐跳/MTU 模型）
+  Sites/                 SiteCatalog（11 站）· CustomSiteStore（sites.json）· SiteLatencyProbe
   History/               JSONL 历史（裁剪安全，源生成序列化）
   Demo/                  确定性样例数据
 src/AirNet.App/          Avalonia 应用
   Styles/                Colors(token) · Icons · Controls(字号/按钮/卡片/开关)
-  Controls/              ScoreRing · Sparkline · MeterBar · SignalBars（全部自绘）
-  Views/                 ShellView + Overview / Monitor / Speed / Path / Settings
-  ViewModels/            Shell（导航与扫描生命周期）· 五个页面 VM · SnapshotView（展示投影）
+  Controls/              ScoreRing · Sparkline · MeterBar · SignalBars · ScanSweep（自绘）
+  Views/                 ShellView + Overview / Monitor / Speed / Sites / Path / Settings
+  ViewModels/            Shell（导航与扫描生命周期）· 六个页面 VM · SnapshotView（展示投影）
+  Services/              SettingsStore（settings.json）
 packaging/publish.ps1    裁剪 + R2R 发布，并打印体积/启动/内存
-tests/AirNet.Core.Tests/  xUnit：统计、分档、traceroute 解析、掩码、历史、DNS 建议
+tests/AirNet.Core.Tests/  xUnit：统计、分档、traceroute 解析、掩码、历史、站点目录/自定义站点
 docs/
   DESIGN.md              视觉规范：色板、字号、组件、图表、动效、无障碍
   TECH_PLAN.md           技术方案：架构、探针、评分与归因、性能预算、里程碑
   FEATURES.md            功能清单（P0/P1/P2 + 验收口径）
-  icon-concepts/         5 个图标方向 + 对比图（待选）
-  shots/                 浅色/深色共 10 张截图
+  WEBSITE_LATENCY.md     网站延迟：功能、交互、视觉与实现方案
+  icon-concepts/         已选脉冲图标 + 4 个备选
+  shots/                 浅色/深色共 12 张截图
 ```
 
 ## 设计要点
@@ -107,7 +114,7 @@ docs/
 - **同一张纸，换了一支笔**：沿用 AirPDF 的暖白纸面色板（`#F1EEE7` / `#FBFAF7` / `#DED7CB`）与字号阶梯；
   主色由陶土改为青绿（健康），陶土降级为**告警色** —— 链路变差时才会出现。
 - **数字有口径**：每个指标都带单位、P95、采样数或满量程，不给出无法解释的分数。
-- **结构可读**：44px 品牌条 + 46px 状态条 + 216px 侧栏 + 30px 状态栏，五页共用，不做导航栈重建。
+- **结构可读**：44px 品牌条 + 46px 状态条 + 216px 侧栏 + 30px 状态栏，六页共用，不做导航栈重建。
 
 细节见 [docs/DESIGN.md](docs/DESIGN.md)。
 
@@ -117,12 +124,15 @@ docs/
 - 内存/启动以本机 2026-11 复测为准：约 217MB / 0.9–2.3s（旧记录 150–170MB / 0.9–1.3s）。这是 Avalonia + Skia + Inter 的固定成本；"轻"体现在无驱动、无后台常驻，而不是内存数字。
 - 截图导出必须用 `--scale 1`：Avalonia 的 `RenderTargetBitmap` 在 2× DPI 下会复用 1× 字形缓存，文字发糊（已记录，未绕开）。
 - TCP 握手 RTT 比 ICMP 高 3–5ms（多一层本地协议栈），评分阈值已按此校准；TCP 也观测不到丢包，所以丢包仍由 ICMP 给出。
-- **设置页三个开关已接通并持久化**（自动刷新 / 双探测 / 保留历史），Ctrl+R / Ctrl+1–5 / Ctrl+T / Esc、
+- **设置页三个开关已接通并持久化**（自动刷新 / 双探测 / 保留历史），Ctrl+R / Ctrl+1–6 / Ctrl+T / Esc、
   监控页"导出报告 / 复制诊断信息"和诊断建议按钮也已接命令。主扫描仍**不含** 12MB 带宽测速，
   测速是独立动作，避免把 3 秒承诺拖成十几秒。
+- **网站延迟**：默认 11 站 + 最多 8 个自定义站点；只支持 HTTPS 443，首字节四段分解；
+  Google/YouTube/X 被拦截时标"不可达/被拦截"，不归因本机网络。差值只在同一次运行会话内保留，
+  重启后清空；趋势放 M3。
 - **带宽只测下行、单流**：未测速时 UI、报告和历史都显示"未测速"，不会用 0 或样例值填充；
   在真实快照上测速会写一条历史记录，近 6 次趋势来自这些记录（样例数据上的测速不落盘）。
-- **本机 R2R 包比旧记录重**：2026-11 复测为 51.9MB / 0.9–2.3s / ~217MB，旧记录是
+- **本机 R2R 包比旧记录重**：2026-11 复测为 52.1MB / 0.9–2.3s / ~217MB，旧记录是
   40.7MB / 0.9–1.3s / 150–170MB；功能不受影响，但体积与启动口径需要复核（SDK / R2R 产物差异）。
 - **出口 IP 是 best-effort**：Cloudflare / 3322 任一端点可用即可；被网络拦截时显示"未获取"，
   不阻塞扫描，也不参与评分。

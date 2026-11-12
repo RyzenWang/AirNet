@@ -43,8 +43,9 @@ public partial class MainWindow : Window
                 Key.D1 or Key.NumPad1 => "Overview",
                 Key.D2 or Key.NumPad2 => "Monitor",
                 Key.D3 or Key.NumPad3 => "Speed",
-                Key.D4 or Key.NumPad4 => "Path",
-                Key.D5 or Key.NumPad5 => "Settings",
+                Key.D4 or Key.NumPad4 => "Sites",
+                Key.D5 or Key.NumPad5 => "Path",
+                Key.D6 or Key.NumPad6 => "Settings",
                 _ => null,
             };
 
@@ -91,8 +92,9 @@ public partial class MainWindow : Window
             ("Overview", "01-overview"),
             ("Monitor", "02-monitor"),
             ("Speed", "03-speed"),
-            ("Path", "04-path"),
-            ("Settings", "05-settings"),
+            ("Sites", "04-sites"),
+            ("Path", "05-path"),
+            ("Settings", "06-settings"),
         };
 
         await Task.Delay(800);

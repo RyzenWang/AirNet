@@ -1,6 +1,7 @@
 using AirNet.Core.Demo;
 using AirNet.Core.Diagnostics;
 using AirNet.Core.Reporting;
+using AirNet.Core.Sites;
 
 namespace AirNet.Core.Tests;
 
@@ -60,5 +61,22 @@ public sealed class ReportBuilderTests
         var html = ReportBuilder.Build(snapshot);
 
         Assert.DoesNotContain("出口 未获取", html);
+    }
+
+    [Fact]
+    public void SiteLatencyTableIsAppendedOnlyWhenProvided()
+    {
+        var sample = new SiteSample(4, 8, 16, 2, true, SiteFailureKind.None, null);
+        var result = new SiteResult(
+            SiteCatalog.Default[0], [sample], sample, true, 1, SiteFailureKind.None, null, DateTimeOffset.Now);
+        var siteReport = new SiteLatencyReport([result], DateTimeOffset.Now, TimeSpan.FromSeconds(2));
+
+        var withSites = ReportBuilder.Build(DemoSnapshotFactory.CreateSnapshot(), siteLatency: siteReport);
+        var withoutSites = ReportBuilder.Build(DemoSnapshotFactory.CreateSnapshot());
+
+        Assert.Contains("网站延迟", withSites);
+        Assert.Contains("百度", withSites);
+        Assert.DoesNotContain("网站延迟", withoutSites);
+        Assert.DoesNotContain("<script", withSites);
     }
 }

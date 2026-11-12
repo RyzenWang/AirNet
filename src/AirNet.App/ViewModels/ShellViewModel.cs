@@ -51,6 +51,7 @@ public partial class ShellViewModel : ObservableObject
             TimeSpan.FromMilliseconds(120),
             Avalonia.Threading.DispatcherPriority.Normal,
             (_, _) => OnScanTick());
+        _scanTicker.Stop();
 
         _autoRefreshTimer = new Avalonia.Threading.DispatcherTimer(
             TimeSpan.FromSeconds(60),
@@ -60,6 +61,7 @@ public partial class ShellViewModel : ObservableObject
         Overview = new OverviewViewModel(this);
         Monitor = new MonitorViewModel(this);
         Speed = new SpeedViewModel(this);
+        SiteLatency = new SiteLatencyViewModel(this);
         Path = new PathViewModel(this);
         Settings = new SettingsViewModel(this);
 
@@ -74,6 +76,7 @@ public partial class ShellViewModel : ObservableObject
     public OverviewViewModel Overview { get; }
     public MonitorViewModel Monitor { get; }
     public SpeedViewModel Speed { get; }
+    public SiteLatencyViewModel SiteLatency { get; }
     public PathViewModel Path { get; }
     public SettingsViewModel Settings { get; }
 
@@ -111,6 +114,7 @@ public partial class ShellViewModel : ObservableObject
                 OnPropertyChanged(nameof(IsOverviewSelected));
                 OnPropertyChanged(nameof(IsMonitorSelected));
                 OnPropertyChanged(nameof(IsSpeedSelected));
+                OnPropertyChanged(nameof(IsSitesSelected));
                 OnPropertyChanged(nameof(IsPathSelected));
                 OnPropertyChanged(nameof(IsSettingsSelected));
             }
@@ -120,8 +124,9 @@ public partial class ShellViewModel : ObservableObject
     public bool IsOverviewSelected => PageIndex == 0;
     public bool IsMonitorSelected => PageIndex == 1;
     public bool IsSpeedSelected => PageIndex == 2;
-    public bool IsPathSelected => PageIndex == 3;
-    public bool IsSettingsSelected => PageIndex == 4;
+    public bool IsSitesSelected => PageIndex == 3;
+    public bool IsPathSelected => PageIndex == 4;
+    public bool IsSettingsSelected => PageIndex == 5;
 
     /// <summary>The echo/TCP target, also used as the trace destination.</summary>
     public string ReferenceHost => _runner.ReferenceHost;
@@ -183,8 +188,9 @@ public partial class ShellViewModel : ObservableObject
             "Overview" => 0,
             "Monitor" => 1,
             "Speed" => 2,
-            "Path" => 3,
-            "Settings" => 4,
+            "Sites" => 3,
+            "Path" => 4,
+            "Settings" => 5,
             _ => PageIndex,
         };
     }
@@ -338,7 +344,8 @@ public partial class ShellViewModel : ObservableObject
             Snapshot,
             Path.Attribution,
             Path.LastMtu,
-            maskAddresses: true);
+            maskAddresses: true,
+            siteLatency: SiteLatency.LastReport);
 
         await File.WriteAllTextAsync(path, html, System.Text.Encoding.UTF8).ConfigureAwait(true);
         StatusMessage = $"报告已导出：{System.IO.Path.GetFileName(path)}";

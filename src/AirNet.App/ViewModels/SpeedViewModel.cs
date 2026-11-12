@@ -22,6 +22,7 @@ public partial class SpeedViewModel : ObservableObject
             TimeSpan.FromMilliseconds(200),
             DispatcherPriority.Normal,
             (_, _) => OnTestTick());
+        _testTicker.Stop();
         _ = RefreshHistoryAsync();
     }
 
@@ -93,8 +94,15 @@ public partial class SpeedViewModel : ObservableObject
         }
     }
 
-    private void OnTestTick() =>
+    private void OnTestTick()
+    {
+        if (!IsTesting)
+        {
+            return;
+        }
+
         TestStatusText = $"正在测速 · {(DateTimeOffset.Now - _testStartedAt).TotalSeconds:0.0} s";
+    }
 
     /// <summary>Latency and jitter are read from the shell snapshot, so refresh them after a scan.</summary>
     public void RefreshFromSnapshot()

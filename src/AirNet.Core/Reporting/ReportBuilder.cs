@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using AirNet.Core.Diagnostics;
+using AirNet.Core.Sites;
 
 namespace AirNet.Core.Reporting;
 
@@ -17,7 +18,8 @@ public static class ReportBuilder
         NetworkSnapshot snapshot,
         Attribution? attribution = null,
         MtuResult? mtu = null,
-        bool maskAddresses = true)
+        bool maskAddresses = true,
+        SiteLatencyReport? siteLatency = null)
     {
         var html = new StringBuilder();
         var captured = snapshot.CapturedAt.ToLocalTime();
@@ -45,6 +47,7 @@ public static class ReportBuilder
             AppendPath(html, attribution, mtu);
         }
 
+        AppendSiteLatency(html, siteLatency);
         AppendFooter(html, maskAddresses);
         html.AppendLine("</main></body></html>");
         return html.ToString();
@@ -257,6 +260,33 @@ public static class ReportBuilder
             : $"{octets[0]}.{octets[1]}.{octets[2]}.x";
     }
 
+    private static void AppendSiteLatency(StringBuilder html, SiteLatencyReport? report)
+    {
+        if (report is null || report.Results.Count == 0)
+        {
+            return;
+        }
+
+        html.AppendLine("<section class=\"card\"><div class=\"cardhead\">");
+        html.AppendLine("<h2>网站延迟</h2><span class=\"muted\">首字节 · 3 次中位数</span></div>");
+        html.AppendLine("<table class=\"sitetable\"><thead><tr><th>站点</th><th class=\"num\">总耗时</th><th>分段</th><th></th></tr></thead><tbody>");
+        foreach (var result in report.Results)
+        {
+            var status = !result.Success || result.TotalMs > 200
+                ? "bad"
+                : result.TotalMs > 80 ? "warn" : "ok";
+            var total = result.Success ? $"{result.TotalMs:0} ms" : "—";
+            var segments = result.Success && result.Median is { } median
+                ? $"DNS {median.DnsMs:0} · TCP {median.TcpMs:0} · TLS {median.TlsMs:0} · 等待 {median.TtfbMs:0}"
+                : result.FailureNote ?? "未完成";
+            html.AppendLine($"<tr><td><strong>{Encode(result.Target.Name)}</strong><div class=\"muted\">{Encode(result.Target.Host)}</div></td>");
+            html.AppendLine($"<td class=\"num mono\">{Encode(total)}</td><td class=\"segments-cell\">{Encode(segments)}</td>");
+            html.AppendLine($"<td><span class=\"dot {status}\"></span></td></tr>");
+        }
+
+        html.AppendLine("</tbody></table></section>");
+    }
+
     private static string Encode(string? value) => WebUtility.HtmlEncode(value ?? string.Empty);
 
     private const string Css = """
@@ -299,6 +329,13 @@ public static class ReportBuilder
         .segment{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:12px}
         .segname{font-size:11px;font-weight:600}
         .segvalue{font-size:20px;font-weight:600;letter-spacing:-.5px;margin:2px 0}
+        .sitetable{width:100%;border-collapse:collapse;font-size:11px}
+        .sitetable th{text-align:left;font-size:9px;letter-spacing:.7px;color:var(--muted);padding:0 0 7px;border-bottom:1px solid var(--line)}
+        .sitetable td{padding:7px 0;border-bottom:1px solid var(--line);vertical-align:top}
+        .sitetable tr:last-child td{border-bottom:none}
+        .sitetable .num{text-align:right;white-space:nowrap}
+        .sitetable .segments-cell{color:var(--muted);font-size:10px}
+        .sitetable .dot{margin:4px 0 0 auto}
         footer{border-top:1px solid var(--line);padding-top:14px;margin-top:22px;color:var(--muted);font-size:10.5px;line-height:1.7}
         svg{display:block;margin-top:6px}
         @media print{body{background:#fff}.card,.metric,.segment{break-inside:avoid}}

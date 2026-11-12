@@ -222,6 +222,12 @@
                   <TextBlock Classes="navLabel" Text="带宽测速" FontSize="12.5" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
+              <Button Classes="nav" Classes.active="{Binding IsSitesSelected}" Command="{Binding NavigateCommand}" CommandParameter="Sites">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Path Classes="navIcon" Data="{StaticResource IconGlobe}" />
+                  <TextBlock Classes="navLabel" Text="网站延迟" FontSize="12.5" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
               <Button Classes="nav" Classes.active="{Binding IsPathSelected}" Command="{Binding NavigateCommand}" CommandParameter="Path">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Path Classes="navIcon" Data="{StaticResource IconTarget}" />
@@ -286,6 +292,9 @@
         <Border Classes="pageHost" IsVisible="{Binding IsSpeedSelected}">
           <views:SpeedView DataContext="{Binding Speed}" />
         </Border>
+        <Border Classes="pageHost" IsVisible="{Binding IsSitesSelected}">
+          <views:SiteLatencyView DataContext="{Binding SiteLatency}" />
+        </Border>
         <Border Classes="pageHost" IsVisible="{Binding IsPathSelected}">
           <views:PathView DataContext="{Binding Path}" />
         </Border>
@@ -317,5 +326,10 @@
         </StackPanel>
       </Grid>
     </Border>
+
+    <!-- Site manager overlay: spans the whole window so the dimming matches the design. -->
+    <Grid Grid.RowSpan="4" Panel.ZIndex="20" IsVisible="{Binding SiteLatency.IsManagerOpen}">
+      <views:SiteManagerView DataContext="{Binding SiteLatency}" />
+    </Grid>
   </Grid>
 </UserControl>

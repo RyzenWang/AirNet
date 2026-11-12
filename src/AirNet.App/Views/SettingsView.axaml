@@ -91,7 +91,7 @@
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                   <Border Classes="pill" Padding="7,2">
-                    <TextBlock Text="Ctrl 1-5" Classes="mono" FontSize="10" />
+                    <TextBlock Text="Ctrl 1-6" Classes="mono" FontSize="10" />
                   </Border>
                   <TextBlock Text="切换页面" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
                 </StackPanel>

@@ -45,12 +45,13 @@
 AirNet.sln
 ├─ src/AirNet.Core            纯 .NET，无 UI 依赖，可被 CLI/测试直接引用
 │  ├─ Probes/                 InterfaceInspector, LatencyProbe, ThroughputProbe, MeasurementRunner
+│  ├─ Sites/                  SiteCatalog（11 站）, CustomSiteStore（sites.json）, SiteLatencyProbe
 │  ├─ Diagnostics/            NetworkSnapshot(模型), LatencyAnalyzer(统计), DiagnosisEngine(评分/归因)
 │  └─ Demo/                   确定性样例数据（评审与演示用）
 └─ src/AirNet.App             Avalonia
-   ├─ ViewModels/             Shell(导航+扫描生命周期), Overview, Monitor, Speed, Settings
-   ├─ Views/                  ShellView + 五个页面（UserControl，非 Window）
-   ├─ Controls/               ScoreRing, Sparkline, MeterBar, SignalBars
+   ├─ ViewModels/             Shell(导航+扫描生命周期), Overview, Monitor, Speed, SiteLatency, Path, Settings
+   ├─ Views/                  ShellView + 六个页面（UserControl，非 Window）+ SiteManagerView
+   ├─ Controls/               ScoreRing, Sparkline, MeterBar, SignalBars, ScanSweep
    └─ Styles/                 Colors, Icons, Controls
 ```
 
@@ -82,6 +83,7 @@ XAML 里不写转换器，视觉评审时只读 XAML 就能看懂。
 | 逐跳 | 调用系统 `tracert -d -w 500` / `traceroute -n` 解析输出（M2 已实现） | 无（子进程） | 8–20s | 仅网关+目标两跳 |
 | Wi-Fi 信号/速率 | Windows `wlanapi.dll`（M1 已实现）；macOS `CoreWLAN`；Linux `iw`/`/proc/net/wireless` | 无 | <50ms | 仅报"无线/有线" |
 | MTU | `PingOptions.DontFragment` + 缓冲区二分（M2 已实现） | 无 | ~1s | 跳过 |
+| 网站延迟 | `ApplicationTimingProbe` ×11 站 ×3 次，并发 4，中位数（M2 已实现） | 无 | 6–12s | 失败站保留原因，不阻塞其他站 |
 
 ### 4.1 一个必须解决的坑：ICMP 分辨率
 
@@ -113,6 +115,8 @@ TCP RTT 比 ICMP 略高（多一层本地协议栈开销），这是可接受的
 - 传感器窗口：延迟曲线保留最近 60 个样本 / 60 秒；计算 P95 用全部样本。
 - 自动刷新（M2 已实现）：默认关闭；开启后 60s 一次，且**只在窗口可见时**执行（`IsVisible` / `WindowState` 检查），最小化即暂停。
 - 移动网络（`NetworkInterfaceType.Wwanpp*`）默认不做带宽测试，避免偷跑流量。
+- 网站延迟是独立动作：11 个默认站（+ 最多 8 个自定义）×3 次，并发 4，约 6–12s；
+  **不进入主扫描，也不参与自动刷新**。
 
 ### 4.3 带宽测速算法
 
@@ -234,10 +238,10 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 | 指标 | 预算 | 本机 2026-11 复测（Release，trim + R2R，便携版） | 手段 / 备注 |
 | --- | --- | --- | --- |
-| 解压体积 | ≤ 45MB | **66.6MB**（exe 50.9 + Skia 9.0 + ANGLE 5.2 + HarfBuzz 1.7）；压缩后 51.9MB | `PublishSingleFile` + `TrimMode=partial`；**未达预算**，SDK 10.0.403 的 R2R 产物偏大 |
+| 解压体积 | ≤ 45MB | **66.6MB**（exe 50.9 + Skia 9.0 + ANGLE 5.2 + HarfBuzz 1.7）；压缩后 52.1MB | `PublishSingleFile` + `TrimMode=partial`；**未达预算**，SDK 10.0.403 的 R2R 产物偏大 |
 | 冷启动 | ≤ 1400ms | **0.9–2.3s** 到窗口可见（二次 / 首次） | R2R 已开；**未达预算**，待查启动路径 |
 | 运行内存 | ≤ 180MB | **~217MB** 工作集 | 图表只保留 60 点、不缓存位图；**未达预算** |
-| 安装包 | ≤ 25MB | 便携 zip **51.9MB**（含说明）；Velopack Setup 尚未接入 CI | `packaging/pack-portable.ps1`；**未达预算** |
+| 安装包 | ≤ 25MB | 便携 zip **52.1MB**（含说明）；Velopack Setup 尚未接入 CI | `packaging/pack-portable.ps1`；**未达预算** |
 | 扫描 CPU | < 3% | 未测 | ICMP 90ms / TCP 70ms 间隔；UI 250ms 合并刷新 |
 
 > 结论：M2 功能完成，但本机 2026-11 的 R2R 产物未达到原体积 / 启动 / 内存预算。
@@ -266,10 +270,10 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 | 层级 | 手段 | 覆盖 |
 | --- | --- | --- |
-| 单元 | xUnit（`tests/AirNet.Core.Tests`，39 项） | `LatencyAnalyzer`（空集/全丢/单点/抖动）、`DiagnosisEngine`（分档边界、带宽容错）、`TraceProbe.Parse`（中英提示）、`ReportBuilder.Mask`、`EgressProbe.Parse`、`DnsAdvisor`、`HistoryStore` |
+| 单元 | xUnit（`tests/AirNet.Core.Tests`，59 项） | `LatencyAnalyzer`、`DiagnosisEngine`、`TraceProbe.Parse`、`ReportBuilder`、`EgressProbe`、`DnsAdvisor`、`HistoryStore`、`SiteCatalog`/`CustomSiteStore`/`SiteLatencyProbe` |
 | 集成 | 本机 `--selftest` 模式（已实现） | 探针链路真实可用性，CI 上可跳过 |
 | 网络伪造 | `tc netem`（Linux）/ Clumsy（Windows）注入丢包抖动 | 归因是否正确 |
-| 视觉回归 | `--export` 截图 + 像素 diff | 深浅色 × 五页，防样式回退 |
+| 视觉回归 | `--export` 截图 + 像素 diff | 深浅色 × 六页，防样式回退 |
 | 持续集成 | GitHub Actions（`.github/workflows/ci.yml`） | `-warnaserror` 构建、单元测试、探针冒烟断言、报告断言、截图工件 |
 | 现场 | 手动矩阵：Wi-Fi/有线、VPN、双栈、热点、移动网络 | 降级路径 |
 
@@ -279,7 +283,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | --- | --- | --- | --- |
 | **M0 视觉原型** | 四页原型 + 设计系统 + 真实探针内核 + 样例数据 | 可运行 exe、8 张截图、本文档 | ✅ 已完成 |
 | **M1 测量内核** | TCP 计时抖动、Wi-Fi 信号、DNS/TCP/TLS/TTFB 分解、评分校准、历史落盘、裁剪+R2R 发布 | 抖动 2.6ms、四段分解条、历史落盘、40MB 发布包 | ✅ 已完成 |
-| **M2 诊断与优化** | 三段归因、逐跳、MTU、一键 DNS（含还原）、报告导出、CI | ✅ 已完成 | — |
+| **M2 诊断与优化** | 三段归因、逐跳、MTU、网站延迟（含自定义站点）、一键 DNS（含还原）、报告导出、CI | ✅ 已完成 | — |
 | **M3 场景与分发** | 游戏/会议模式、双栈、CLI、邻区扫描、Velopack 打包与签名 | 1.1 | 2 周 |
 
 ## 13. 风险
@@ -305,7 +309,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 | 能力 | 状态 |
 | --- | --- |
-| 设计系统 + 五页视觉 + 深浅色 | ✅ M0/M2 |
+| 设计系统 + 六页视觉 + 深浅色 | ✅ M0/M2 |
 | ICMP 丢包 / TCP 握手计时（亚毫秒抖动） | ✅ M1，本机实测 jitter 2.6ms |
 | 接口识别（虚拟网卡过滤 + 网关优先） | ✅ M1 |
 | Wi-Fi 信号 / 速率 / PHY（wlanapi P/Invoke） | ✅ M1 代码完成，**未在真实无线网卡上验证**（本机为有线） |
@@ -317,13 +321,14 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 历史持久化（JSONL，30 天，裁剪安全） | ✅ M1 |
 | 出口 IP（Cloudflare / 3322，best-effort） | ✅ M2，被拦截时显示"未获取" |
 | 带宽测速（单流下行） | 🟡 只测下行；未测速显示"未测速"，不写假值 |
-| 裁剪 + R2R 单文件发布 | ✅ M1；本机 2026-11 复测 51.9MB / 0.9–2.3s / ~217MB（旧记录 40.6MB，待复核） |
+| 网站延迟（11 默认 + 最多 8 自定义） | ✅ M2，四段分解/3 次中位数；自定义落 `sites.json`，不并入健康分 |
+| 裁剪 + R2R 单文件发布 | ✅ M1；本机 2026-11 复测 52.1MB / 0.9–2.3s / ~217MB（旧记录 40.6MB，待复核） |
 | 报告导出（自包含 HTML，可打印 PDF） | ✅ M2，7.8KB，零脚本 |
 | 一键 DNS + 还原（Windows 提权，UAC 可取消） | ✅ M2，实测命令生成与还原记录；**提权执行未自动化验证** |
-| 单元测试（xUnit，39 项） | ✅ M2，覆盖统计 / 分档 / 解析 / 掩码 / 历史 / DNS |
+| 单元测试（xUnit，59 项） | ✅ M2，覆盖统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 站点目录与自定义站点 |
 | CI（构建 + 单元测试 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | 动效（扫描/测速/追踪扫描带 + 实时读数 + 落地过冲/高亮） | ✅ M2，样本真实回传，截图模式可关闭 |
-| 设置项持久化 + 60s 自动刷新 + 快捷键 | ✅ M2，写入 `settings.json`；Ctrl+R / Ctrl+1–5 / Ctrl+T / Esc |
+| 设置项持久化 + 60s 自动刷新 + 快捷键 | ✅ M2，写入 `settings.json`；Ctrl+R / Ctrl+1–6 / Ctrl+T / Esc |
 | 双栈、邻区扫描、游戏/会议模式 | ⬜ M3 |
 
 > 原型以**确定性样例数据**启动（右上角标注"示例数据"），点"开始检测"即切换为真实测量并写入历史；

@@ -33,7 +33,7 @@ AirNet 的定位是"轻量、快速检测和优化网络"。视觉要服务三�
 | 主色 | 陶土 `#E3563B` | **青 `#2E6F63`** | 网络健康用"平静"的青绿；陶土降级为**告警色**，链路变差时才出现，成为两兄弟产品的暗号 |
 | 语义色 | 无（只有强调/危险） | good / warn / bad 三档 | 网络诊断必须有三档状态，且要与主色同族 |
 | 第二色 | 青 `#2E6F63`（次） | 陶土 `#E3563B`（仅告警） | 角色互换，色板仍是同一组 |
-| 主体 | 单文档阅读画布 | 仪表盘卡片网格 + 侧栏导航 | 工具类产品需要固定五页，阅读器是文档驱动 |
+| 主体 | 单文档阅读画布 | 仪表盘卡片网格 + 侧栏导航 | 工具类产品需要固定六页，阅读器是文档驱动 |
 | 数字声音 | 无 | 专用数值字号/字距，等宽用于地址与端口 | 测量值需要"仪表感" |
 | 主题默认 | 跟随系统 | 跟随系统（原型默认浅色便于评审） | — |
 
@@ -125,6 +125,7 @@ MonoFontFamily    : Cascadia Mono, Consolas, SF Mono, Menlo, monospace     ← I
 │  总览    │
 │  实时检测│
 │  带宽测速│
+│  网站延迟│   ← M2 新增：11 站 + 自定义站点 + 分段条
 │  链路路径│   ← M2 新增：归因 + 逐跳 + MTU
 │  设置    │
 │ 本机链路 │
@@ -223,7 +224,7 @@ MonoFontFamily    : Cascadia Mono, Consolas, SF Mono, Menlo, monospace     ← I
 ```
 src/AirNet.App/
   Styles/Colors.axaml      色板 token（Light/Dark 双字典 + 字体 + 圆角）
-  Styles/Icons.axaml       37 个图标（Lucide 线性风格）
+  Styles/Icons.axaml       线性图标（Lucide 风格；含品牌脉冲标记）
   Styles/Controls.axaml    字号阶梯、按钮、卡片、开关、状态点、图表默认值
   Controls/ScoreRing.cs    360° 环
   Controls/Sparkline.cs    延迟曲线
@@ -236,6 +237,8 @@ src/AirNet.App/
   Views/OverviewView.axaml 首页 + 纸叠插画
   Views/MonitorView.axaml  仪表盘
   Views/SpeedView.axaml    测速
+  Views/SiteLatencyView.axaml  网站延迟（主页面）
+  Views/SiteManagerView.axaml  管理站点弹层
   Views/PathView.axaml     链路路径
   Views/SettingsView.axaml 设置
 ```
@@ -247,7 +250,8 @@ src/AirNet.App/
 | 总览 | ![总览浅色](shots/01-overview-light.png) | ![总览深色](shots/01-overview-dark.png) |
 | 实时检测 | ![仪表盘浅色](shots/02-monitor-light.png) | ![仪表盘深色](shots/02-monitor-dark.png) |
 | 带宽测速 | ![测速浅色](shots/03-speed-light.png) | ![测速深色](shots/03-speed-dark.png) |
-| 链路路径 | ![路径浅色](shots/04-path-light.png) | ![路径深色](shots/04-path-dark.png) |
-| 设置 | ![设置浅色](shots/05-settings-light.png) | ![设置深色](shots/05-settings-dark.png) |
+| 网站延迟 | ![站点浅色](shots/04-sites-light.png) | ![站点深色](shots/04-sites-dark.png) |
+| 链路路径 | ![路径浅色](shots/05-path-light.png) | ![路径深色](shots/05-path-dark.png) |
+| 设置 | ![设置浅色](shots/06-settings-light.png) | ![设置深色](shots/06-settings-dark.png) |
 
 截图由 `AirNet.exe --export <目录> --scale 1` 生成：程序在屏幕外真实渲染窗口后逐页抓取，与最终运行时像素一致。

@@ -1,0 +1,314 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AirNet.App.ViewModels"
+             xmlns:controls="using:AirNet.App.Controls"
+             x:Class="AirNet.App.Views.SiteLatencyView"
+             x:DataType="vm:SiteLatencyViewModel">
+  <UserControl.Styles>
+    <Style Selector="Border.siteBadge">
+      <Setter Property="Width" Value="26" />
+      <Setter Property="Height" Value="26" />
+      <Setter Property="CornerRadius" Value="7" />
+      <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.siteBadge.intl">
+      <Setter Property="Background" Value="{DynamicResource WarnSoftBrush}" />
+    </Style>
+    <Style Selector="TextBlock.siteBadgeText">
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.siteBadgeText.intl">
+      <Setter Property="Foreground" Value="{DynamicResource WarnBrush}" />
+    </Style>
+    <Style Selector="TextBlock.delta">
+      <Setter Property="FontFamily" Value="{DynamicResource MonoFontFamily}" />
+      <Setter Property="FontSize" Value="9.5" />
+      <Setter Property="HorizontalAlignment" Value="Right" />
+      <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.delta.down">
+      <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+    </Style>
+    <Style Selector="TextBlock.delta.up">
+      <Setter Property="Foreground" Value="{DynamicResource WarnBrush}" />
+    </Style>
+    <Style Selector="TextBlock.delta.bad">
+      <Setter Property="Foreground" Value="{DynamicResource BadBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid>
+    <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto">
+      <Grid Margin="24,18,24,16" RowDefinitions="Auto,Auto,*" RowSpacing="12">
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <StackPanel Spacing="1">
+            <TextBlock Text="网站延迟" Classes="h3" />
+            <TextBlock Text="{Binding PageSubtitle}"
+                       Classes="caption"
+                       FontSize="10.5"
+                       TextTrimming="CharacterEllipsis" />
+            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,3,0,0">
+              <Ellipse Classes="scanDot" IsVisible="{Binding IsTesting}" VerticalAlignment="Center" />
+              <TextBlock Text="{Binding TestStatusText}"
+                         FontSize="10.5"
+                         Foreground="{DynamicResource AccentTextBrush}"
+                         VerticalAlignment="Center"
+                         TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+          </StackPanel>
+
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
+            <StackPanel Orientation="Horizontal" Spacing="2">
+              <Button Classes="seg" Classes.active="{Binding IsFilterAll}"
+                      Command="{Binding SetFilterCommand}" CommandParameter="All" Content="{Binding AllCountText}" />
+              <Button Classes="seg" Classes.active="{Binding IsFilterDomestic}"
+                      Command="{Binding SetFilterCommand}" CommandParameter="Domestic" Content="{Binding DomesticCountText}" />
+              <Button Classes="seg" Classes.active="{Binding IsFilterInternational}"
+                      Command="{Binding SetFilterCommand}" CommandParameter="International" Content="{Binding InternationalCountText}" />
+              <Button Classes="seg" Classes.active="{Binding IsFilterCustom}"
+                      Command="{Binding SetFilterCommand}" CommandParameter="Custom" Content="{Binding CustomCountText}" />
+            </StackPanel>
+            <Button Classes="ghost" Height="30" MinHeight="30" Padding="10,0"
+                    Command="{Binding OpenManagerCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Path Classes="icon small muted" Data="{StaticResource IconPlus}" Width="12" Height="12" />
+                <TextBlock Text="管理站点" FontSize="10.5" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+            <Button Classes="primary" Height="30" MinHeight="30" Padding="12,0"
+                    Command="{Binding RunTestCommand}"
+                    IsVisible="{Binding !IsTesting}">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Path Classes="icon small" Data="{StaticResource IconTarget}" Width="13" Height="13"
+                      Stroke="{DynamicResource AccentOnBrush}" />
+                <TextBlock Text="{Binding TestButtonText}" FontSize="11" FontWeight="SemiBold" />
+              </StackPanel>
+            </Button>
+            <Button Classes="ghost" Height="30" MinHeight="30" Padding="12,0"
+                    Command="{Binding StopTestCommand}"
+                    IsVisible="{Binding IsTesting}">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Path Classes="icon small" Data="{StaticResource IconStop}" Width="10" Height="10" />
+                <TextBlock Text="停止" FontSize="11" FontWeight="SemiBold" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Grid>
+
+        <!-- Summary -->
+        <Border Grid.Row="1" Classes="card" Padding="12,4">
+          <Grid ColumnDefinitions="*,*,*,*">
+            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0" Padding="0,5,18,5">
+              <StackPanel Spacing="2">
+                <TextBlock Text="最快 / FASTEST" Classes="eyebrow" FontSize="9" />
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                  <TextBlock Text="{Binding FastestValue}" FontSize="24" FontWeight="SemiBold" Foreground="{DynamicResource GoodBrush}" />
+                  <TextBlock Text="ms" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="0,0,0,3" IsVisible="{Binding HasResults}" />
+                </StackPanel>
+                <TextBlock Text="{Binding FastestFoot}" Classes="micro" FontSize="9.5" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </Border>
+            <Border Grid.Column="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0" Padding="18,5">
+              <StackPanel Spacing="2">
+                <TextBlock Text="最慢 / SLOWEST" Classes="eyebrow" FontSize="9" />
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                  <TextBlock Text="{Binding SlowestValue}" FontSize="24" FontWeight="SemiBold" Foreground="{DynamicResource BadBrush}" />
+                  <TextBlock Text="ms" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="0,0,0,3" IsVisible="{Binding HasResults}" />
+                </StackPanel>
+                <TextBlock Text="{Binding SlowestFoot}" Classes="micro" FontSize="9.5" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </Border>
+            <Border Grid.Column="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0" Padding="18,5">
+              <StackPanel Spacing="2">
+                <TextBlock Text="平均 / AVERAGE" Classes="eyebrow" FontSize="9" />
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                  <TextBlock Text="{Binding AverageValue}" FontSize="24" FontWeight="SemiBold" />
+                  <TextBlock Text="ms" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="0,0,0,3" IsVisible="{Binding HasResults}" />
+                </StackPanel>
+                <TextBlock Text="{Binding AverageFoot}" Classes="micro" FontSize="9.5" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </Border>
+            <Border Grid.Column="3" Padding="18,5">
+              <StackPanel Spacing="2">
+                <TextBlock Text="完成 / DONE" Classes="eyebrow" FontSize="9" />
+                <TextBlock Text="{Binding DoneValue}" FontSize="24" FontWeight="SemiBold" Foreground="{DynamicResource GoodBrush}" />
+                <TextBlock Text="{Binding DoneFoot}" Classes="micro" FontSize="9.5" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </Border>
+          </Grid>
+        </Border>
+
+        <!-- Table + judgement -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,286" ColumnSpacing="12">
+          <Border Classes="card" ClipToBounds="True">
+            <Grid RowDefinitions="Auto,Auto,*,Auto">
+              <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="16,13,16,8">
+                <TextBlock Text="站点延迟" Classes="h3" FontSize="13.5" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                  <StackPanel Orientation="Horizontal" Spacing="3">
+                    <Border Width="6" Height="6" CornerRadius="2" Background="{DynamicResource AccentBrush}" />
+                    <TextBlock Text="DNS" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="3">
+                    <Border Width="6" Height="6" CornerRadius="2" Background="{DynamicResource AccentBrush}" Opacity="0.78" />
+                    <TextBlock Text="TCP" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="3">
+                    <Border Width="6" Height="6" CornerRadius="2" Background="{DynamicResource AccentBrush}" Opacity="0.56" />
+                    <TextBlock Text="TLS" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="3">
+                    <Border Width="6" Height="6" CornerRadius="2" Background="{DynamicResource AccentBrush}" Opacity="0.32" />
+                    <TextBlock Text="等待" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" />
+                  </StackPanel>
+                  <TextBlock Text="按总耗时排序" FontSize="9" Foreground="{DynamicResource TextTertiaryBrush}" />
+                </StackPanel>
+              </Grid>
+
+              <Grid Grid.Row="1" ColumnDefinitions="*,64,148,58,16" ColumnSpacing="10"
+                    Margin="16,0,16,7">
+                <TextBlock Text="站点" Classes="micro" FontSize="9" />
+                <TextBlock Grid.Column="1" Text="总耗时" Classes="micro" FontSize="9" TextAlignment="Right" />
+                <TextBlock Grid.Column="2" Text="分段" Classes="micro" FontSize="9" />
+                <TextBlock Grid.Column="3" Text="较上次" Classes="micro" FontSize="9" TextAlignment="Right" />
+                <TextBlock Grid.Column="4" Text="" />
+              </Grid>
+
+              <ItemsControl Grid.Row="2" ItemsSource="{Binding Rows}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:SiteRow">
+                    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0">
+                      <Grid ColumnDefinitions="*,64,148,58,16" ColumnSpacing="10" Height="40"
+                            Margin="16,0,16,0" ToolTip.Tip="{Binding FailureText}">
+                        <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                          <Border Classes="siteBadge" Classes.intl="{Binding IsInternational}">
+                            <TextBlock Text="{Binding Badge}"
+                                       Classes="siteBadgeText"
+                                       Classes.intl="{Binding IsInternational}" />
+                          </Border>
+                          <StackPanel VerticalAlignment="Center" Spacing="0">
+                            <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding DetailText}"
+                                       FontFamily="{DynamicResource MonoFontFamily}"
+                                       FontSize="8.5"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="190" />
+                          </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"
+                                    Spacing="1" VerticalAlignment="Center">
+                          <TextBlock Text="{Binding TotalText}"
+                                     FontFamily="{DynamicResource MonoFontFamily}"
+                                     FontSize="13"
+                                     FontWeight="SemiBold" />
+                          <TextBlock Text="{Binding UnitText}" FontSize="8"
+                                     Foreground="{DynamicResource TextTertiaryBrush}"
+                                     VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                        </StackPanel>
+
+                        <Grid Grid.Column="2" Width="148" Height="6" VerticalAlignment="Center">
+                          <Border Background="{DynamicResource TrackBrush}" CornerRadius="3" />
+                          <StackPanel Orientation="Horizontal">
+                            <Border Width="{Binding DnsWidth}" Height="6" Background="{DynamicResource AccentBrush}" />
+                            <Border Width="{Binding TcpWidth}" Height="6" Background="{DynamicResource AccentBrush}" Opacity="0.78" />
+                            <Border Width="{Binding TlsWidth}" Height="6" Background="{DynamicResource AccentBrush}" Opacity="0.56" />
+                            <Border Width="{Binding WaitWidth}" Height="6" Background="{DynamicResource AccentBrush}" Opacity="0.32" />
+                          </StackPanel>
+                        </Grid>
+
+                        <TextBlock Grid.Column="3"
+                                   Text="{Binding DeltaText}"
+                                   Classes="delta"
+                                   Classes.down="{Binding IsDeltaDown}"
+                                   Classes.up="{Binding IsDeltaUp}"
+                                   Classes.bad="{Binding IsDeltaBad}"
+                                   IsVisible="{Binding HasDelta}"
+                                   VerticalAlignment="Center" />
+
+                        <Ellipse Grid.Column="4"
+                                 Classes="sevDot"
+                                 Classes.info="{Binding IsPending}"
+                                 Classes.warn="{Binding IsWarn}"
+                                 Classes.bad="{Binding IsBad}"
+                                 ToolTip.Tip="{Binding StatusText}"
+                                 HorizontalAlignment="Right" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <Border Grid.Row="3" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                      Padding="16,9">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="{Binding CustomSummary}" Classes="micro" FontSize="9" />
+                  <TextBlock Grid.Column="1" Text="不并入健康分 · 仅本机测量" Classes="micro" FontSize="9" />
+                </Grid>
+              </Border>
+            </Grid>
+          </Border>
+
+          <StackPanel Grid.Column="1" Spacing="12">
+            <Border Classes="card" Padding="15,14">
+              <StackPanel Spacing="8">
+                <TextBlock Text="本次判断" Classes="h3" FontSize="12.5" />
+                <TextBlock Text="{Binding JudgementText}"
+                           Classes="caption"
+                           FontSize="10"
+                           LineHeight="16"
+                           TextWrapping="Wrap" />
+                <Border Classes="hairline" />
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="站点延迟不并入健康分" Classes="caption" FontSize="10" />
+                  <TextBlock Grid.Column="1" Text="单独看" FontSize="10" FontWeight="SemiBold" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card" Padding="15,14">
+              <StackPanel Spacing="7">
+                <TextBlock Text="口径" Classes="h3" FontSize="12.5" />
+                <TextBlock Text="每站 3 次独立 HTTPS 请求取中位数；四段相加等于总耗时。只读首字节，不下载页面、不带 Cookie。"
+                           Classes="caption"
+                           FontSize="10"
+                           LineHeight="15"
+                           TextWrapping="Wrap" />
+                <TextBlock Text="≤80 良好 · 80–200 偏慢 · &gt;200 跨境/异常"
+                           Classes="micro"
+                           FontSize="9.5" />
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card" Padding="15,14">
+              <StackPanel Spacing="6">
+                <TextBlock Text="站点清单" Classes="h3" FontSize="12.5" />
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="默认站点" Classes="caption" FontSize="10" />
+                  <TextBlock Grid.Column="1" Text="11" FontSize="10" FontWeight="SemiBold" />
+                </Grid>
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="自定义站点" Classes="caption" FontSize="10" />
+                  <TextBlock Grid.Column="1" Text="{Binding CustomLimitText}" FontSize="10" FontWeight="SemiBold" />
+                </Grid>
+                <Button Classes="ghost" Height="29" MinHeight="29" Margin="0,4,0,0"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Command="{Binding OpenManagerCommand}" Content="管理站点" FontSize="10.5" />
+                <TextBlock Text="默认站点固定；自定义最多 8 个。" Classes="micro" FontSize="9" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </Grid>
+      </Grid>
+    </ScrollViewer>
+
+    <controls:ScanSweep IsActive="{Binding IsTesting}" />
+  </Grid>
+</UserControl>

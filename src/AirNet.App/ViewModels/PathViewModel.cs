@@ -49,6 +49,7 @@ public partial class PathViewModel : ObservableObject
             TimeSpan.FromMilliseconds(200),
             DispatcherPriority.Normal,
             (_, _) => OnTraceTick());
+        _traceTicker.Stop();
     }
 
     public ShellViewModel Shell { get; }
@@ -127,8 +128,15 @@ public partial class PathViewModel : ObservableObject
         }
     }
 
-    private void OnTraceTick() =>
+    private void OnTraceTick()
+    {
+        if (!IsTracing)
+        {
+            return;
+        }
+
         StatusText = $"正在追踪 {TargetText} · {(DateTimeOffset.Now - _traceStartedAt).TotalSeconds:0.0} s（最多 16 跳）";
+    }
 
     [RelayCommand]
     private async Task RunTraceAsync()
