@@ -186,7 +186,7 @@ MonoFontFamily    : Cascadia Mono, Consolas, SF Mono, Menlo, monospace     ← I
 统一开关 `Features.Motion`：截图导出与 CI 会关掉它，保证截图确定；将来"减少动态"偏好也挂在同一处。
 
 > 实装的是 **A+B 混合**（下表）。对比页 [motion.html](motion.html) 仍保留三版原始方案；
-> 静态预览：[扫描中](motion-scanning.png) · [完成后](motion-done.png)。
+> 动态预览：[motion.html](motion.html)。静态截图不再入库，避免示例中的网络地址进入图片。
 
 | 场景 | 实现 | 参数 |
 | --- | --- | --- |

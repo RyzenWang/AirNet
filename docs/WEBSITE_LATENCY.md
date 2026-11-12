@@ -7,8 +7,8 @@
 > HTTP 状态识别、`sites.jsonl` 历史、`--sites` CLI、报告表格、70 项单元测试都已接入；
 > 实现截图见 [04-sites-light.png](shots/04-sites-light.png)。
 >
-> 视觉稿：[主页面](site-latency-mockup.png) · [管理站点](site-latency-manage-mockup.png) ·
-> [HTML 源稿](site-latency-mockup.html)
+> 视觉稿：[主页面](site-latency-mockup.png) · [HTML 源稿](site-latency-mockup.html)；
+> 管理弹层实现见 `Views/SiteManagerView.axaml`。
 >
 > 稿内数值是设计示例，不是实测结果；平均 148 ms 把 4 个跨境站点也算了进去。
 
@@ -169,7 +169,7 @@
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-视觉稿：[site-latency-manage-mockup.png](site-latency-manage-mockup.png)。
+管理弹层：`Views/SiteManagerView.axaml`（九宫格默认站点 + 右侧表单）。
 
 ### 5.3 新增流程
 

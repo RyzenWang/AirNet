@@ -109,13 +109,8 @@ public partial class MainWindow : Window
                 viewModel.NavigateCommand.Execute(command);
                 await Task.Delay(400);
 
-                // The route page is empty until a trace runs; capture it with real data.
-                if (command == "Path" && viewModel.Path.RunTraceCommand.CanExecute(null))
-                {
-                    await viewModel.Path.RunTraceCommand.ExecuteAsync(null);
-                    await Task.Delay(400);
-                }
-
+                // Never run a real traceroute for static docs: its public hop addresses
+                // would end up in a checked-in screenshot. The page keeps its demo state.
                 Capture(Path.Combine(directory, $"{file}-{suffix}.png"), scale);
             }
         }
