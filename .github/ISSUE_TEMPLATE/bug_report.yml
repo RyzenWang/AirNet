@@ -1,0 +1,60 @@
+name: Bug report
+description: Report a reproducible problem in AirNet
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Do not include real public IPs, SSIDs, DNS servers,
+        or other household network details. Use documentation ranges such as
+        `192.0.2.x` / `203.0.113.x` when an address is needed.
+  - type: input
+    id: version
+    attributes:
+      label: AirNet version
+      description: The release tag or portable asset name.
+      placeholder: v0.2.1 / AirNet-0.2.1-win-x64-portable.zip
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows x64
+        - Linux x64
+        - Linux arm64
+        - macOS arm64
+        - macOS x64
+        - Other / build from source
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start AirNet
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior / error
+      description: Paste the exact error text and, for Linux, `uname -m` and `ls -l AirNet`.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Screenshots or logs with sensitive values removed.

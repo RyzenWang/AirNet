@@ -45,7 +45,7 @@ function New-PortableZip {
             $relative = $file.FullName.Substring($Stage.Length).TrimStart('\', '/').Replace('\', '/')
             $entry = $archive.CreateEntry($relative, [System.IO.Compression.CompressionLevel]::Optimal)
             # 0o100755 / 0o100644 in the high 16 bits. The low bits are DOS attributes.
-            $isExecutable = $relative -eq $ExecutableRelativePath
+            $isExecutable = $relative -eq $ExecutableRelativePath -or $relative.EndsWith('.sh')
             $isNativeLibrary = $relative.EndsWith('.so') -or $relative.Contains('.so.') -or $relative.EndsWith('.dylib')
             $mode = if ($isExecutable -or $isNativeLibrary) { 0x81ED } else { 0x81A4 }
             $entry.ExternalAttributes = $mode -shl 16
@@ -98,8 +98,8 @@ $linuxReadme = @(
     "",
     "用法",
     "  1. 解压后进入 AirNet 目录",
-    "  2. chmod +x AirNet",
-    "  3. ./AirNet",
+    "  2. 直接执行 bash run.sh（zip/tar 都适用，不依赖解压后的执行位）",
+    "  3. 也可以 chmod +x AirNet && ./AirNet",
     "",
     "依赖",
     "  · X11 或 Wayland（Avalonia 通过 X11/XWayland 运行）",
@@ -113,6 +113,7 @@ $linuxReadme = @(
     "已知限制",
     "  · Wi-Fi 信号/速率是 Windows 专属实现；Linux 上会降级为接口信息。",
     "  · 逐跳依赖系统 traceroute；部分网络会过滤。",
+    "  · Linux x64 已在真实环境启动验证；Linux arm64 尚待验证。",
     "  · 未做发行版打包，发布包仅供本机验证。"
 ) -join "`n"
 
@@ -173,7 +174,7 @@ foreach ($runtime in $Runtimes) {
         $appDir = Join-Path $stageRoot "AirNet"
         New-Item -ItemType Directory -Force $appDir | Out-Null
         Copy-Item "$publishDir/*" $appDir -Recurse
-        Set-Content -Path (Join-Path $appDir "使用说明.txt") -Value $linuxReadme -Encoding utf8
+        Set-Content -Path (Join-Path $appDir "README.txt") -Value $linuxReadme -Encoding utf8
         $desktop = @"
 [Desktop Entry]
 Type=Application
@@ -185,11 +186,35 @@ Categories=Network;Utility;
 "@
         Set-Content -Path (Join-Path $appDir "AirNet.desktop") -Value $desktop -Encoding utf8
 
+        # This wrapper also repairs the executable bit when a Windows unzip tool
+        # strips Unix permissions. Running `bash run.sh` works even without +x.
+        $runScript = @'
+#!/usr/bin/env bash
+set -e
+cd "$(dirname "$0")"
+chmod +x AirNet 2>/dev/null || true
+exec ./AirNet "$@"
+'@
+        [System.IO.File]::WriteAllText(
+            (Join-Path $appDir "run.sh"),
+            $runScript.Replace("`r`n", "`n"),
+            (New-Object System.Text.UTF8Encoding($false)))
+
         $asset = Join-Path $Output "AirNet-$version-linux-$($runtime.Substring(6)).zip"
         New-PortableZip -Stage $stageRoot -ZipPath $asset -ExecutableRelativePath "AirNet/AirNet"
+        $tarAsset = Join-Path $Output "AirNet-$version-linux-$($runtime.Substring(6)).tar.gz"
+        Remove-Item $tarAsset -Force -ErrorAction SilentlyContinue
+        & tar -czf $tarAsset -C $stageRoot "AirNet"
+        if ($LASTEXITCODE -ne 0) {
+            throw "tar failed for $tarAsset"
+        }
     }
 
-    $zipInfo = Get-Item $asset
-    Write-Host ("asset   : {0} ({1:N2} MB)" -f $asset, ($zipInfo.Length / 1MB)) -ForegroundColor Green
-    Write-Host ("sha256  : {0}" -f (Get-FileHash $asset -Algorithm SHA256).Hash)
+    $assets = @($asset)
+    if ($isLinuxRuntime) { $assets += $tarAsset }
+    foreach ($item in $assets) {
+        $info = Get-Item $item
+        Write-Host ("asset   : {0} ({1:N2} MB)" -f $item, ($info.Length / 1MB)) -ForegroundColor Green
+        Write-Host ("sha256  : {0}" -f (Get-FileHash $item -Algorithm SHA256).Hash)
+    }
 }

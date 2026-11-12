@@ -160,14 +160,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: airnet-portable
-          path: artifacts/packages/AirNet-*.zip
+          path: |
+            artifacts/packages/AirNet-*.zip
+            artifacts/packages/AirNet-*.tar.gz
           if-no-files-found: error
           retention-days: 30
 
-      # Only portable zips are attached; no setup/installer is produced or uploaded.
+      # Only portable archives are attached; no setup/installer is produced or uploaded.
       - name: Attach portable assets to tag release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/packages/AirNet-*.zip
+          files: |
+            artifacts/packages/AirNet-*.zip
+            artifacts/packages/AirNet-*.tar.gz
           fail_on_unmatched_files: true

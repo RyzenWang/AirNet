@@ -20,8 +20,8 @@ if (-not $SkipWindows) {
 
 Write-Host ""
 Write-Host "portable assets:" -ForegroundColor Cyan
-Get-ChildItem (Join-Path $root "artifacts/packages") -Filter "AirNet-*.zip" -File -ErrorAction SilentlyContinue |
-    Where-Object { $_.Name -match '-(portable|macos|linux)-' } |
+Get-ChildItem (Join-Path $root "artifacts/packages") -File -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -match '^AirNet-\d+\.\d+\.\d+-(win|macos|linux)-.*\.(zip|tar\.gz)$' } |
     Sort-Object Name |
     Select-Object Name, @{Name = "MB"; Expression = { [math]::Round($_.Length / 1MB, 2) } } |
     Format-Table -AutoSize

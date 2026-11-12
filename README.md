@@ -2,7 +2,11 @@
 
 **轻量、快速的网络检测与优化工具** —— 点一下，三秒告诉你网络好不好、问题在路由器还是运营商。
 
-基于 .NET 10 + Avalonia 11.3，与 [AirPDF](F:\AirPdf) 同一套"纸张"设计语言，同一套单文件发布与更新管线。
+基于 .NET 10 + Avalonia 11.3，沿用 AirPDF 的"纸张"设计语言与单文件发布方式。
+
+[![CI](https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml/badge.svg)](https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/RyzenWang/AirNet?display_name=tag)](https://github.com/RyzenWang/AirNet/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-2E6F63.svg)](LICENSE)
 
 ![总览（浅色）](docs/shots/01-overview-light.png)
 
@@ -22,6 +26,7 @@
 
 | 部分 | 状态 |
 | --- | --- |
+| 平台支持 | Windows x64 ✅ 本机验证；Linux x64 ✅ 真实环境启动验证；Linux arm64 / macOS arm64+x64 🟡 已构建，未真机验证 |
 | 视觉系统（六页 × 深浅色） | ✅ M0/M2 |
 | 真实探测：ICMP 丢包 / TCP 计时 / DNS·TCP·TLS·TTFB | ✅ M1 |
 | 亚毫秒抖动（`Stopwatch` 计时 TCP 握手） | ✅ 本机实测 2.6ms（原先恒为 0） |
@@ -44,6 +49,10 @@
 | 双栈、邻区扫描、游戏/会议模式 | ⬜ 见 [技术方案](docs/TECH_PLAN.md) |
 
 程序启动时展示**确定性样例数据**（右上角标"示例数据"），点"开始检测"即切换为真实测量并写入历史。
+
+Release 下载：<https://github.com/RyzenWang/AirNet/releases/latest>。  
+参与开发前请读 [CONTRIBUTING.md](CONTRIBUTING.md)；安全问题见 [SECURITY.md](SECURITY.md)；
+第三方许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 ## 快速开始
 
@@ -71,9 +80,9 @@ powershell -File packaging/pack-all.ps1                          # Windows + mac
 | --- | --- |
 | Windows x64 | `AirNet-<version>-win-x64-portable.zip`，解压双击 `AirNet.exe` |
 | macOS Apple Silicon / Intel | `AirNet-<version>-macos-arm64.zip` / `-macos-x64.zip`，解压得到 `AirNet.app` |
-| Linux x64 / arm64 | `AirNet-<version>-linux-x64.zip` / `-linux-arm64.zip`，解压后 `chmod +x AirNet && ./AirNet` |
+| Linux x64 / arm64 | `AirNet-<version>-linux-x64.zip` / `-linux-arm64.zip`（以及同名 `.tar.gz`）；直接 `bash run.sh`（zip/tar 都适用） |
 
-Linux x64 已在真实 Linux 环境启动验证；需要 X11 或 Wayland（XWayland）及常见桌面库。macOS 包未签名/未公证，暂未在真机验证；Linux arm64 也待验证。CI 在 tag 上会把全部 zip 挂到对应 Release，不构建 setup。
+Linux x64 已在真实 Linux 环境启动验证；需要 X11 或 Wayland（XWayland）及常见桌面库。macOS 包未签名/未公证，暂未在真机验证；Linux arm64 也待验证。CI 在 tag 上会把全部便携 zip/tar.gz 挂到对应 Release，不构建 setup。
 
 `--selftest` 的输出示例（本机，有线 1000M）：
 
