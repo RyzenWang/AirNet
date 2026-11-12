@@ -49,7 +49,7 @@ AirNet.sln
 │  └─ Demo/                   确定性样例数据（评审与演示用）
 └─ src/AirNet.App             Avalonia
    ├─ ViewModels/             Shell(导航+扫描生命周期), Overview, Monitor, Speed, Settings
-   ├─ Views/                  ShellView + 四个页面（UserControl，非 Window）
+   ├─ Views/                  ShellView + 五个页面（UserControl，非 Window）
    ├─ Controls/               ScoreRing, Sparkline, MeterBar, SignalBars
    └─ Styles/                 Colors, Icons, Controls
 ```
@@ -77,7 +77,7 @@ XAML 里不写转换器，视觉评审时只读 XAML 就能看懂。
 | DNS 解析 | `Dns.GetHostAddressesAsync` 计时 ×3 | 无 | ~100ms | 直连 53/UDP 查询绕开缓存 |
 | TLS 握手 | `SslStream.AuthenticateAsClientAsync` 计时 | 无 | ~200ms | 跳过 |
 | HTTP 首字节 | `HttpClient` + `ResponseHeadersRead` | 无 | ~200ms | 跳过 |
-| 出口 IP / 落地 | `https://1.1.1.1/cdn-cgi/trace`（纯文本，<1KB） | 无 | ~150ms | 关闭该项 |
+| 出口 IP / 落地 | `https://ip.3322.net` + `https://www.cloudflare.com/cdn-cgi/trace`（纯文本，<1KB，并行取先到者） | 无 | ~0.2–3s | 显示"未获取"，不阻塞扫描 |
 | 带宽 | 多流 ranged GET/DELETE，5s 窗口 | 无 | 5–8s | 单流 |
 | 逐跳 | 调用系统 `tracert -d -w 500` / `traceroute -n` 解析输出（M2 已实现） | 无（子进程） | 8–20s | 仅网关+目标两跳 |
 | Wi-Fi 信号/速率 | Windows `wlanapi.dll`（M1 已实现）；macOS `CoreWLAN`；Linux `iw`/`/proc/net/wireless` | 无 | <50ms | 仅报"无线/有线" |
@@ -88,17 +88,17 @@ XAML 里不写转换器，视觉评审时只读 XAML 就能看懂。
 本机实测（M0，`AirNet.exe --selftest`）：
 
 ```
-avg=35  p95=35  jitter=0  loss=0  sent=20  received=20
+avg=35  p95=35  jitter=0  loss=0  sent=15  received=15
 ```
 
-`System.Net.NetworkInformation.Ping` 的 `RoundtripTime` 是**整毫秒**，20 个包全部落在 35ms，
+`System.Net.NetworkInformation.Ping` 的 `RoundtripTime` 是**整毫秒**，15 个包全部落在 35ms，
 于是抖动恒为 0 —— 这对"网络好不好"的判断是致命的（真实抖动可能有 ±3ms）。
 
-**M1 已实现的对策**：延迟、P95、抖动一律由 `Stopwatch` 计时的 **TCP 握手序列**（12 次独立 SYN）计算，
+**M1 已实现的对策**：延迟、P95、抖动一律由 `Stopwatch` 计时的 **TCP 握手序列**（10 次独立 SYN）计算，
 ICMP 只负责**丢包比例**（TCP 握手观测不到丢包）。同一台机器的复测结果：
 
 ```
-probeMode=Tcp  avg=38.6  p95=41.9  jitter=2.6  loss=0  sent=20  received=20
+probeMode=Tcp  avg=38.6  p95=41.9  jitter=2.6  loss=0  sent=15  received=15
 ```
 
 抖动从 0 变成 2.6ms，P95 有了区分度，`ProbeMode` 会写进快照并在 UI 上标注（"ICMP 计时 / TCP 计时"）。
@@ -108,7 +108,8 @@ TCP RTT 比 ICMP 略高（多一层本地协议栈开销），这是可接受的
 
 ### 4.2 采样与窗口
 
-- 一轮扫描 = 20 个 ICMP（110ms 间隔）+ 3 次 DNS + 网关 4 包 + 可选带宽。约 2.4s。
+- 一轮扫描 = 15 个 ICMP（90ms 间隔）+ 10 次 TCP 握手（70ms 间隔）+ 首包分解 + 网关 4 包。约 2.2–3s；
+  出口 IP 与首包分解并行，带宽测速是单独动作。
 - 传感器窗口：延迟曲线保留最近 60 个样本 / 60 秒；计算 P95 用全部样本。
 - 自动刷新：默认关闭；开启后 60s 一次，且**只在窗口可见时**执行（`IsVisible` 事件），最小化即暂停。
 - 移动网络（`NetworkInterfaceType.Wwanpp*`）默认不做带宽测试，避免偷跑流量。
@@ -236,8 +237,8 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 解压体积 | ≤ 45MB | **40.7MB**（exe 24.6 + Skia 9.0 + ANGLE 5.2 + HarfBuzz 1.7）；压缩后 26.1MB | `PublishSingleFile` + `TrimMode=partial`；原生图形库无法再压 |
 | 冷启动 | ≤ 1400ms | **0.9–1.3s** 到窗口可见（机器空闲时约 0.9s，负载高时 1.3s；去掉 R2R 会劣化到 2053ms） | R2R |
 | 运行内存 | ≤ 180MB | **150–170MB** 工作集 | 图表只保留 60 点、不缓存位图；内存主要来自运行时与 Skia，与 AirPDF 同量级 |
-| 安装包 | ≤ 25MB | 便携 zip 26.1MB（含说明）；Velopack Setup 仅在 CI 打标签时产出 | `packaging/pack-portable.ps1` |
-| 扫描 CPU | < 3% | 未测 | 探针 110ms 间隔；UI 250ms 合并刷新 |
+| 安装包 | ≤ 25MB | 便携 zip 26.1MB（含说明）；Velopack Setup 尚未接入 CI | `packaging/pack-portable.ps1` |
+| 扫描 CPU | < 3% | 未测 | ICMP 90ms / TCP 70ms 间隔；UI 250ms 合并刷新 |
 
 > 结论：**裁剪/R2R 的目标达成**——体积与启动都可接受，代价是 R2R 多出约 10MB。
 > 内存 150–170MB 是 Avalonia + Skia + Inter 的固定成本，砍不动，也不该用"内存 46MB"这种数字做宣传。
@@ -257,7 +258,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 ## 10. 权限、隐私与安全
 
 - **默认零提权**：所有测量无需管理员。只有"切换 DNS / 改 MTU"这类写操作才申请一次提权，并明确展示命令。
-- **零上传**：除"出口 IP 查询"（可关）与"测速"（可选）外不产生外发流量；遥测默认关闭。
+- **零上传**：除"出口 IP 查询"（每次扫描一次，best-effort；开关待 M3）与"测速"（用户点击）外不产生外发流量；遥测默认关闭。
 - 子进程调用（`tracert`）必须使用参数数组而非字符串拼接，避免注入。
 - 报告/日志中的 IP 可掩码；不记录 SSID 明文（默认只存 `Wi-Fi#1` 这种占位）。
 
@@ -265,11 +266,11 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 | 层级 | 手段 | 覆盖 |
 | --- | --- | --- |
-| 单元 | xUnit | `LatencyAnalyzer`（空集/全丢/单点/抖动的均值绝对差）、`DiagnosisEngine`（分档边界、规则触发） |
+| 单元 | xUnit（`tests/AirNet.Core.Tests`，39 项） | `LatencyAnalyzer`（空集/全丢/单点/抖动）、`DiagnosisEngine`（分档边界、带宽容错）、`TraceProbe.Parse`（中英提示）、`ReportBuilder.Mask`、`EgressProbe.Parse`、`DnsAdvisor`、`HistoryStore` |
 | 集成 | 本机 `--selftest` 模式（已实现） | 探针链路真实可用性，CI 上可跳过 |
 | 网络伪造 | `tc netem`（Linux）/ Clumsy（Windows）注入丢包抖动 | 归因是否正确 |
 | 视觉回归 | `--export` 截图 + 像素 diff | 深浅色 × 五页，防样式回退 |
-| 持续集成 | GitHub Actions（`.github/workflows/ci.yml`） | `-warnaserror` 构建、探针冒烟断言、报告断言、截图工件 |
+| 持续集成 | GitHub Actions（`.github/workflows/ci.yml`） | `-warnaserror` 构建、单元测试、探针冒烟断言、报告断言、截图工件 |
 | 现场 | 手动矩阵：Wi-Fi/有线、VPN、双栈、热点、移动网络 | 降级路径 |
 
 ## 12. 里程碑
@@ -279,7 +280,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | **M0 视觉原型** | 四页原型 + 设计系统 + 真实探针内核 + 样例数据 | 可运行 exe、8 张截图、本文档 | ✅ 已完成 |
 | **M1 测量内核** | TCP 计时抖动、Wi-Fi 信号、DNS/TCP/TLS/TTFB 分解、评分校准、历史落盘、裁剪+R2R 发布 | 抖动 2.6ms、四段分解条、历史落盘、40MB 发布包 | ✅ 已完成 |
 | **M2 诊断与优化** | 三段归因、逐跳、MTU、一键 DNS（含还原）、报告导出、CI | ✅ 已完成 | — |
-| **M3 场景与分发** | 游戏/会议模式、双栈、自动复测、CLI、Velopack 打包与签名 | 1.1 | 2 周 |
+| **M3 场景与分发** | 游戏/会议模式、双栈、自动复测、快捷键/设置持久化、CLI、Velopack 打包与签名 | 1.1 | 2 周 |
 
 ## 13. 风险
 
@@ -290,7 +291,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 无线信号在 macOS/Linux 拿不到 | 该平台无射频分 | 计算分时置中值并标注"该平台不支持射频测量" |
 | 测速服务被劫持/限速 | 数字失真 | 校验字节数、多端点探测、异常时给"无法测量"而非假数字 |
 | 杀软对 raw socket / 子进程敏感 | 误报 | 默认不用 raw socket；`tracert` 仅在用户点击时启动 |
-| 测量抖动导致结论跳变 | 用户不信任 | 一轮结论需 20 个样本过阈值；只有 1 个坏包不降档 |
+| 测量抖动导致结论跳变 | 用户不信任 | 一轮结论需 15 个样本过阈值；只有 1 个坏包不降档 |
 
 ## 14. 从 AirPDF 直接复用的资产
 
@@ -300,7 +301,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 - `--export` 截图流水线（视觉回归基线）；
 - 单文件发布 + Velopack 更新管线（`packaging/`）。
 
-## 15. 现状（M2 进行中）
+## 15. 现状（M2 已完成）
 
 | 能力 | 状态 |
 | --- | --- |
@@ -310,17 +311,22 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | Wi-Fi 信号 / 速率 / PHY（wlanapi P/Invoke） | ✅ M1 代码完成，**未在真实无线网卡上验证**（本机为有线） |
 | DNS / TCP / TLS / TTFB 四段分解 | ✅ M1 |
 | 三段归因（局域网 / 运营商 / 对端） | ✅ M2，粗定位 + 逐跳定位两级 |
-| 逐跳路径（系统 traceroute + 本地化无关解析） | ✅ M2，实测 14 跳 / 17s |
+| 逐跳路径（系统 traceroute + 本地化无关解析） | ✅ M2，实测 14 跳 / 17s；目标未响应时不判"对端" |
 | MTU（DF 二分） | ✅ M2，实测 1480 |
 | 评分、场景估计、规则诊断 | ✅ M1 |
 | 历史持久化（JSONL，30 天，裁剪安全） | ✅ M1 |
-| 带宽测速（单流） | ✅ |
+| 出口 IP（Cloudflare / 3322，best-effort） | ✅ M2，被拦截时显示"未获取" |
+| 带宽测速（单流下行） | 🟡 只测下行；未测速显示"未测速"，不写假值 |
 | 裁剪 + R2R 单文件发布 | ✅ M1，40.6MB / 0.9–1.1s / 154MB |
 | 报告导出（自包含 HTML，可打印 PDF） | ✅ M2，7.8KB，零脚本 |
 | 一键 DNS + 还原（Windows 提权，UAC 可取消） | ✅ M2，实测命令生成与还原记录；**提权执行未自动化验证** |
-| CI（构建 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
+| 单元测试（xUnit，39 项） | ✅ M2，覆盖统计 / 分档 / 解析 / 掩码 / 历史 / DNS |
+| CI（构建 + 单元测试 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | 动效（A 扫描带 + B 实时读数 + 落地过冲/高亮） | ✅ M2，样本真实回传，截图模式可关闭 |
+| 设置项持久化、自动刷新、快捷键、双探测开关 | ⬜ M3；当前是展示态 |
 | 双栈、邻区扫描、游戏/会议模式 | ⬜ M3 |
 
 > 原型以**确定性样例数据**启动（右上角标注"示例数据"），点"开始检测"即切换为真实测量并写入历史；
 > 首页的"最近检测"在历史非空时自动切换为"本机实测"。
+> 带宽只在用户点"开始测速"后才有值：未测速时快照、报告、历史都按"未测速"处理，不再继承样例的
+> 384.2 Mbps；在真实快照上测速会写一条历史记录，供"近 6 次"趋势使用。

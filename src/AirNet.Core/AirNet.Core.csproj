@@ -6,4 +6,8 @@
     <Description>Network measurement and diagnosis services for AirNet.</Description>
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="AirNet.Core.Tests" />
+  </ItemGroup>
 </Project>

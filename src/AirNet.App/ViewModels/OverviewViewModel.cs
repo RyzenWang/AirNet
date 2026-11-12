@@ -43,7 +43,7 @@ public partial class OverviewViewModel : ObservableObject
             new RecentRun
             {
                 Title = $"{view.SsidText} · 本次检测",
-                Subtitle = $"延迟 {view.LatencyAvgText} ms · 丢包 {view.LossText}% · 下行 {view.DownloadText} Mbps",
+                Subtitle = $"延迟 {view.LatencyAvgText} ms · 丢包 {view.LossText}% · 下行 {view.DownloadText}",
                 ScoreText = view.ScoreText,
                 TimeText = view.CapturedAtText,
                 IsGood = view.IsGood,
@@ -105,7 +105,7 @@ public partial class OverviewViewModel : ObservableObject
         return new RecentRun
         {
             Title = $"{title} · {(isToday ? "今天" : local.ToString("M月d日", CultureInfo.InvariantCulture))}",
-            Subtitle = $"延迟 {Fmt.Fixed(record.LatencyAvg)} ms · 丢包 {Fmt.Fixed(record.Loss)}% · 下行 {Fmt.Compact(record.DownMbps)} Mbps",
+            Subtitle = $"延迟 {Fmt.Fixed(record.LatencyAvg)} ms · 丢包 {Fmt.Fixed(record.Loss)}% · 下行 {Fmt.Mbps(record.DownMbps)}",
             ScoreText = record.Score.ToString(CultureInfo.InvariantCulture),
             TimeText = local.ToString("HH:mm", CultureInfo.InvariantCulture),
             IsGood = record.Score >= 90,

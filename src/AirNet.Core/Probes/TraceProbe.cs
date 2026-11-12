@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using AirNet.Core.Diagnostics;
 
@@ -44,7 +46,8 @@ public static partial class TraceProbe
             if (hops.Count > 0)
             {
                 var reached = hops.LastOrDefault(h => h.Responded)?.Index ?? hops.Count;
-                return new TraceResult(target, hops, true, reached);
+                var reachedTarget = await TargetReachedAsync(target, hops, cancellationToken).ConfigureAwait(false);
+                return new TraceResult(target, hops, true, reached, null, reachedTarget);
             }
         }
 
@@ -102,6 +105,38 @@ public static partial class TraceProbe
         catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
         {
             // already gone
+        }
+    }
+
+    /// <summary>
+    /// A traceroute can stop at a router that filters TTL-expired probes without reaching the
+    /// target. Only a last hop that matches the target proves the path end; a resolver failure
+    /// returns null so the caller keeps the older, less precise behaviour.
+    /// </summary>
+    private static async Task<bool?> TargetReachedAsync(
+        string target,
+        IReadOnlyList<TraceHop> hops,
+        CancellationToken cancellationToken)
+    {
+        var last = hops.LastOrDefault(h => h.Responded);
+        if (last is null)
+        {
+            return false;
+        }
+
+        if (IPAddress.TryParse(target, out var literal))
+        {
+            return string.Equals(last.Address, literal.ToString(), StringComparison.Ordinal);
+        }
+
+        try
+        {
+            var addresses = await Dns.GetHostAddressesAsync(target, cancellationToken).ConfigureAwait(false);
+            return addresses.Any(a => string.Equals(a.ToString(), last.Address, StringComparison.Ordinal));
+        }
+        catch (Exception ex) when (ex is SocketException or ArgumentException)
+        {
+            return null;
         }
     }
 

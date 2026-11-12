@@ -80,7 +80,10 @@ public static class ReportBuilder
         }
 
         html.AppendLine($"<span class=\"chip mono\">{Encode(Mask(snapshot.Interface.LocalAddress, mask))}</span>");
-        html.AppendLine($"<span class=\"chip mono\">出口 {Encode(Mask(snapshot.EgressText, mask))}</span>");
+        if (!string.IsNullOrWhiteSpace(snapshot.EgressAddress))
+        {
+            html.AppendLine($"<span class=\"chip mono\">出口 {Encode(Mask(snapshot.EgressAddress, mask))}</span>");
+        }
         html.AppendLine("</div></div></section>");
     }
 
@@ -91,7 +94,10 @@ public static class ReportBuilder
         AppendMetric(html, "延迟 / LATENCY", $"{s.AverageMs:0.0}", "ms", $"P95 {s.P95Ms:0.0} ms");
         AppendMetric(html, "抖动 / JITTER", $"{s.JitterMs:0.0}", "ms", "相邻包差均值");
         AppendMetric(html, "丢包 / LOSS", $"{s.LossPercent:0.0}", "%", $"{s.Received}/{s.Sent} 已返回");
-        AppendMetric(html, "下载 / DOWNLOAD", $"{snapshot.DownloadMbps:0}", "Mbps", $"上行 {snapshot.UploadMbps:0} Mbps");
+        AppendMetric(html, "下载 / DOWNLOAD",
+            snapshot.HasBandwidth ? $"{snapshot.DownloadMbps:0}" : "—",
+            "Mbps",
+            snapshot.HasUpload ? $"上行 {snapshot.UploadMbps:0} Mbps" : "未测速");
         AppendMetric(html, "DNS", snapshot.Timing.Succeeded ? $"{snapshot.Timing.DnsMs:0.0}" : "—", "ms",
             snapshot.Timing.Succeeded ? $"总首包 {snapshot.Timing.TotalMs:0} ms" : "未测");
         AppendMetric(html, "计时方式", snapshot.ProbeMode == ProbeMode.Tcp ? "TCP" : "ICMP", string.Empty,

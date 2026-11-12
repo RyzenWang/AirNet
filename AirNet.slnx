@@ -3,4 +3,7 @@
     <Project Path="src/AirNet.App/AirNet.App.csproj" />
     <Project Path="src/AirNet.Core/AirNet.Core.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AirNet.Core.Tests/AirNet.Core.Tests.csproj" />
+  </Folder>
 </Solution>

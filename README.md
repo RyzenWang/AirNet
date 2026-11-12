@@ -15,7 +15,7 @@
 ## 当前状态
 
 **M2 已完成**：五页界面、评分与诊断、真实探测（含亚毫秒抖动）、三段归因、逐跳路径、MTU、
-报告导出、一键 DNS（含还原）、历史落盘、裁剪单文件发布、CI 都已跑通。
+报告导出、一键 DNS（含还原）、历史落盘、出口 IP、单元测试、裁剪单文件发布、CI 都已跑通。
 
 | 部分 | 状态 |
 | --- | --- |
@@ -25,14 +25,16 @@
 | Wi-Fi 信号 / 速率 / PHY（wlanapi） | ✅ 代码完成，未在真实无线网卡上验证 |
 | 评分、场景估计、规则诊断 | ✅ M1 |
 | 历史（JSONL，30 天，裁剪安全） | ✅ M1 |
-| 带宽测速（单流） | ✅ |
+| 带宽测速（单流下行） | 🟡 只测下行；未测速显示"未测速"，不写假值 |
+| **出口 IP**（Cloudflare / 3322，best-effort） | ✅ 被拦截时显示"未获取"，不阻塞扫描 |
 | **三段归因**（局域网 / 运营商 / 对端） | ✅ M2 粗定位 + 逐跳定位 |
-| **逐跳路径**（系统 traceroute，本地化无关解析） | ✅ M2 实测 14 跳 / 17s |
+| **逐跳路径**（系统 traceroute，本地化无关解析） | ✅ M2 实测 14 跳 / 17s；目标未响应时不误判对端 |
 | **MTU**（DF 二分） | ✅ M2 实测 1480（PPPoE） |
 | **报告导出**（自包含 HTML，可打印 PDF） | ✅ M2 7.8KB / 零脚本 / 地址掩码 |
 | **一键 DNS + 还原**（Windows 提权） | ✅ M2 命令先展示，还原记录落盘 |
+| **单元测试**（xUnit） | ✅ 39 项：统计 / 分档 / 解析 / 掩码 / 历史 |
 | 裁剪 + R2R 单文件发布 | ✅ 40.7MB / 0.9–1.3s / 150–170MB |
-| CI（构建 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
+| CI（构建 + 单元测试 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | **动效**（扫描进度、环/条填充、数字滚动、曲线扫入、页面淡入） | ✅ M2，截图模式可关闭 |
 | 双栈、邻区扫描、游戏/会议模式 | ⬜ 见 [技术方案](docs/TECH_PLAN.md) |
 
@@ -48,32 +50,37 @@ git clone <repo> ; cd AirNet
 dotnet run --project src/AirNet.App                              # 启动应用
 dotnet run --project src/AirNet.App -- --selftest out.txt        # 跑一轮真实探测 + 历史往返，输出报告
 dotnet run --project src/AirNet.App -- --report report.html      # 真测一轮并导出 HTML 报告
-dotnet run --project src/AirNet.App -- --export docs/shots       # 重新生成全部截图（动效自动关闭）
+dotnet run --project src/AirNet.App -- --export docs/shots --scale 1   # 重新生成全部截图（动效自动关闭）
 dotnet run --project src/AirNet.App -- --scan-shot scan.png      # 抓一张"检测中"的界面（动效开启）
+dotnet test tests/AirNet.Core.Tests/AirNet.Core.Tests.csproj     # 纯逻辑单元测试
 
 powershell -File packaging/publish.ps1                           # 裁剪单文件发布 + 实测启动/内存
 powershell -File packaging/pack-portable.ps1                     # 打本地验证包（免安装便携版）
 ```
 
 本地验证只出**免安装便携版**：`artifacts/packages/AirNet-<version>-win-x64-portable.zip`，
-解压后双击 `AirNet.exe` 即可，内含 `使用说明.txt`。安装包（Velopack Setup.exe）只在 CI 打标签时产出。
+解压后双击 `AirNet.exe` 即可，内含 `使用说明.txt`。Velopack Setup.exe 尚未接入 CI；当前 CI 只产出 zip，本地脚本只出便携版。
 
 `--selftest` 的输出示例（本机，有线 1000M）：
 
 ```
 interface=以太网      local=192.168.1.2   gateway=192.168.1.1
-probeMode=Tcp         avg=38.6  p95=41.9  jitter=2.6  loss=0  sent=20  received=20
+egress=203.0.113.42  hasBandwidth=False
+probeMode=Tcp         avg=38.6  p95=41.9  jitter=2.6  loss=0  sent=15  received=15
 dnsLookupMs=15.8  tcpMs=5.1  tlsMs=53.8  ttfbMs=8.5   timingOk=True
 score=88  grade=良好  hops=2  findings=2  historyRoundTrip=True
-traceOk=True hops=14 reached=14     mtu=1480 payload=1452
+traceOk=True hops=14 reached=14 targetReached=True   mtu=1480 payload=1452
 culprit=无 precise=True headline=整条路径没有明显瓶颈
 ```
+
+`hasBandwidth=False` 表示还没跑测速；此时快照、报告和历史都按"未测速"处理，不会把样例
+的 384 Mbps 或 0 Mbps 当成实测值。
 
 ## 目录
 
 ```
 src/AirNet.Core/         探测与诊断内核（无 UI 依赖）
-  Probes/                InterfaceInspector · LatencyProbe · ThroughputProbe
+  Probes/                InterfaceInspector · LatencyProbe · ThroughputProbe · EgressProbe
                          ApplicationTimingProbe · TraceProbe · MtuProbe · WlanRadio · MeasurementRunner
   Diagnostics/           NetworkSnapshot · LatencyAnalyzer · DiagnosisEngine
                          AttributionEngine（三段归因）· PathAnalysis（逐跳/MTU 模型）
@@ -85,6 +92,7 @@ src/AirNet.App/          Avalonia 应用
   Views/                 ShellView + Overview / Monitor / Speed / Path / Settings
   ViewModels/            Shell（导航与扫描生命周期）· 五个页面 VM · SnapshotView（展示投影）
 packaging/publish.ps1    裁剪 + R2R 发布，并打印体积/启动/内存
+tests/AirNet.Core.Tests/  xUnit：统计、分档、traceroute 解析、掩码、历史、DNS 建议
 docs/
   DESIGN.md              视觉规范：色板、字号、组件、图表、动效、无障碍
   TECH_PLAN.md           技术方案：架构、探针、评分与归因、性能预算、里程碑
@@ -97,7 +105,7 @@ docs/
 - **同一张纸，换了一支笔**：沿用 AirPDF 的暖白纸面色板（`#F1EEE7` / `#FBFAF7` / `#DED7CB`）与字号阶梯；
   主色由陶土改为青绿（健康），陶土降级为**告警色** —— 链路变差时才会出现。
 - **数字有口径**：每个指标都带单位、P95、采样数或满量程，不给出无法解释的分数。
-- **结构可读**：44px 品牌条 + 46px 状态条 + 216px 侧栏 + 30px 状态栏，四页共用，不做导航栈重建。
+- **结构可读**：44px 品牌条 + 46px 状态条 + 216px 侧栏 + 30px 状态栏，五页共用，不做导航栈重建。
 
 细节见 [docs/DESIGN.md](docs/DESIGN.md)。
 
@@ -107,7 +115,15 @@ docs/
 - 内存 150–170MB、启动 0.9–1.3s：这是 Avalonia + Skia + Inter 的固定成本，与 AirPDF 同量级；"轻"体现在无驱动、无后台常驻、40MB 解压体积，不是内存数字。
 - 截图导出必须用 `--scale 1`：Avalonia 的 `RenderTargetBitmap` 在 2× DPI 下会复用 1× 字形缓存，文字发糊（已记录，未绕开）。
 - TCP 握手 RTT 比 ICMP 高 3–5ms（多一层本地协议栈），评分阈值已按此校准；TCP 也观测不到丢包，所以丢包仍由 ICMP 给出。
-- 报告导出、一键优化、快捷键、动效均为占位。
+- **快捷键、设置项持久化、自动刷新、双探测开关仍未接通**：设置页四个开关目前是展示态，
+  Ctrl+R / Ctrl+1–4 / Ctrl+T / Esc 尚未实现；监控页的"复制诊断信息""优化 DNS"也还没有命令，
+  顶栏"导出报告"可用。
+- **带宽只测下行、单流**：未测速时 UI、报告和历史都显示"未测速"，不会用 0 或样例值填充；
+  在真实快照上测速会写一条历史记录，近 6 次趋势来自这些记录（样例数据上的测速不落盘）。
+- **出口 IP 是 best-effort**：Cloudflare / 3322 任一端点可用即可；被网络拦截时显示"未获取"，
+  不阻塞扫描，也不参与评分。
+- **逐跳归因以"最后一跳是否等于目标"判断到达**：目标不回 TTL 探测时标注"目标未响应"，
+  不再把最后一个响应的中间路由器当成对端。
 
 ## 许可
 

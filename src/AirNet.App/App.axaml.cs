@@ -161,6 +161,8 @@ public partial class App : Application
             report.AppendLine($"local={snapshot.Interface.LocalAddress}");
             report.AppendLine($"gateway={snapshot.Interface.Gateway}");
             report.AppendLine($"dns={snapshot.Interface.DnsServer}");
+            report.AppendLine($"egress={snapshot.EgressText}");
+            report.AppendLine($"hasBandwidth={snapshot.HasBandwidth}");
             report.AppendLine($"probeMode={snapshot.ProbeMode}");
             report.AppendLine($"avg={snapshot.Latency.AverageMs}");
             report.AppendLine($"p95={snapshot.Latency.P95Ms}");
@@ -194,7 +196,7 @@ public partial class App : Application
 
             // Route discovery: the parser must survive a localized traceroute.
             var trace = await Core.Probes.TraceProbe.TraceAsync("223.5.5.5").ConfigureAwait(true);
-            report.AppendLine($"traceOk={trace.Succeeded} hops={trace.Hops.Count} reached={trace.ReachedHop} spike={trace.SpikeIndex}");
+            report.AppendLine($"traceOk={trace.Succeeded} hops={trace.Hops.Count} reached={trace.ReachedHop} targetReached={trace.ReachedTarget} spike={trace.SpikeIndex}");
             foreach (var hop in trace.Hops)
             {
                 report.AppendLine($"  hop{hop.Index} {hop.Address} {(hop.Responded ? $"{hop.LatencyMs:0.0}ms" : "timeout")}");

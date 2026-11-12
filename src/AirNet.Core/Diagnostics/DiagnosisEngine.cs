@@ -37,7 +37,8 @@ public static class DiagnosisEngine
             findings,
             downloadMbps,
             uploadMbps,
-            raw.CapturedAt);
+            raw.CapturedAt,
+            raw.Diagnostics);
     }
 
     public static HealthGrade GradeOf(int score) => score switch
@@ -88,6 +89,10 @@ public static class DiagnosisEngine
         var jitter = s.JitterMs;
         var loss = s.LossPercent;
 
+        // An unmeasured uplink must not be treated as a 0 Mbps link: that would turn a missing
+        // number into a false meeting/streaming penalty.
+        var upstreamPenalty = up > 0 && up < 8 ? (8 - up) * 2 : 0;
+
         return
         [
             new("网页浏览", Pct(100 - (latency * 0.22) - (jitter * 0.7) - (loss * 5)),
@@ -96,10 +101,11 @@ public static class DiagnosisEngine
                 "拖拽与缓冲速度"),
             new("在线游戏", Pct(96 - (latency * 0.5) - (jitter * 1.5) - (loss * 7)),
                 "操作延迟与命中"),
-            new("视频会议", Pct(100 - (jitter * 1.4) - (loss * 7) - (up < 8 ? (8 - up) * 2 : 0)),
-                "语音连续性与画质"),
-            new("大文件下载", Pct(Math.Min(100, 52 + (down * 0.12))),
-                "峰值吞吐能力"),
+            new("视频会议", Pct(100 - (jitter * 1.4) - (loss * 7) - upstreamPenalty),
+                up > 0 ? "语音连续性与画质" : "上行未测，仅按延迟估算"),
+            down > 0
+                ? new("大文件下载", Pct(Math.Min(100, 52 + (down * 0.12))), "峰值吞吐能力")
+                : new("大文件下载", 0, "未测速", IsMeasured: false),
         ];
     }
 
@@ -209,7 +215,13 @@ public static class DiagnosisEngine
 
         if (s.AverageMs <= 35 && s.JitterMs <= 6 && s.LossPercent <= 0.5)
         {
-            return $"延迟低、抖动小、无丢包，适合游戏与 4K 会议；{link}余量充足。";
+            var bandwidthNote = down <= 0 ? " 带宽尚未测速。" : string.Empty;
+            return $"延迟低、抖动小、无丢包，适合游戏与 4K 会议；{link}余量充足。{bandwidthNote}";
+        }
+
+        if (down <= 0)
+        {
+            return $"{link}延迟与稳定性正常；带宽尚未测速，大文件场景暂不评价。";
         }
 
         if (down >= 100)

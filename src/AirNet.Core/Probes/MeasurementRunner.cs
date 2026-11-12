@@ -106,8 +106,13 @@ public sealed class MeasurementRunner
         var (stats, series, mode) = SelectTiming(icmpStats, icmpSamples, tcpStats, tcpSamples);
 
         progress?.Report(new ScanProgress("首包四段分解", 0.68));
+
+        // The egress lookup runs beside the first-byte breakdown; when Cloudflare is blocked the
+        // scan still completes and the chip reads "未获取" instead of inventing an address.
+        var egressTask = EgressProbe.TryGetAsync(cancellationToken);
         var timing = await ApplicationTimingProbe.MeasureAsync(
             ApplicationHost, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var egress = await egressTask.ConfigureAwait(false) ?? "未获取";
 
         progress?.Report(new ScanProgress("网关与链路", 0.86));
         var hops = new List<HopReading>();
@@ -124,7 +129,7 @@ public sealed class MeasurementRunner
         progress?.Report(new ScanProgress("评分与归因", 0.96));
 
         var measurement = new MeasurementResult(
-            nic, stats, mode, diagnostics, timing, series, hops, "未获取", DateTimeOffset.Now);
+            nic, stats, mode, diagnostics, timing, series, hops, egress, DateTimeOffset.Now);
 
         var snapshot = DiagnosisEngine.Evaluate(measurement, fallbackDownloadMbps, fallbackUploadMbps);
         progress?.Report(new ScanProgress("完成", 1.0));

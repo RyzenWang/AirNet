@@ -126,9 +126,11 @@ public partial class PathViewModel : ObservableObject
 
             Apply(trace, mtu);
 
-            StatusText = trace.Succeeded
-                ? $"已追踪 {trace.Hops.Count} 跳 · 用时 {watch.Elapsed.TotalSeconds:0.0} s"
-                : trace.Note ?? "追踪失败";
+            StatusText = !trace.Succeeded
+                ? trace.Note ?? "追踪失败"
+                : trace.ReachedTarget == false
+                    ? $"已追踪 {trace.Hops.Count} 跳 · 目标未响应，用时 {watch.Elapsed.TotalSeconds:0.0} s"
+                    : $"已追踪 {trace.Hops.Count} 跳 · 用时 {watch.Elapsed.TotalSeconds:0.0} s";
         }
         catch (Exception ex)
         {
@@ -150,7 +152,9 @@ public partial class PathViewModel : ObservableObject
         MtuNote = mtu.Note;
         ReachedText = trace.Hops.Count == 0 ? "—" : $"{trace.ReachedHop} 跳";
         SpikeText = trace.SpikeIndex is { } spike ? $"第 {spike} 跳" : "无明显突变";
-        TraceModeText = trace.Succeeded ? "逐跳追踪" : "粗定位";
+        TraceModeText = !trace.Succeeded
+            ? "粗定位"
+            : trace.ReachedTarget == false ? "逐跳（目标未响应）" : "逐跳追踪";
 
         OnPropertyChanged(nameof(Verdict));
         OnPropertyChanged(nameof(VerdictDetail));

@@ -83,8 +83,13 @@ public static class AttributionEngine
         var middleLatency = middleHops.Count > 0 ? Median(middleHops.Select(h => h.LatencyMs!.Value)) : lanLatency;
         var targetLatency = last.LatencyMs!.Value;
 
+        // A trace that never answers from the target only proves where the path stopped being
+        // observable. Treating that last router as the far end is how a silent target becomes a
+        // false "对端" verdict, so the far-end segment is only scored when the target answered.
+        var reachedTarget = trace.ReachedTarget != false;
+
         var carrierDelta = Math.Max(0, middleLatency - lanLatency);
-        var farEndDelta = Math.Max(0, targetLatency - middleLatency);
+        var farEndDelta = reachedTarget ? Math.Max(0, targetLatency - middleLatency) : 0;
         // The trace measures its own path, so its last hop is the honest total even when the
         // dashboard is still showing an older (or sample) snapshot.
         var total = targetLatency;
@@ -100,9 +105,11 @@ public static class AttributionEngine
         var carrierSeverity = carrierDelta > 60
             ? Severity.Warn
             : carrierDelta > 30 && isSlow ? Severity.Warn : Severity.Ok;
-        var farEndSeverity = farEndDelta > 60
-            ? Severity.Warn
-            : farEndDelta > 30 && isSlow ? Severity.Warn : Severity.Ok;
+        var farEndSeverity = !reachedTarget
+            ? Severity.Info
+            : farEndDelta > 60
+                ? Severity.Warn
+                : farEndDelta > 30 && isSlow ? Severity.Warn : Severity.Ok;
 
         var segments = new List<PathSegment>
         {
@@ -119,25 +126,39 @@ public static class AttributionEngine
                 }),
             new("运营商",
                 $"+{carrierDelta:0.0} ms",
-                $"接入 → 第 {last.Index} 跳前",
+                reachedTarget ? $"接入 → 第 {last.Index} 跳前" : $"接入 → 第 {last.Index} 跳",
                 carrierSeverity,
                 carrierSeverity == Severity.Ok ? "骨干段正常" : "跨网段出现明显增量"),
             new("对端",
-                $"+{farEndDelta:0.0} ms",
-                $"最后一跳 {last.Address}",
+                reachedTarget ? $"+{farEndDelta:0.0} ms" : "未测",
+                reachedTarget ? $"最后一跳 {last.Address}" : $"目标 {trace.Target} 未响应",
                 farEndSeverity,
-                farEndSeverity == Severity.Ok ? "对端响应正常" : "增量出现在最后一跳"),
+                reachedTarget
+                    ? farEndSeverity == Severity.Ok ? "对端响应正常" : "增量出现在最后一跳"
+                    : $"追踪止于第 {last.Index} 跳 {last.Address}"),
         };
 
         var culprit = lanSeverity == Severity.Bad
             ? "局域网"
             : carrierSeverity != Severity.Ok
                 ? "运营商"
-                : farEndSeverity != Severity.Ok
+                : reachedTarget && farEndSeverity != Severity.Ok
                     ? "对端"
                     : "无";
 
         var attribution = Build(culprit, segments, precise: true, total);
+
+        if (!reachedTarget)
+        {
+            var note = $"逐跳追踪到第 {last.Index} 跳（{last.Address}）后停止，目标 {trace.Target} 未响应，是否可达未知。";
+            attribution = attribution with
+            {
+                Headline = culprit == "无" ? "前段无明显瓶颈，目标未响应" : attribution.Headline,
+                Detail = culprit == "无"
+                    ? $"{note}前段延迟均匀，问题更可能在目标侧或路径末段。"
+                    : $"{attribution.Detail} {note}",
+            };
+        }
 
         if (mtu is { Succeeded: true, MtuBytes: < 1450 })
         {

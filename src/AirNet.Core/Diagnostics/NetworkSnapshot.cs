@@ -90,9 +90,9 @@ public sealed record HopReading(
     bool IsTerminal = false);
 
 /// <summary>How well a usage scenario is expected to behave on this path.</summary>
-public sealed record ScenarioReading(string Name, int Score, string Hint)
+public sealed record ScenarioReading(string Name, int Score, string Hint, bool IsMeasured = true)
 {
-    public string ScoreText => Score.ToString();
+    public string ScoreText => IsMeasured ? Score.ToString() : "—";
 }
 
 /// <summary>One diagnosis line: what was measured, what it means, what to do.</summary>
@@ -121,6 +121,7 @@ public sealed record NetworkSnapshot(
     double DownloadMbps,
     double UploadMbps,
     DateTimeOffset CapturedAt,
+    ProbeDiagnostics Diagnostics,
     bool IsSample = false)
 {
     public string ScoreText => Score.ToString();
@@ -128,6 +129,11 @@ public sealed record NetworkSnapshot(
     public string CapturedAtText => CapturedAt.ToLocalTime().ToString("HH:mm:ss");
 
     public string EgressText => string.IsNullOrWhiteSpace(EgressAddress) ? "未获取" : EgressAddress;
+
+    /// <summary>Zero means the speed test has not run yet; it is not a measured 0 Mbps.</summary>
+    public bool HasBandwidth => DownloadMbps > 0 || UploadMbps > 0;
+
+    public bool HasUpload => UploadMbps > 0;
 
     public double DnsMs => Timing.DnsMs;
 

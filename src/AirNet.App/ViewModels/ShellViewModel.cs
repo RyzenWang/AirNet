@@ -232,6 +232,7 @@ public partial class ShellViewModel : ObservableObject
             Overview.Refresh(View);
             Monitor.Apply(View);
             Path.RefreshFromSnapshot();
+            Speed.RefreshFromSnapshot();
             Settings.RefreshDnsPlan();
             StatusMessage = $"检测完成 · 评分 {View.Score} / {View.GradeLabel}";
 
@@ -241,6 +242,7 @@ public partial class ShellViewModel : ObservableObject
                 await _history.AppendAsync(snapshot).ConfigureAwait(true);
                 await Overview.LoadHistoryAsync().ConfigureAwait(true);
                 await Settings.RefreshHistoryCountAsync().ConfigureAwait(true);
+                await Speed.RefreshHistoryAsync().ConfigureAwait(true);
             }
         }
         catch (OperationCanceledException)
@@ -283,22 +285,18 @@ public partial class ShellViewModel : ObservableObject
         return path;
     }
 
-    public void PublishSpeed(double downloadMbps, double uploadMbps, string message)
+    public async Task PublishSpeedAsync(double downloadMbps, double uploadMbps, string message)
     {
-        if (downloadMbps > 0 && uploadMbps > 0)
+        // Download-only is the normal case: the prototype never measures upload, so requiring
+        // both values here would silently drop every successful test.
+        if (downloadMbps > 0 || uploadMbps > 0)
         {
             var updated = DiagnosisEngine.Evaluate(
                 new MeasurementResult(
                     Snapshot.Interface,
                     Snapshot.Latency,
                     Snapshot.ProbeMode,
-                    new ProbeDiagnostics(
-                        Snapshot.ProbeMode == ProbeMode.Icmp,
-                        true,
-                        Snapshot.Latency.Sent,
-                        Snapshot.Latency.Received,
-                        Snapshot.Latency.Sent,
-                        Snapshot.Latency.Received),
+                    Snapshot.Diagnostics,
                     Snapshot.Timing,
                     Snapshot.LatencySeries,
                     Snapshot.Hops,
@@ -311,6 +309,14 @@ public partial class ShellViewModel : ObservableObject
             Overview.Refresh(View);
             Monitor.Apply(View);
             Path.RefreshFromSnapshot();
+            Speed.RefreshFromSnapshot();
+
+            if (!updated.IsSample)
+            {
+                await _history.AppendAsync(updated).ConfigureAwait(true);
+                await Overview.LoadHistoryAsync().ConfigureAwait(true);
+                await Settings.RefreshHistoryCountAsync().ConfigureAwait(true);
+            }
         }
 
         StatusMessage = message;

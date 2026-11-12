@@ -7,15 +7,20 @@ public sealed record TraceHop(int Index, string Address, double? LatencyMs, bool
 }
 
 /// <summary>The route, plus the hop where latency jumped the most.</summary>
+/// <param name="ReachedTarget">
+/// True only when the last responding hop is the target. Null means the target name could not be
+/// resolved, so the caller should not treat the last hop as the far end.
+/// </param>
 public sealed record TraceResult(
     string Target,
     IReadOnlyList<TraceHop> Hops,
     bool Succeeded,
     int ReachedHop,
-    string? Note = null)
+    string? Note = null,
+    bool? ReachedTarget = null)
 {
     public static TraceResult Unavailable(string target, string note) =>
-        new(target, [], false, 0, note);
+        new(target, [], false, 0, note, ReachedTarget: false);
 
     public int? SpikeIndex
     {

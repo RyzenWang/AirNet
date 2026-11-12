@@ -12,6 +12,9 @@ internal static class Fmt
         value >= 100
             ? value.ToString("0", CultureInfo.InvariantCulture)
             : value.ToString("0.0", CultureInfo.InvariantCulture);
+
+    /// <summary>Bandwidth with its unit, or "未测" when no speed test has run.</summary>
+    public static string Mbps(double value) => value > 0 ? $"{Compact(value)} Mbps" : "未测";
 }
 
 /// <summary>One number on the dashboard, with the caption that explains it.</summary>
@@ -41,6 +44,7 @@ public sealed class ScenarioRow
     public required string Hint { get; init; }
     public required string ScoreText { get; init; }
     public required double Bar { get; init; }
+    public bool IsPlaceholder { get; init; }
     public bool IsGood { get; init; }
     public bool IsWarn { get; init; }
     public bool IsBad { get; init; }
@@ -139,8 +143,9 @@ public sealed class SnapshotView
     public string LatencyP95Text => Fmt.Fixed(Source.Latency.P95Ms);
     public string JitterText => Fmt.Fixed(Source.Latency.JitterMs);
     public string LossText => Fmt.Fixed(Source.Latency.LossPercent);
-    public string DownloadText => Fmt.Compact(Source.DownloadMbps);
-    public string UploadText => Fmt.Compact(Source.UploadMbps);
+    public string DownloadText => Fmt.Mbps(Source.DownloadMbps);
+    public string UploadText => Fmt.Mbps(Source.UploadMbps);
+    public bool HasBandwidth => Source.HasBandwidth;
     public string DnsText => Source.DnsMs <= 0 ? "未测" : Fmt.Fixed(Source.DnsMs);
 
     public string SampleCountText => $"{Source.Latency.Sent} 次采样";
@@ -186,6 +191,7 @@ public sealed class SnapshotView
         var jitter = s.Latency.JitterMs;
         var loss = s.Latency.LossPercent;
         var down = s.DownloadMbps;
+        var hasBandwidth = s.HasBandwidth;
 
         return
         [
@@ -228,14 +234,15 @@ public sealed class SnapshotView
             new MetricTile
             {
                 Label = "下载 / DOWNLOAD",
-                Value = Fmt.Compact(down),
+                Value = hasBandwidth ? Fmt.Compact(down) : "—",
                 Number = down,
                 Decimals = down >= 100 ? 0 : 1,
                 Unit = "Mbps",
-                Foot = $"上行 {Fmt.Compact(s.UploadMbps)} Mbps",
-                IsGood = down >= 100,
-                IsWarn = down is >= 30 and < 100,
-                IsBad = down < 30,
+                Foot = s.HasUpload ? $"上行 {Fmt.Compact(s.UploadMbps)} Mbps" : "未测速",
+                IsPlaceholder = !hasBandwidth,
+                IsGood = hasBandwidth && down >= 100,
+                IsWarn = hasBandwidth && down is >= 30 and < 100,
+                IsBad = hasBandwidth && down < 30,
             },
         ];
     }
@@ -247,10 +254,11 @@ public sealed class SnapshotView
             Name = item.Name,
             Hint = item.Hint,
             ScoreText = item.ScoreText,
-            Bar = Math.Clamp(item.Score / 100d, 0, 1),
-            IsGood = item.Score >= 85,
-            IsWarn = item.Score is >= 70 and < 85,
-            IsBad = item.Score < 70,
+            Bar = item.IsMeasured ? Math.Clamp(item.Score / 100d, 0, 1) : 0,
+            IsPlaceholder = !item.IsMeasured,
+            IsGood = item.IsMeasured && item.Score >= 85,
+            IsWarn = item.IsMeasured && item.Score is >= 70 and < 85,
+            IsBad = item.IsMeasured && item.Score < 70,
         }).ToList();
     }
 

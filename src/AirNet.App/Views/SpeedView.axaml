@@ -57,13 +57,22 @@
                                         TrackBrush="{DynamicResource TrackBrush}"
                                         ProgressBrush="{DynamicResource AccentBrush}" />
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                      <controls:AnimatedNumber Value="{Binding DownloadMbps}"
-                                               Decimals="0"
-                                               FontSize="38"
-                                               FontWeight="SemiBold"
-                                               LetterSpacing="-2"
-                                               Foreground="{DynamicResource TextPrimaryBrush}"
-                                               HorizontalAlignment="Center" />
+                      <Grid>
+                        <controls:AnimatedNumber Value="{Binding DownloadMbps}"
+                                                 Decimals="0"
+                                                 FontSize="38"
+                                                 FontWeight="SemiBold"
+                                                 LetterSpacing="-2"
+                                                 Foreground="{DynamicResource TextPrimaryBrush}"
+                                                 HorizontalAlignment="Center"
+                                                 IsVisible="{Binding HasDownload}" />
+                        <TextBlock Text="—"
+                                   FontSize="38"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   IsVisible="{Binding !HasDownload}" />
+                      </Grid>
                       <TextBlock Text="Mbps" Classes="eyebrow" FontSize="8" HorizontalAlignment="Center" Margin="0,-1,0,0" />
                     </StackPanel>
                   </Grid>
@@ -84,13 +93,22 @@
                                         TrackBrush="{DynamicResource TrackBrush}"
                                         ProgressBrush="{DynamicResource GoodBrush}" />
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                      <controls:AnimatedNumber Value="{Binding UploadMbps}"
-                                               Decimals="1"
-                                               FontSize="38"
-                                               FontWeight="SemiBold"
-                                               LetterSpacing="-2"
-                                               Foreground="{DynamicResource TextPrimaryBrush}"
-                                               HorizontalAlignment="Center" />
+                      <Grid>
+                        <controls:AnimatedNumber Value="{Binding UploadMbps}"
+                                                 Decimals="1"
+                                                 FontSize="38"
+                                                 FontWeight="SemiBold"
+                                                 LetterSpacing="-2"
+                                                 Foreground="{DynamicResource TextPrimaryBrush}"
+                                                 HorizontalAlignment="Center"
+                                                 IsVisible="{Binding HasUpload}" />
+                        <TextBlock Text="—"
+                                   FontSize="38"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   IsVisible="{Binding !HasUpload}" />
+                      </Grid>
                       <TextBlock Text="Mbps" Classes="eyebrow" FontSize="8" HorizontalAlignment="Center" Margin="0,-1,0,0" />
                     </StackPanel>
                   </Grid>
@@ -119,7 +137,12 @@
                 <TextBlock Text="历史趋势" Classes="h3" FontSize="13.5" />
                 <TextBlock Grid.Column="1" Text="近 6 次 · 下行" Classes="micro" FontSize="10" VerticalAlignment="Center" />
               </Grid>
-              <ItemsControl ItemsSource="{Binding History}">
+              <TextBlock Text="还没有可对比的测速记录；完成一次真实检测后测速会记录在这里。"
+                         Classes="micro"
+                         FontSize="10"
+                         Margin="0,2,0,4"
+                         IsVisible="{Binding !HasHistory}" />
+              <ItemsControl ItemsSource="{Binding History}" IsVisible="{Binding HasHistory}">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
                     <UniformGrid Columns="6" />
@@ -159,12 +182,12 @@
               <TextBlock Text="本次结果" Classes="eyebrow" />
               <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Text="下行" Classes="caption" FontSize="11" />
-                <TextBlock Grid.Column="1" Text="{Binding DownloadText, StringFormat='{}{0} Mbps'}" FontSize="11.5" FontWeight="SemiBold" />
+                <TextBlock Grid.Column="1" Text="{Binding DownloadText}" FontSize="11.5" FontWeight="SemiBold" />
               </Grid>
               <Border Classes="hairline" />
               <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Text="上行" Classes="caption" FontSize="11" />
-                <TextBlock Grid.Column="1" Text="{Binding UploadText, StringFormat='{}{0} Mbps'}" FontSize="11.5" FontWeight="SemiBold" />
+                <TextBlock Grid.Column="1" Text="{Binding UploadText}" FontSize="11.5" FontWeight="SemiBold" />
               </Grid>
               <Border Classes="hairline" />
               <Grid ColumnDefinitions="*,Auto">
@@ -216,10 +239,7 @@
                          FontSize="10"
                          LineHeight="15"
                          TextWrapping="Wrap" />
-              <StackPanel Orientation="Horizontal" Spacing="7">
-                <Button Classes="mini" Content="千兆基准" />
-                <Button Classes="mini" Content="移动网络模式" />
-              </StackPanel>
+
             </StackPanel>
           </Border>
         </StackPanel>
