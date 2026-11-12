@@ -73,7 +73,7 @@ powershell -File packaging/pack-all.ps1                          # Windows + mac
 | macOS Apple Silicon / Intel | `AirNet-<version>-macos-arm64.zip` / `-macos-x64.zip`，解压得到 `AirNet.app` |
 | Linux x64 / arm64 | `AirNet-<version>-linux-x64.zip` / `-linux-arm64.zip`，解压后 `chmod +x AirNet && ./AirNet` |
 
-macOS 包未签名/未公证；Linux 需要 X11 或 Wayland（XWayland）及常见桌面库。CI 在 tag 上会把全部 zip 挂到对应 Release，不构建 setup。
+Linux x64 已在真实 Linux 环境启动验证；需要 X11 或 Wayland（XWayland）及常见桌面库。macOS 包未签名/未公证，暂未在真机验证；Linux arm64 也待验证。CI 在 tag 上会把全部 zip 挂到对应 Release，不构建 setup。
 
 `--selftest` 的输出示例（本机，有线 1000M）：
 
