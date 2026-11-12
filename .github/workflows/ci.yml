@@ -124,7 +124,7 @@ jobs:
 
       - name: Upload artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ci-output
           path: |
@@ -157,7 +157,7 @@ jobs:
         run: ./packaging/pack-all.ps1
 
       - name: Upload portable artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: airnet-portable
           path: |
