@@ -61,11 +61,19 @@ dotnet run --project src/AirNet.App -- --scan-shot scan.png      # 抓一张"检
 dotnet test tests/AirNet.Core.Tests/AirNet.Core.Tests.csproj     # 纯逻辑单元测试
 
 powershell -File packaging/publish.ps1                           # 裁剪单文件发布 + 实测启动/内存
-powershell -File packaging/pack-portable.ps1                     # 打本地验证包（免安装便携版）
+powershell -File packaging/pack-portable.ps1                     # Windows 免安装便携包
+powershell -File packaging/pack-all.ps1                          # Windows + macOS + Linux 全部便携包
 ```
 
-本地验证只出**免安装便携版**：`artifacts/packages/AirNet-<version>-win-x64-portable.zip`，
-解压后双击 `AirNet.exe` 即可，内含 `使用说明.txt`。Velopack Setup.exe 尚未接入 CI；当前 CI 只产出 zip，本地脚本只出便携版。
+本地验证和 Release 只出**免安装便携包**，不含 setup/安装器：
+
+| 平台 | 文件 |
+| --- | --- |
+| Windows x64 | `AirNet-<version>-win-x64-portable.zip`，解压双击 `AirNet.exe` |
+| macOS Apple Silicon / Intel | `AirNet-<version>-macos-arm64.zip` / `-macos-x64.zip`，解压得到 `AirNet.app` |
+| Linux x64 / arm64 | `AirNet-<version>-linux-x64.zip` / `-linux-arm64.zip`，解压后 `chmod +x AirNet && ./AirNet` |
+
+macOS 包未签名/未公证；Linux 需要 X11 或 Wayland（XWayland）及常见桌面库。CI 在 tag 上会把全部 zip 挂到对应 Release，不构建 setup。
 
 `--selftest` 的输出示例（本机，有线 1000M）：
 
@@ -100,6 +108,7 @@ src/AirNet.App/          Avalonia 应用
   ViewModels/            Shell（导航与扫描生命周期）· 六个页面 VM · SnapshotView（展示投影）
   Services/              SettingsStore（settings.json）
 packaging/publish.ps1    裁剪 + R2R 发布，并打印体积/启动/内存
+packaging/pack-all.ps1   Windows / macOS / Linux 便携 zip（无 setup）
 tests/AirNet.Core.Tests/  xUnit：统计、分档、traceroute 解析、掩码、历史、站点目录/自定义站点
 docs/
   DESIGN.md              视觉规范：色板、字号、组件、图表、动效、无障碍

@@ -1,0 +1,27 @@
+﻿# Builds every portable release asset: Windows x64 plus macOS/Linux x64 and arm64.
+# No setup/installer package is produced by this repository.
+#
+#   pwsh packaging/pack-all.ps1
+#
+# Output: artifacts/packages/AirNet-<version>-*.zip
+
+param(
+    [switch]$SkipWindows
+)
+
+$ErrorActionPreference = "Stop"
+$root = Split-Path -Parent $PSScriptRoot
+
+if (-not $SkipWindows) {
+    & (Join-Path $PSScriptRoot "pack-portable.ps1") -Runtime "win-x64"
+}
+
+& (Join-Path $PSScriptRoot "pack-cross.ps1")
+
+Write-Host ""
+Write-Host "portable assets:" -ForegroundColor Cyan
+Get-ChildItem (Join-Path $root "artifacts/packages") -Filter "AirNet-*.zip" -File -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -match '-(portable|macos|linux)-' } |
+    Sort-Object Name |
+    Select-Object Name, @{Name = "MB"; Expression = { [math]::Round($_.Length / 1MB, 2) } } |
+    Format-Table -AutoSize

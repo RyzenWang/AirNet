@@ -57,22 +57,28 @@ $readmeLines = @(
     "",
     "会用到网络的功能",
     "  · 开始检测：ICMP + TCP 握手 + DNS/TLS 首包，约 2-3 秒。",
+    "  · 网站延迟：11 个默认站点 + 自定义站点，每站 3 次取中位数，识别 HTTP 拦截。",
     "  · 链路路径 → 开始追踪：系统 traceroute，约 10-20 秒，最多 16 跳。",
     "  · 带宽测速：单流 12MB，按需触发。",
     "  · 导出报告：生成单文件 HTML，浏览器可直接打开或打印成 PDF。",
+    "",
+    "命令行",
+    "  AirNet.exe --sites result.txt     跑一轮网站延迟（无界面）",
+    "  AirNet.exe --report report.html   跑一轮主检测并导出报告",
     "",
     "会改系统的地方（仅一处）",
     "  · 设置 → DNS 优化：需要 UAC。执行前显示完整命令，应用后记录还原点，",
     "    随时可「还原」。解析不慢时它不会建议你改。",
     "",
     "数据位置",
-    "  %LOCALAPPDATA%\AirNet\  （history.jsonl 历史、dns-backup.json 还原点）",
+    "  %LOCALAPPDATA%\AirNet\  （history.jsonl 历史、sites.jsonl 站点历史、settings.json 偏好、sites.json 自定义站点、dns-backup.json 还原点）",
     "  删掉该目录即清除全部本地数据。",
     "",
     "已知限制",
     "  · Wi-Fi 信号采样未在真实无线网卡上验证过（开发机是有线）。",
     "  · 抖动取自 TCP 握手，比 ICMP 高 3-5ms 属正常。",
-    "  · 逐跳依赖系统 traceroute，部分企业网络会拦截。"
+    "  · 逐跳依赖系统 traceroute，部分企业网络会拦截。",
+    "  · 网站延迟只测 HTTPS 首字节；Google/YouTube/X 被拦截时会标不可达或 HTTP 拦截。"
 ) -join "`r`n"
 
 $readmeLines | Out-File -FilePath (Join-Path $stageDir "使用说明.txt") -Encoding utf8

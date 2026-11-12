@@ -19,6 +19,9 @@ if (-not $Output) {
 
 $r2r = if ($NoReadyToRun) { "false" } else { "true" }
 
+# An incremental publish can leave native libraries behind between RID switches.
+# Start clean and keep them external so every archive has the same layout.
+Remove-Item -Recurse -Force $Output -ErrorAction SilentlyContinue
 Write-Host "publishing $Runtime (ReadyToRun=$r2r) -> $Output" -ForegroundColor Cyan
 dotnet publish (Join-Path $root "src/AirNet.App/AirNet.App.csproj") `
     -c Release `
@@ -29,6 +32,7 @@ dotnet publish (Join-Path $root "src/AirNet.App/AirNet.App.csproj") `
     -p:TrimMode=partial `
     -p:PublishReadyToRun=$r2r `
     -p:EnableCompressionInSingleFile=true `
+    -p:IncludeNativeLibrariesForSelfExtract=false `
     -o $Output `
     --nologo
 

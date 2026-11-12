@@ -242,7 +242,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 解压体积 | ≤ 45MB | **67.1MB**（exe 51.2 + Skia 9.0 + ANGLE 5.2 + HarfBuzz 1.7）；压缩后 52.2MB | `PublishSingleFile` + `TrimMode=partial`；**未达预算**，SDK 10.0.403 的 R2R 产物偏大 |
 | 冷启动 | ≤ 1400ms | **0.9–2.3s** 到窗口可见（二次 / 首次） | R2R 已开；**未达预算**，待查启动路径 |
 | 运行内存 | ≤ 180MB | **~217MB** 工作集 | 图表只保留 60 点、不缓存位图；**未达预算** |
-| 安装包 | ≤ 25MB | 便携 zip **52.2MB**（含说明）；Velopack Setup 尚未接入 CI | `packaging/pack-portable.ps1`；**未达预算** |
+| 安装包 | ≤ 25MB | Windows zip **52.2MB**（超预算）；macOS **17.4/17.9MB**、Linux **14.0/14.8MB**（均含说明） | `packaging/pack-all.ps1`；只出便携 zip，不做 setup |
 | 扫描 CPU | < 3% | 未测 | ICMP 90ms / TCP 70ms 间隔；UI 250ms 合并刷新 |
 
 > 结论：M2 功能完成，但本机 2026-11 的 R2R 产物未达到原体积 / 启动 / 内存预算。
@@ -259,6 +259,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 逐跳 | `tracert` 子进程 | `traceroute` | `traceroute`/`tracepath` |
 | 改 DNS | `netsh interface ip set dns` | `networksetup -setdnsservers` | `nmcli con mod` |
 | 自定义标题栏 | `BorderOnly + NoChrome` | 同 | 同 |
+| 便携包 | `win-x64-portable.zip` | `macos-arm64/x64.zip`（`.app`） | `linux-x64/arm64.zip` |
 
 ## 10. 权限、隐私与安全
 
@@ -324,6 +325,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 带宽测速（单流下行） | 🟡 只测下行；未测速显示"未测速"，不写假值 |
 | 网站延迟（11 默认 + 最多 8 自定义） | ✅ M2，四段分解/3 次中位数/HTTP 状态；自定义落 `sites.json`，历史落 `sites.jsonl`，`--sites` 可无 UI 烟测 |
 | 裁剪 + R2R 单文件发布 | ✅ M1；本机 2026-11 复测 52.2MB / 0.9–2.3s / ~217MB（旧记录 40.6MB，待复核） |
+| 跨平台便携包 | ✅ Windows / macOS（arm64+x64）/ Linux（x64+arm64）zip；macOS 未签名/未公证，mac/Linux 未在本机启动验证 |
 | 报告导出（自包含 HTML，可打印 PDF） | ✅ M2，7.8KB，零脚本 |
 | 一键 DNS + 还原（Windows 提权，UAC 可取消） | ✅ M2，实测命令生成与还原记录；**提权执行未自动化验证** |
 | 单元测试（xUnit，70 项） | ✅ M2，覆盖统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 站点目录、自定义站点、HTTP 状态与站点历史 |
