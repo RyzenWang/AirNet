@@ -84,6 +84,7 @@ public sealed class DiagnosisEngineTests
             ProbeMode.Icmp,
             new ProbeDiagnostics(true, true, 10, received, 10, received),
             timing,
+            DualStackResult.Unavailable,
             [averageMs],
             [new HopReading("家庭网关", "192.168.1.1", 1.5, true)],
             "203.0.113.42",

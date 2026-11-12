@@ -18,7 +18,7 @@ public static class DiagnosisEngine
         var score = Score(latency, raw.Interface, raw.Timing);
         var grade = GradeOf(score);
         var scenarios = Scenarios(latency, downloadMbps, uploadMbps);
-        var findings = Findings(latency, raw.Interface, raw.Timing, raw.Diagnostics);
+        var findings = Findings(latency, raw.Interface, raw.Timing, raw.Diagnostics, raw.DualStack);
 
         return new NetworkSnapshot(
             score,
@@ -31,6 +31,7 @@ public static class DiagnosisEngine
             latency,
             raw.ProbeMode,
             raw.Timing,
+            raw.DualStack,
             raw.LatencySeries,
             raw.Hops,
             scenarios,
@@ -113,7 +114,8 @@ public static class DiagnosisEngine
         LatencyStats s,
         InterfaceInfo nic,
         LayerTiming timing,
-        ProbeDiagnostics diagnostics)
+        ProbeDiagnostics diagnostics,
+        DualStackResult dualStack)
     {
         var list = new List<Finding>();
 
@@ -181,6 +183,20 @@ public static class DiagnosisEngine
         else if (!string.IsNullOrEmpty(timing.FailureNote))
         {
             list.Add(new Finding(Severity.Info, "首包分解不可用", timing.FailureNote));
+        }
+
+        // Only speak up when the IPv6 path is actually worse; "IPv6 unavailable" is normal and
+        // would otherwise push a real problem out of the four slots.
+        if (dualStack.IsV6Slower)
+        {
+            list.Add(new Finding(Severity.Warn, "IPv6 明显更慢",
+                $"IPv4 {dualStack.V4Text}，IPv6 {dualStack.V6Text}。多数应用会优先尝试 IPv6，"
+                + "回退前的那一次超时会直接变成首包延迟。", "查看建议"));
+        }
+        else if (dualStack.Verdict == DualStackVerdict.V6Preferred)
+        {
+            list.Add(new Finding(Severity.Info, "IPv6 更快",
+                $"IPv4 {dualStack.V4Text}，IPv6 {dualStack.V6Text}。{dualStack.Note}"));
         }
 
         return list

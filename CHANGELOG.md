@@ -5,6 +5,27 @@ project uses semantic versioning for release tags.
 
 ## [Unreleased]
 
+### Added
+
+- Upload bandwidth measurement. The speed page now times both directions: the
+  downlink is bounded by a 4s budget rather than a byte count, and the uplink
+  streams 4MB from a single buffer. Either direction can fail on its own and the
+  page says "未测出" instead of writing a fake number.
+- IPv4/IPv6 dual-stack comparison. The same host is timed with five TCP
+  handshakes per family, in parallel with the first-byte breakdown, and reported
+  as 均衡 / IPv6 更快 / IPv6 偏慢. A slow IPv6 path now raises a diagnosis line,
+  because most stacks try IPv6 first and the fallback delay lands in the first
+  byte. Thresholds (0.9 / 1.3) are unit-tested, and a host without IPv6 is
+  reported as "仅 IPv4" without affecting the score.
+- `--speedtest <path>` for a headless both-directions run.
+- Dual-stack line in the HTML report and the path page summary.
+
+### Fixed
+
+- Downlink measurement reported 0 Mbps on slow links: the old probe required
+  12MB inside an 8s timeout, so anything under ~12 Mbps timed out. It is now
+  time-bounded and stops reading when the budget expires.
+
 ### Verified
 
 - Wi-Fi radio sampling confirmed on a real Windows wireless adapter (2026-11-12):

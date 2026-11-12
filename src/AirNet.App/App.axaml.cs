@@ -52,6 +52,13 @@ public partial class App : Application
                 return;
             }
 
+            // Headless bandwidth test, both directions, so upload can be verified without a UI.
+            if (ReadStringArgument(desktop.Args, "--speedtest") is { } speedPath)
+            {
+                _ = RunSpeedTestAsync(speedPath, desktop);
+                return;
+            }
+
             // Developer aid: capture the window while a real scan is in flight.
             var scanShotPath = ReadStringArgument(desktop.Args, "--scan-shot");
 
@@ -191,6 +198,8 @@ public partial class App : Application
             report.AppendLine($"hops={snapshot.Hops.Count}");
             report.AppendLine($"findings={snapshot.Findings.Count}");
             report.AppendLine($"samples={snapshot.LatencySeries.Count}");
+            report.AppendLine($"dualStack={snapshot.DualStack.Verdict} v4={snapshot.DualStack.V4Text} "
+                              + $"v6={snapshot.DualStack.V6Text} note={snapshot.DualStack.Note}");
 
             // The store must survive trimming: source-generated JSON is the only reason it does.
             var store = new Core.History.HistoryStore(
@@ -332,6 +341,35 @@ public partial class App : Application
             await File.WriteAllTextAsync(htmlPath, "report failed: " + ex).ConfigureAwait(false);
         }
 
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
+    }
+
+    /// <summary>Runs both bandwidth directions once and writes the numbers to a text file.</summary>
+    private static async Task RunSpeedTestAsync(
+        string path,
+        IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        var report = new System.Text.StringBuilder();
+        try
+        {
+            report.AppendLine($"captured={DateTimeOffset.Now:O}");
+            var download = await Core.Probes.ThroughputProbe
+                .MeasureDownloadMbpsAsync("https://speed.cloudflare.com/__down?bytes=26214400")
+                .ConfigureAwait(true);
+            report.AppendLine($"downloadMbps={download}");
+
+            var upload = await Core.Probes.ThroughputProbe
+                .MeasureUploadMbpsAsync("https://speed.cloudflare.com/__up", 4 * 1024 * 1024)
+                .ConfigureAwait(true);
+            report.AppendLine($"uploadMbps={upload}");
+            report.AppendLine($"bothMeasured={(download > 0 && upload > 0)}");
+        }
+        catch (Exception ex)
+        {
+            report.AppendLine("error=" + ex);
+        }
+
+        await File.WriteAllTextAsync(path, report.ToString()).ConfigureAwait(false);
         Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
     }
 }

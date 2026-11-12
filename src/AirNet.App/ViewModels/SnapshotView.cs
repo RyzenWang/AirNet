@@ -170,6 +170,14 @@ public sealed class SnapshotView
         ? Source.Interface.Kind
         : $"{Source.Interface.Kind} · {Source.Interface.Ssid}";
 
+    // Dual stack ----------------------------------------------------------
+    public string DualStackVerdictText => Source.DualStack.VerdictText;
+    public string DualStackDetailText => Source.DualStack.Verdict == DualStackVerdict.Unavailable
+        ? "未测量"
+        : $"IPv4 {Source.DualStack.V4Text} · IPv6 {Source.DualStack.V6Text}";
+    public string DualStackNote => Source.DualStack.Note;
+    public bool IsV6Slower => Source.DualStack.IsV6Slower;
+
     // App-layer breakdown -------------------------------------------------
     public bool HasTiming => Source.Timing.Succeeded;
     public string TimingHostText => Source.Timing.Host;

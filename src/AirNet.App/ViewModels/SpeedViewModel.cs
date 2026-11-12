@@ -14,6 +14,10 @@ public partial class SpeedViewModel : ObservableObject
 
     private readonly DispatcherTimer _testTicker;
     private DateTimeOffset _testStartedAt;
+    private string _testPhase = "正在测速";
+
+    private const string DownloadUrl = "https://speed.cloudflare.com/__down?bytes=26214400";
+    private const string UploadUrl = "https://speed.cloudflare.com/__up";
 
     public SpeedViewModel(ShellViewModel shell)
     {
@@ -101,7 +105,7 @@ public partial class SpeedViewModel : ObservableObject
             return;
         }
 
-        TestStatusText = $"正在测速 · {(DateTimeOffset.Now - _testStartedAt).TotalSeconds:0.0} s";
+        TestStatusText = $"{_testPhase} · {(DateTimeOffset.Now - _testStartedAt).TotalSeconds:0.0} s";
     }
 
     /// <summary>Latency and jitter are read from the shell snapshot, so refresh them after a scan.</summary>
@@ -157,8 +161,10 @@ public partial class SpeedViewModel : ObservableObject
         IsTesting = true;
         try
         {
+            _testPhase = "正在测下行";
+            TestStatusText = _testPhase;
             var download = await ThroughputProbe.MeasureDownloadMbpsAsync(
-                "https://speed.cloudflare.com/__down?bytes=12582912", bytes: 12 * 1024 * 1024);
+                DownloadUrl).ConfigureAwait(true);
 
             if (download <= 0)
             {
@@ -166,8 +172,22 @@ public partial class SpeedViewModel : ObservableObject
                 return;
             }
 
-            Apply(download, UploadMbps, DateTimeOffset.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
-            await Shell.PublishSpeedAsync(download, UploadMbps, $"测速完成 · 下行 {DownloadText}").ConfigureAwait(true);
+            // Show the download number while the upload still runs, so the page is not frozen.
+            Apply(download, 0);
+
+            _testPhase = "正在测上行";
+            TestStatusText = _testPhase;
+            var upload = await ThroughputProbe.MeasureUploadMbpsAsync(
+                UploadUrl, bytes: 4 * 1024 * 1024).ConfigureAwait(true);
+
+            var testedAt = DateTimeOffset.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+            Apply(download, upload, testedAt);
+
+            var message = upload > 0
+                ? $"测速完成 · 下行 {DownloadText} · 上行 {UploadText} Mbps"
+                : $"测速完成 · 下行 {DownloadText}（上行未测出，可能被拦截或超时）";
+
+            await Shell.PublishSpeedAsync(download, upload, message).ConfigureAwait(true);
             await RefreshHistoryAsync().ConfigureAwait(true);
         }
         finally

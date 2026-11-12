@@ -52,12 +52,17 @@ public static class DemoSnapshotFactory
             TcpSent: 12,
             TcpReceived: 12);
 
+        // A plausible dual-stack reading: present but slightly slower, which is the common
+        // residential IPv6 situation and exercises the "IPv6 偏慢" branch in the UI.
+        var dualStack = DualStackAnalyzer.Evaluate(v4Ms: 21.4, v6Ms: 25.9, v4Samples: 5, v6Samples: 5);
+
         return new MeasurementResult(
             nic,
             stats,
             ProbeMode.Icmp,
             diagnostics,
             timing,
+            dualStack,
             series,
             hops,
             EgressAddress: "203.0.113.42",

@@ -6,22 +6,26 @@ using AirNet.Core.Diagnostics;
 namespace AirNet.Core.Probes;
 
 /// <summary>
-/// Single-connection ranged download used for the bandwidth estimate. Deliberately simple: the
-/// prototype only needs a representative number, and the production design uses parallel
-/// streams with a discard sink (see TECH_PLAN.md, 带宽测速).
+/// Single-connection bandwidth probes, one per direction. Both report what the connection
+/// actually carried — no ramp-up exclusion, no multi-stream extrapolation — because a number
+/// that needs a caveat is worse than an honest conservative one.
 /// </summary>
 public static class ThroughputProbe
 {
+    /// <summary>
+    /// Measures downlink for a fixed time budget rather than a fixed byte count. A byte target
+    /// either finishes too early on fast links or never finishes on slow ones — the latter is
+    /// exactly how the first version reported 0 Mbps on a 7 Mbps line.
+    /// </summary>
     public static async Task<double> MeasureDownloadMbpsAsync(
         string url,
-        int bytes = 12 * 1024 * 1024,
-        int timeoutMs = 8000,
+        int maxBytes = 25 * 1024 * 1024,
+        int maxDurationMs = 4000,
         CancellationToken cancellationToken = default)
     {
         using var handler = new SocketsHttpHandler { AutomaticDecompression = DecompressionMethods.None };
-        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(timeoutMs) };
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(maxDurationMs + 8000) };
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
-        request.Headers.Range = new RangeHeaderValue(0, bytes - 1);
         request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
 
         var buffer = new byte[64 * 1024];
@@ -34,7 +38,7 @@ public static class ThroughputProbe
             response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
-            while (total < bytes)
+            while (total < maxBytes && stopwatch.ElapsedMilliseconds < maxDurationMs)
             {
                 var read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
                 if (read == 0)
@@ -52,7 +56,74 @@ public static class ThroughputProbe
             return 0;
         }
 
-        var seconds = stopwatch.Elapsed.TotalSeconds;
-        return seconds <= 0 || total == 0 ? 0 : Math.Round(total * 8 / seconds / 1_000_000, 1);
+        return SpeedMath.Mbps(total, stopwatch.Elapsed);
+    }
+
+    /// <summary>
+    /// Uploads a fixed number of bytes and times it end to end. The body is streamed from one
+    /// reused buffer, so an 8 MB test never allocates 8 MB.
+    /// </summary>
+    public static async Task<double> MeasureUploadMbpsAsync(
+        string url,
+        int bytes = 8 * 1024 * 1024,
+        int timeoutMs = 20000,
+        CancellationToken cancellationToken = default)
+    {
+        using var handler = new SocketsHttpHandler { AutomaticDecompression = DecompressionMethods.None };
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(timeoutMs) };
+        using var content = new StreamedBytesContent(bytes);
+        using var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
+        request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
+
+        var stopwatch = Stopwatch.StartNew();
+        long sent;
+        try
+        {
+            using var response = await client.SendAsync(
+                request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            sent = content.BytesWritten;
+            stopwatch.Stop();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException)
+        {
+            return 0;
+        }
+
+        return SpeedMath.Mbps(sent, stopwatch.Elapsed);
+    }
+
+    /// <summary>Writes <paramref name="totalBytes"/> zeroes without buffering the whole payload.</summary>
+    private sealed class StreamedBytesContent : HttpContent
+    {
+        private readonly int _totalBytes;
+
+        public StreamedBytesContent(int totalBytes)
+        {
+            _totalBytes = totalBytes;
+            Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        }
+
+        /// <summary>Counted as the transport consumes the body, so a partial send is not counted as success.</summary>
+        public long BytesWritten { get; private set; }
+
+        protected override async Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+        {
+            var buffer = new byte[64 * 1024];
+            var remaining = _totalBytes;
+            while (remaining > 0)
+            {
+                var chunk = Math.Min(buffer.Length, remaining);
+                await stream.WriteAsync(buffer.AsMemory(0, chunk), CancellationToken.None).ConfigureAwait(false);
+                remaining -= chunk;
+                BytesWritten += chunk;
+            }
+        }
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = _totalBytes;
+            return true;
+        }
     }
 }

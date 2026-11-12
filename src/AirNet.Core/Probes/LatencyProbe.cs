@@ -137,7 +137,8 @@ public static class LatencyProbe
         }
     }
 
-    private static async Task<double?> MeasureTcpConnectAsync(
+    /// <summary>One handshake to a resolved endpoint; shared by the TCP series and the dual-stack probe.</summary>
+    public static async Task<double?> MeasureTcpConnectAsync(
         IPEndPoint endpoint,
         int timeoutMs,
         CancellationToken cancellationToken)

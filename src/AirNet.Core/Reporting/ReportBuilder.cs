@@ -44,7 +44,7 @@ public static class ReportBuilder
         AppendFindings(html, snapshot);
         if (attribution is not null)
         {
-            AppendPath(html, attribution, mtu);
+            AppendPath(html, attribution, mtu, snapshot.DualStack);
         }
 
         AppendSiteLatency(html, siteLatency);
@@ -155,7 +155,11 @@ public static class ReportBuilder
         html.AppendLine("</ul></section>");
     }
 
-    private static void AppendPath(StringBuilder html, Attribution attribution, MtuResult? mtu)
+    private static void AppendPath(
+        StringBuilder html,
+        Attribution attribution,
+        MtuResult? mtu,
+        DualStackResult dualStack)
     {
         html.AppendLine("<section class=\"card\"><div class=\"cardhead\"><h2>链路归因</h2>");
         html.AppendLine($"<span class=\"muted\">{Encode(attribution.Headline)}</span></div>");
@@ -176,6 +180,13 @@ public static class ReportBuilder
         if (mtu is { Succeeded: true } mtuValue)
         {
             html.AppendLine($"<p class=\"lead\">MTU {mtuValue.MtuBytes} B · {Encode(mtuValue.Note)}</p>");
+        }
+
+        if (dualStack.Verdict != DualStackVerdict.Unavailable)
+        {
+            html.AppendLine(
+                $"<p class=\"lead\">双栈 {Encode(dualStack.VerdictText)} · IPv4 {Encode(dualStack.V4Text)} / "
+                + $"IPv6 {Encode(dualStack.V6Text)} · {Encode(dualStack.Note)}</p>");
         }
 
         html.AppendLine("</section>");

@@ -171,6 +171,26 @@
                 <TextBlock Text="判定依据" Classes="caption" FontSize="10.5" />
                 <TextBlock Grid.Column="1" Text="{Binding TraceModeText}" Classes="micro" FontSize="10" />
               </Grid>
+              <Border Classes="hairline" />
+              <StackPanel Spacing="2">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="双栈" Classes="caption" FontSize="10.5" />
+                  <TextBlock Grid.Column="1"
+                             Text="{Binding Shell.View.DualStackVerdictText}"
+                             FontSize="11"
+                             FontWeight="SemiBold" />
+                </Grid>
+                <TextBlock Text="{Binding Shell.View.DualStackDetailText}"
+                           Classes="mono"
+                           FontSize="9.5"
+                           HorizontalAlignment="Right" />
+                <TextBlock Text="{Binding Shell.View.DualStackNote}"
+                           Classes="micro"
+                           FontSize="9"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Right"
+                           TextAlignment="Right" />
+              </StackPanel>
             </StackPanel>
           </Border>
 

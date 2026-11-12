@@ -79,7 +79,9 @@ XAML 里不写转换器，视觉评审时只读 XAML 就能看懂。
 | TLS 握手 | `SslStream.AuthenticateAsClientAsync` 计时 | 无 | ~200ms | 跳过 |
 | HTTP 首字节 | `HttpClient` + `ResponseHeadersRead` | 无 | ~200ms | 跳过 |
 | 出口 IP / 落地 | `https://ip.3322.net` + `https://www.cloudflare.com/cdn-cgi/trace`（纯文本，<1KB，并行取先到者） | 无 | ~0.2–3s | 显示"未获取"，不阻塞扫描 |
-| 带宽 | 多流 ranged GET/DELETE，5s 窗口 | 无 | 5–8s | 单流 |
+| 带宽下行 | 单流 GET，**4s 时间预算**（非字节数） | 无 | ~4s | 失败显未测出 |
+| 带宽上行 | 4MB 流式 POST，单缓冲不占内存 | 无 | 1–5s | 同上 |
+| 双栈 | 同一主机 IPv4/IPv6 各 5 次 TCP 握手，与首包分解并行 | 无 | ~0.5s | 无 IPv6 时标「仅 IPv4」 |
 | 逐跳 | 调用系统 `tracert -d -w 500` / `traceroute -n` 解析输出（M2 已实现） | 无（子进程） | 8–20s | 仅网关+目标两跳 |
 | Wi-Fi 信号/速率 | Windows `wlanapi.dll`（M1 已实现）；macOS `CoreWLAN`；Linux `iw`/`/proc/net/wireless` | 无 | <50ms | 仅报"无线/有线" |
 | MTU | `PingOptions.DontFragment` + 缓冲区二分（M2 已实现） | 无 | ~1s | 跳过 |
@@ -322,7 +324,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 评分、场景估计、规则诊断 | ✅ M1 |
 | 历史持久化（JSONL，30 天，裁剪安全） | ✅ M1 |
 | 出口 IP（Cloudflare / 3322，best-effort） | ✅ M2，被拦截时显示"未获取" |
-| 带宽测速（单流下行） | 🟡 只测下行；未测速显示"未测速"，不写假值 |
+| 带宽测速（单流，上下行） | ✅ 下行 4s 时间预算 + 上行 4MB 流式，任一向失败显"未测出" |
 | 网站延迟（11 默认 + 最多 8 自定义） | ✅ M2，四段分解/3 次中位数/HTTP 状态；自定义落 `sites.json`，历史落 `sites.jsonl`，`--sites` 可无 UI 烟测 |
 | 裁剪 + R2R 单文件发布 | ✅ M1；本机 2026-11 复测 26.9MB zip / 41.1MB 解压 / 1.6–1.9s / ~176MB |
 | 跨平台便携包 | ✅ Windows / macOS（arm64+x64）/ Linux（x64+arm64）zip；Linux x64 已在真实环境启动验证；Linux arm64 与 macOS 尚未验证（macOS 未签名/未公证） |
@@ -332,7 +334,8 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | CI（构建 + 单元测试 + 探针/站点冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | 动效（扫描/测速/追踪扫描带 + 实时读数 + 落地过冲/高亮） | ✅ M2，样本真实回传，截图模式可关闭 |
 | 设置项持久化 + 60s 自动刷新 + 快捷键 | ✅ M2，写入 `settings.json`；Ctrl+R / Ctrl+1–6 / Ctrl+T / Esc |
-| 双栈、邻区扫描、游戏/会议模式 | ⬜ M3 |
+| 双栈（IPv4/IPv6 对照） | ✅ 同步测两条路，IPv6 偏慢时给 Warn 结论 |
+| 邻区扫描、游戏/会议模式 | ⬜ M3 |
 
 > 原型以**确定性样例数据**启动（右上角标注"示例数据"），点"开始检测"即切换为真实测量并写入历史；
 > 首页的"最近检测"在历史非空时自动切换为"本机实测"。

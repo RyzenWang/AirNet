@@ -126,9 +126,15 @@ public sealed class MeasurementRunner
 
         // The egress lookup runs beside the first-byte breakdown; when Cloudflare is blocked the
         // scan still completes and the chip reads "未获取" instead of inventing an address.
+        // Dual-stack timing runs beside them too, so the comparison costs no extra wall clock.
         var egressTask = EgressProbe.TryGetAsync(cancellationToken);
-        var timing = await ApplicationTimingProbe.MeasureAsync(
-            ApplicationHost, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var timingTask = ApplicationTimingProbe.MeasureAsync(
+            ApplicationHost, cancellationToken: cancellationToken);
+        var stackTask = DualStackProbe.MeasureAsync(ApplicationHost, cancellationToken: cancellationToken);
+
+        await Task.WhenAll(timingTask, stackTask).ConfigureAwait(false);
+        var timing = await timingTask.ConfigureAwait(false);
+        var dualStack = await stackTask.ConfigureAwait(false);
         var egress = await egressTask.ConfigureAwait(false) ?? "未获取";
 
         progress?.Report(new ScanProgress("网关与链路", 0.86));
@@ -146,7 +152,7 @@ public sealed class MeasurementRunner
         progress?.Report(new ScanProgress("评分与归因", 0.96));
 
         var measurement = new MeasurementResult(
-            nic, stats, mode, diagnostics, timing, series, hops, egress, DateTimeOffset.Now);
+            nic, stats, mode, diagnostics, timing, dualStack, series, hops, egress, DateTimeOffset.Now);
 
         var snapshot = DiagnosisEngine.Evaluate(measurement, fallbackDownloadMbps, fallbackUploadMbps);
         progress?.Report(new ScanProgress("完成", 1.0));
