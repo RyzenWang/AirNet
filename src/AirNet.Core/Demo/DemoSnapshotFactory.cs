@@ -27,7 +27,7 @@ public static class DemoSnapshotFactory
             LinkSpeedMbps: 1201,
             LocalAddress: "192.0.2.24",
             Gateway: "192.0.2.1",
-            DnsServer: "223.5.5.5");
+            DnsServer: "192.0.2.1");
 
         IReadOnlyList<HopReading> hops =
         [
@@ -66,6 +66,7 @@ public static class DemoSnapshotFactory
             // The sample deliberately shows no proxy/VPN so the default screenshots stay clean;
             // the branch is covered by unit tests.
             InterferenceInfo.None,
+            DnsComparisonAnalyzer.Evaluate("当前 DNS", "192.0.2.1", 8.1, DemoServers()),
             series,
             hops,
             EgressAddress: "203.0.113.42",
@@ -104,4 +105,14 @@ public static class DemoSnapshotFactory
 
         return series;
     }
+
+    /// <summary>
+    /// Sample resolver timings: both publics answer, and neither beats the current 8.1 ms — the
+    /// demo should not recommend a change the sample data does not support.
+    /// </summary>
+    private static IReadOnlyList<DnsServerTiming> DemoServers() =>
+    [
+        new("阿里 DNS", "223.5.5.5", 12.4, 3),
+        new("Cloudflare", "1.1.1.1", 28.6, 3),
+    ];
 }

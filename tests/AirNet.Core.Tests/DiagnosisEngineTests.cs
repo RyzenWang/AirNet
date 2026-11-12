@@ -143,6 +143,7 @@ public sealed class DiagnosisEngineTests
             timing,
             DualStackResult.Unavailable,
             interference ?? InterferenceInfo.None,
+            DnsComparison.Unavailable,
             [averageMs],
             [new HopReading("家庭网关", "192.168.1.1", 1.5, true)],
             "203.0.113.42",

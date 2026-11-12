@@ -49,6 +49,8 @@ public partial class OverviewViewModel : ObservableObject
                 IsGood = view.IsGood,
                 IsWarn = view.IsWarn,
                 IsBad = view.IsBad,
+                DeltaText = "较上次 评分 +5 · 延迟 −8.3 · 抖动 −1.6",
+                DeltaImproved = true,
             },
             new RecentRun
             {
@@ -57,6 +59,8 @@ public partial class OverviewViewModel : ObservableObject
                 ScoreText = "88",
                 TimeText = "20:42",
                 IsGood = true,
+                DeltaText = "较上次 评分 −2 · 延迟 +1.1",
+                DeltaRegressed = true,
             },
             new RecentRun
             {
@@ -86,7 +90,14 @@ public partial class OverviewViewModel : ObservableObject
             return;
         }
 
-        RecentRuns = records.Select(ToRow).ToList();
+        // Records arrive newest first, so each row compares against the one after it.
+        var rows = new List<RecentRun>(records.Count);
+        for (var i = 0; i < records.Count; i++)
+        {
+            rows.Add(ToRow(records[i], i + 1 < records.Count ? records[i + 1] : null));
+        }
+
+        RecentRuns = rows;
         RecentCaption = "本机实测";
     }
 
@@ -96,11 +107,12 @@ public partial class OverviewViewModel : ObservableObject
         RecentCaption = "示例";
     }
 
-    private static RecentRun ToRow(HistoryRecord record)
+    private static RecentRun ToRow(HistoryRecord record, HistoryRecord? previous)
     {
         var local = record.At.ToLocalTime();
         var isToday = local.Date == DateTimeOffset.Now.Date;
         var title = string.IsNullOrEmpty(record.Ssid) ? record.Kind : $"{record.Kind} · {record.Ssid}";
+        var delta = HistoryDelta.Compare(record, previous);
 
         return new RecentRun
         {
@@ -111,6 +123,9 @@ public partial class OverviewViewModel : ObservableObject
             IsGood = record.Score >= 90,
             IsWarn = record.Score is >= 60 and < 90,
             IsBad = record.Score < 60,
+            DeltaText = delta.Text,
+            DeltaImproved = delta.IsImprovement,
+            DeltaRegressed = delta.IsRegression,
         };
     }
 }

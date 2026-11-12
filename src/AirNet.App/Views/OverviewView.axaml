@@ -4,6 +4,18 @@
              xmlns:controls="using:AirNet.App.Controls"
              x:Class="AirNet.App.Views.OverviewView"
              x:DataType="vm:OverviewViewModel">
+  <UserControl.Styles>
+    <!-- History delta: green when the run improved, terracotta when it regressed. -->
+    <Style Selector="TextBlock.delta">
+      <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.delta.ok">
+      <Setter Property="Foreground" Value="{DynamicResource GoodBrush}" />
+    </Style>
+    <Style Selector="TextBlock.delta.bad">
+      <Setter Property="Foreground" Value="{DynamicResource BadBrush}" />
+    </Style>
+  </UserControl.Styles>
   <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
     <Grid MaxWidth="1070"
           MinHeight="600"
@@ -129,6 +141,14 @@
                       <TextBlock Text="{Binding Subtitle}"
                                  Classes="caption"
                                  FontSize="10.5"
+                                 TextTrimming="CharacterEllipsis" />
+                      <!-- Difference from the previous run: the "did it actually get better" line. -->
+                      <TextBlock Text="{Binding DeltaText}"
+                                 Classes.delta="{Binding HasDelta}"
+                                 Classes.ok="{Binding DeltaImproved}"
+                                 Classes.bad="{Binding DeltaRegressed}"
+                                 FontSize="9.5"
+                                 IsVisible="{Binding HasDelta}"
                                  TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                     <Border Grid.Column="2"

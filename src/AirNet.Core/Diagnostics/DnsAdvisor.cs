@@ -25,7 +25,13 @@ public static class DnsAdvisor
     private const string SecondaryResolver = "1.1.1.1";
 
     /// <summary>Only recommend a change when resolution is measurably slow and not already optimal.</summary>
-    public static DnsPlan Plan(InterfaceInfo nic, LayerTiming timing)
+    public static DnsPlan Plan(InterfaceInfo nic, LayerTiming timing) => Plan(nic, timing, null);
+
+    /// <summary>
+    /// Same, but with measured evidence: when the comparison has data, the recommendation quotes
+    /// the numbers instead of inferring from a single 25 ms threshold.
+    /// </summary>
+    public static DnsPlan Plan(InterfaceInfo nic, LayerTiming timing, DnsComparison? comparison)
     {
         if (string.IsNullOrWhiteSpace(nic.Name) || nic.Name == "未检测到活动网卡")
         {
@@ -39,15 +45,33 @@ public static class DnsAdvisor
 
         var current = nic.DnsServer;
         var alreadyOptimal = current == PreferredResolver || current == SecondaryResolver;
-        var worthChanging = timing.DnsMs >= 25 && !alreadyOptimal;
+
+        if (!alreadyOptimal && comparison is { HasEvidence: true })
+        {
+            var fastest = comparison.Best!.Address;
+            var secondary = fastest == PreferredResolver ? SecondaryResolver : PreferredResolver;
+            var worthChanging = comparison.WorthChanging;
+
+            return new DnsPlan(
+                AdapterName: nic.Name,
+                CurrentDns: string.IsNullOrWhiteSpace(current) ? "自动（DHCP）" : current,
+                ProposedDns: $"{fastest} / {secondary}",
+                ApplyCommand: BuildApply(nic.Name, fastest, secondary),
+                RestoreCommand: BuildRestore(nic.Name, current),
+                Headline: comparison.Verdict,
+                Rationale: comparison.Detail,
+                IsWorthChanging: worthChanging);
+        }
+
+        var heuristicWorthChanging = timing.DnsMs >= 25 && !alreadyOptimal;
 
         var headline = alreadyOptimal
             ? "当前 DNS 已是最优解之一"
-            : worthChanging
+            : heuristicWorthChanging
                 ? $"解析用了 {timing.DnsMs:0} ms，建议换成 {PreferredResolver}"
                 : $"解析只有 {timing.DnsMs:0} ms，无需调整";
 
-        var rationale = worthChanging
+        var rationale = heuristicWorthChanging
             ? "DNS 慢会拖慢每个新连接的首包时间。切换后可用同一页复测验证，随时可还原。"
             : "当前解析延迟在正常范围内，改 DNS 不会带来可感知收益，不建议折腾。";
 
@@ -55,28 +79,28 @@ public static class DnsAdvisor
             AdapterName: nic.Name,
             CurrentDns: string.IsNullOrWhiteSpace(current) ? "自动（DHCP）" : current,
             ProposedDns: $"{PreferredResolver} / {SecondaryResolver}",
-            ApplyCommand: BuildApply(nic.Name),
+            ApplyCommand: BuildApply(nic.Name, PreferredResolver, SecondaryResolver),
             RestoreCommand: BuildRestore(nic.Name, current),
             Headline: headline,
             Rationale: rationale,
-            IsWorthChanging: worthChanging);
+            IsWorthChanging: heuristicWorthChanging);
     }
 
-    private static string BuildApply(string adapter)
+    private static string BuildApply(string adapter, string primary, string secondary)
     {
         if (OperatingSystem.IsWindows())
         {
-            return $"netsh interface ip set dns name=\"{adapter}\" static {PreferredResolver} primary"
+            return $"netsh interface ip set dns name=\"{adapter}\" static {primary} primary"
                    + Environment.NewLine
-                   + $"netsh interface ip add dns name=\"{adapter}\" {SecondaryResolver} index=2";
+                   + $"netsh interface ip add dns name=\"{adapter}\" {secondary} index=2";
         }
 
         if (OperatingSystem.IsMacOS())
         {
-            return $"networksetup -setdnsservers \"{adapter}\" {PreferredResolver} {SecondaryResolver}";
+            return $"networksetup -setdnsservers \"{adapter}\" {primary} {secondary}";
         }
 
-        return $"nmcli con mod \"{adapter}\" ipv4.dns \"{PreferredResolver} {SecondaryResolver}\" "
+        return $"nmcli con mod \"{adapter}\" ipv4.dns \"{primary} {secondary}\" "
                + Environment.NewLine
                + $"nmcli con up \"{adapter}\"";
     }

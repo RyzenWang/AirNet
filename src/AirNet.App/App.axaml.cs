@@ -59,6 +59,13 @@ public partial class App : Application
                 return;
             }
 
+            // Scriptable probe: stable JSON plus an exit code that carries the verdict.
+            if (desktop.Args.Contains("--probe"))
+            {
+                _ = RunProbeAsync(ReadStringArgument(desktop.Args, "--json"), desktop);
+                return;
+            }
+
             // Developer aid: capture the window while a real scan is in flight.
             var scanShotPath = ReadStringArgument(desktop.Args, "--scan-shot");
 
@@ -236,7 +243,9 @@ public partial class App : Application
             report.AppendLine($"reportHasScore={html.Contains("class=\"score\"", StringComparison.Ordinal)}");
             report.AppendLine($"reportMasked={Core.Reporting.ReportBuilder.Mask("192.168.1.42", true)}");
 
-            var dnsPlan = Core.Diagnostics.DnsAdvisor.Plan(snapshot.Interface, snapshot.Timing);
+            var dnsPlan = Core.Diagnostics.DnsAdvisor.Plan(snapshot.Interface, snapshot.Timing, snapshot.Dns);
+            report.AppendLine($"dnsCurrent={snapshot.Dns.Current?.TimeText ?? "-"} "
+                              + string.Join(" ", snapshot.Dns.Alternatives.Select(a => $"{a.Address}={a.TimeText}")));
             report.AppendLine($"dnsWorthChanging={dnsPlan.IsWorthChanging} dnsProposed={dnsPlan.ProposedDns}");
             report.AppendLine($"dnsApply={dnsPlan.ApplyCommand.Replace(Environment.NewLine, " && ")}");
             report.AppendLine($"dnsRestore={dnsPlan.RestoreCommand}");
@@ -373,5 +382,57 @@ public partial class App : Application
 
         await File.WriteAllTextAsync(path, report.ToString()).ConfigureAwait(false);
         Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
+    }
+
+    /// <summary>
+    /// One scan, one JSON document, and an exit code that says what happened:
+    /// 0 healthy (score 75+), 1 degraded (60-74), 2 poor (&lt;60), 3 the scan itself failed.
+    /// </summary>
+    private static async Task RunProbeAsync(
+        string? jsonPath,
+        IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        var target = string.IsNullOrWhiteSpace(jsonPath) ? "airnet-probe.json" : jsonPath;
+        var exitCode = 3;
+
+        try
+        {
+            var snapshot = await new Core.Probes.MeasurementRunner().RunAsync().ConfigureAwait(true);
+            var version = typeof(App).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
+            var json = Core.Reporting.ProbeJsonContext.Serialize(Core.Reporting.ProbeJson.From(snapshot, version));
+
+            var directory = Path.GetDirectoryName(Path.GetFullPath(target));
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            await File.WriteAllTextAsync(target, json, System.Text.Encoding.UTF8).ConfigureAwait(false);
+
+            exitCode = snapshot.Score switch
+            {
+                >= 75 => 0,
+                >= 60 => 1,
+                _ => 2,
+            };
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                await File.WriteAllTextAsync(
+                    target,
+                    "{\"schemaVersion\":1,\"error\":\"" + ex.GetType().Name + "\"}",
+                    System.Text.Encoding.UTF8).ConfigureAwait(false);
+            }
+            catch (Exception writeFailure) when (writeFailure is IOException or UnauthorizedAccessException)
+            {
+                // Nothing left to report to; the exit code still says the scan failed.
+            }
+
+            exitCode = 3;
+        }
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown(exitCode));
     }
 }

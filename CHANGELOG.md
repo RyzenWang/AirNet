@@ -3,6 +3,24 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
+## [Unreleased]
+
+### Added
+
+- DNS three-way comparison. The settings page no longer guesses that a public resolver
+  would be faster: the same hostname is asked of the current resolver, 223.5.5.5 and
+  1.1.1.1 in the same run, and the recommendation quotes the three times. A change is
+  only suggested when an alternative is at least 20% and 5 ms faster; when both public
+  resolvers stay silent the advisor falls back to the single-sample heuristic.
+- `--probe --json <path>`: one scan, one JSON document with a versioned schema
+  (`schemaVersion: 1`) covering score, latency, timing segments, dual stack,
+  interface, interference, DNS and findings. The exit code carries the verdict —
+  0 healthy (75+), 1 degraded (60-74), 2 poor, 3 the scan itself failed — so a script
+  can gate on it without parsing anything.
+- Per-run deltas on the overview history. Each row now shows how it differs from the
+  previous run (score, latency, jitter, downlink), tinted for good or bad, which makes
+  "did replacing the router help" answerable from the first screen.
+
 ## [0.2.4] - 2026-11-12
 
 ### Added

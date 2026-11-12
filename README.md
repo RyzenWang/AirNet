@@ -48,6 +48,8 @@
 | **动效**（扫描/测速/追踪扫描带、实时读数、环/条填充、数字滚动、曲线扫入、页面淡入） | ✅ M2，截图模式可关闭 |
 | **IPv4/IPv6 双栈** | ✅ 同一主机两条路各 5 次握手，给出「均衡 / IPv6 更快 / IPv6 偏慢」，偏慢时进诊断 |
 | **代理 / VPN 识别** | ✅ 检测系统代理与隧道网卡，明确标注「经代理 / 经 VPN」并说明哪些数字因此失真 |
+| **DNS 三方对比** | ✅ 同一域名实测「当前 / 223.5.5.5 / 1.1.1.1」，差 20% 且 ≥5ms 才建议更换 |
+| **CLI JSON** | ✅ `--probe --json out.json`，稳定 schema + 退出码（0 健康 / 1 一般 / 2 较差 / 3 失败） |
 | 邻区扫描、游戏/会议模式 | ⬜ 见 [技术方案](docs/TECH_PLAN.md) |
 
 程序启动时展示**确定性样例数据**（右上角标"示例数据"），点"开始检测"即切换为真实测量并写入历史。
@@ -66,6 +68,7 @@ git clone <repo> ; cd AirNet
 dotnet run --project src/AirNet.App                              # 启动应用
 dotnet run --project src/AirNet.App -- --selftest out.txt        # 跑一轮真实探测 + 历史往返，输出报告
 dotnet run --project src/AirNet.App -- --sites sites.txt          # 真实跑 11+ 个站点，输出四段/HTTP 状态
+dotnet run --project src/AirNet.App -- --probe --json probe.json  # 脚本用：JSON + 退出码
 dotnet run --project src/AirNet.App -- --report report.html      # 真测一轮并导出 HTML 报告（含最近站点表）
 dotnet run --project src/AirNet.App -- --export docs/shots --scale 1   # 重新生成全部截图（动效自动关闭）
 dotnet run --project src/AirNet.App -- --scan-shot scan.png      # 抓一张"检测中"的界面（动效开启）

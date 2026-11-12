@@ -182,6 +182,27 @@
                          FontSize="10"
                          LineHeight="15"
                          TextWrapping="Wrap" />
+              <!-- Evidence: the same question asked of each resolver in this run. -->
+              <Border Background="{DynamicResource SurfaceAltBrush}"
+                      BorderBrush="{DynamicResource BorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      Padding="10,7"
+                      IsVisible="{Binding HasDnsEvidence}">
+                <ItemsControl ItemsSource="{Binding DnsServerRows}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Grid ColumnDefinitions="*,Auto" Margin="0,1.5">
+                        <TextBlock Text="{Binding Label}" Classes="caption" FontSize="10" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding TimeText}"
+                                   Classes="mono"
+                                   FontSize="10" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </Border>
               <Border Background="{DynamicResource SurfaceAltBrush}"
                       BorderBrush="{DynamicResource BorderBrush}"
                       BorderThickness="1"

@@ -134,10 +134,14 @@ public sealed class MeasurementRunner
             proxy: HttpClient.DefaultProxy,
             cancellationToken: cancellationToken);
         var stackTask = DualStackProbe.MeasureAsync(ApplicationHost, cancellationToken: cancellationToken);
+        var publicDnsTask = DnsProbe.MeasurePublicAsync(ApplicationHost, cancellationToken);
 
-        await Task.WhenAll(timingTask, stackTask).ConfigureAwait(false);
+        await Task.WhenAll(timingTask, stackTask, publicDnsTask).ConfigureAwait(false);
         var timing = await timingTask.ConfigureAwait(false);
         var dualStack = await stackTask.ConfigureAwait(false);
+        var dns = DnsComparisonAnalyzer.Evaluate(
+            "当前 DNS", nic.DnsServer, (await timingTask.ConfigureAwait(false)).DnsMs,
+            await publicDnsTask.ConfigureAwait(false));
         var egress = await egressTask.ConfigureAwait(false) ?? "未获取";
 
         progress?.Report(new ScanProgress("网关与链路", 0.86));
@@ -155,7 +159,7 @@ public sealed class MeasurementRunner
         progress?.Report(new ScanProgress("评分与归因", 0.96));
 
         var measurement = new MeasurementResult(
-            nic, stats, mode, diagnostics, timing, dualStack, interference, series, hops, egress, DateTimeOffset.Now);
+            nic, stats, mode, diagnostics, timing, dualStack, interference, dns, series, hops, egress, DateTimeOffset.Now);
 
         var snapshot = DiagnosisEngine.Evaluate(measurement, fallbackDownloadMbps, fallbackUploadMbps);
         progress?.Report(new ScanProgress("完成", 1.0));

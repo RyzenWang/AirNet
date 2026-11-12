@@ -82,6 +82,12 @@ public sealed class RecentRun
     public bool IsGood { get; init; }
     public bool IsWarn { get; init; }
     public bool IsBad { get; init; }
+
+    /// <summary>Difference from the previous run; empty on the oldest row or when nothing moved.</summary>
+    public string DeltaText { get; init; } = string.Empty;
+    public bool HasDelta => !string.IsNullOrEmpty(DeltaText);
+    public bool DeltaImproved { get; init; }
+    public bool DeltaRegressed { get; init; }
 }
 
 public sealed class SpeedHistoryBar

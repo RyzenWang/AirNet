@@ -74,6 +74,7 @@ $readmeLines = @(
     "  AirNet.exe --report report.html   跑一轮主检测并导出报告",
     "  AirNet.exe --selftest probe.txt   跑一轮主检测（含逐跳/MTU/双栈），把网卡与延迟写成文本",
     "  AirNet.exe --speedtest speed.txt  测上下行带宽（大约 8-15 秒）",
+    "  AirNet.exe --probe --json p.json  跑一轮并输出 JSON（schema v1），退出码 0/1/2/3",
     "",
     "核对探测结果（不用开界面）",
     "  probe.txt 里会列出来：interface / kind / ssid / signal / rssi / avg / p95 / jitter /",

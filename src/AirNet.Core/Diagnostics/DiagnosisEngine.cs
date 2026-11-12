@@ -33,6 +33,7 @@ public static class DiagnosisEngine
             raw.Timing,
             raw.DualStack,
             raw.Interference,
+            raw.Dns,
             raw.LatencySeries,
             raw.Hops,
             scenarios,

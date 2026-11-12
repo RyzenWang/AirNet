@@ -20,6 +20,8 @@ public partial class SettingsViewModel : ObservableObject
         _dualProbe = shell.Preferences.DualProbe;
         _keepHistory = shell.Preferences.KeepHistory;
         _dnsPlan = DnsAdvisor.Plan(shell.Snapshot.Interface, shell.Snapshot.Timing);
+        // Evidence rows too, so the sample state already shows the comparison table.
+        RefreshDnsPlan();
         _ = InitializeAsync();
     }
 
@@ -51,7 +53,9 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _hasDnsBackup;
-
+    /// <summary>Measured resolver timings, or empty when this run had no evidence.</summary>
+    [ObservableProperty]
+    private IReadOnlyList<DnsServerRow> _dnsServerRows = [];
     [ObservableProperty]
     private string _dnsBackupText = string.Empty;
 
@@ -62,6 +66,7 @@ public partial class SettingsViewModel : ObservableObject
         "测量在本机完成；出口 IP 查询会访问 3322 / Cloudflare，不上传本地字段。历史记录仅保存在本地。";
 
     public bool CanApplyDns => DnsPlan.IsWorthChanging;
+    public bool HasDnsEvidence => DnsServerRows.Count > 0;
 
     public string DnsCurrentText => $"当前 {DnsPlan.CurrentDns}";
 
@@ -96,13 +101,49 @@ public partial class SettingsViewModel : ObservableObject
         HistoryCountText = count == 0 ? "暂无记录" : $"{count} 条记录 · 保留 30 天";
     }
 
-    /// <summary>Re-planned after every scan, because the recommendation depends on DNS latency.</summary>
+    /// <summary>Re-planned after every scan, because the recommendation now rests on measurements.</summary>
     public void RefreshDnsPlan()
     {
-        DnsPlan = DnsAdvisor.Plan(Shell.Snapshot.Interface, Shell.Snapshot.Timing);
+        var comparison = Shell.Snapshot.Dns;
+        DnsPlan = DnsAdvisor.Plan(Shell.Snapshot.Interface, Shell.Snapshot.Timing, comparison);
         DnsCommandText = DnsPlan.ApplyCommand;
+        DnsServerRows = BuildDnsRows(comparison);
         OnPropertyChanged(nameof(CanApplyDns));
+        OnPropertyChanged(nameof(HasDnsEvidence));
         OnPropertyChanged(nameof(DnsCurrentText));
+    }
+
+    /// <summary>The three resolvers measured on the same host, current first.</summary>
+    private static IReadOnlyList<DnsServerRow> BuildDnsRows(DnsComparison comparison)
+    {
+        if (!comparison.HasEvidence)
+        {
+            return [];
+        }
+
+        var rows = new List<DnsServerRow>();
+        if (comparison.Current is { } current)
+        {
+            rows.Add(new DnsServerRow
+            {
+                Label = string.IsNullOrWhiteSpace(current.Address) ? "当前 DNS" : $"当前 · {current.Address}",
+                TimeText = current.TimeText,
+                IsBest = false,
+            });
+        }
+
+        foreach (var alternative in comparison.Alternatives)
+        {
+            var isBest = ReferenceEquals(alternative, comparison.Best);
+            rows.Add(new DnsServerRow
+            {
+                Label = $"{alternative.Label} · {alternative.Address}{(isBest ? " · 最快" : string.Empty)}",
+                TimeText = alternative.TimeText,
+                IsBest = isBest,
+            });
+        }
+
+        return rows;
     }
 
     [RelayCommand]
@@ -178,4 +219,12 @@ public partial class SettingsViewModel : ObservableObject
             ? string.Empty
             : $"{backup.AppliedAt.ToLocalTime():MM-dd HH:mm} 修改过 {backup.AdapterName}，原 DNS {backup.OriginalDns}";
     }
+}
+
+/// <summary>One row of the resolver comparison table.</summary>
+public sealed class DnsServerRow
+{
+    public string Label { get; init; } = string.Empty;
+    public string TimeText { get; init; } = string.Empty;
+    public bool IsBest { get; init; }
 }
