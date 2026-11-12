@@ -8,6 +8,13 @@
 #
 # Installer builds (Velopack Setup.exe) are intentionally not part of this script; the
 # release workflow handles those.
+#
+# IMPORTANT: this file must stay UTF-8 **with BOM**. It contains Chinese literals (the usage
+# note written into the package) and Windows PowerShell 5.1 reads a BOM-less .ps1 as ANSI,
+# which turns those literals into mojibake and fails with a misleading parser error about
+# unterminated strings. If an editor strips the BOM, re-add it:
+#   $c=[IO.File]::ReadAllText($p,[Text.Encoding]::UTF8)
+#   [IO.File]::WriteAllText($p,$c,(New-Object Text.UTF8Encoding $true))
 
 param(
     [string]$Runtime = "win-x64",
@@ -65,6 +72,11 @@ $readmeLines = @(
     "命令行",
     "  AirNet.exe --sites result.txt     跑一轮网站延迟（无界面）",
     "  AirNet.exe --report report.html   跑一轮主检测并导出报告",
+    "  AirNet.exe --selftest probe.txt   跑一轮主检测（含逐跳/MTU），把网卡与延迟写成文本",
+    "",
+    "核对探测结果（不用开界面）",
+    "  probe.txt 里会列出来：interface / kind / ssid / signal / rssi / avg / p95 / jitter /",
+    "  loss / mtu / culprit。Wi-Fi 下重点看 kind（是否为 Wi-Fi 5/6/7）、ssid、signal、rssi。",
     "",
     "会改系统的地方（仅一处）",
     "  · 设置 → DNS 优化：需要 UAC。执行前显示完整命令，应用后记录还原点，",
