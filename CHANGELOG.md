@@ -20,6 +20,11 @@ project uses semantic versioning for release tags.
 
 ### Fixed
 
+- The executable icon still had the old teal background (`#2E6F63`) after the v0.2.3
+  move to warm orange. Explorer and the taskbar showed a green tile next to orange
+  windows. Both icons (`.ico` for Windows, `.icns` for macOS) are now generated from
+  the 512px pulse shape by `docs/icon-concepts/make-icon.py` with the brand colour as
+  the only input, so the next palette change cannot leave them behind.
 - Site latency and the first-byte breakdown bypassed the system proxy. The probe used
   a bare socket, so on a proxied machine it reported numbers for a route the browser
   never takes — and the interference note claimed the opposite. The probe now opens
