@@ -1,4 +1,4 @@
-﻿# Builds portable macOS and Linux assets from the same source as the Windows zip.
+﻿﻿﻿# Builds portable macOS and Linux assets from the same source as the Windows zip.
 # Cross-publishing works from Windows because every runtime pack is self-contained.
 #
 #   pwsh packaging/pack-cross.ps1
@@ -50,18 +50,18 @@ function New-PortableZip {
             $mode = if ($isExecutable -or $isNativeLibrary) { 0x81ED } else { 0x81A4 }
             $entry.ExternalAttributes = $mode -shl 16
             $entry.LastWriteTime = $file.LastWriteTime
-            $input = [System.IO.File]::OpenRead($file.FullName)
+            $sourceStream = [System.IO.File]::OpenRead($file.FullName)
             try {
-                $output = $entry.Open()
+                $targetStream = $entry.Open()
                 try {
-                    $input.CopyTo($output)
+                    $sourceStream.CopyTo($targetStream)
                 }
                 finally {
-                    $output.Dispose()
+                    $targetStream.Dispose()
                 }
             }
             finally {
-                $input.Dispose()
+                $sourceStream.Dispose()
             }
         }
     }
@@ -117,9 +117,9 @@ $linuxReadme = @(
 ) -join "`n"
 
 foreach ($runtime in $Runtimes) {
-    $isMac = $runtime -like 'osx-*'
-    $isLinux = $runtime -like 'linux-*'
-    if (-not ($isMac -or $isLinux)) {
+    $isMacRuntime = $runtime -like 'osx-*'
+    $isLinuxRuntime = $runtime -like 'linux-*'
+    if (-not ($isMacRuntime -or $isLinuxRuntime)) {
         throw "unsupported runtime: $runtime (this script handles osx-* and linux-*)"
     }
 
@@ -131,7 +131,7 @@ foreach ($runtime in $Runtimes) {
     Write-Host "publishing $runtime" -ForegroundColor Cyan
     & (Join-Path $PSScriptRoot "publish.ps1") -Runtime $runtime -NoReadyToRun -Output $publishDir
 
-    if ($isMac) {
+    if ($isMacRuntime) {
         $app = Join-Path $stageRoot "AirNet.app"
         $macOsDir = Join-Path $app "Contents/MacOS"
         $resourcesDir = Join-Path $app "Contents/Resources"
