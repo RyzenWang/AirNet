@@ -68,6 +68,24 @@ jobs:
           }
           if ($text -match 'error=') { throw "self test reported an error" }
 
+      - name: Site latency CLI smoke
+        shell: pwsh
+        run: |
+          $exe = "src/AirNet.App/bin/Release/net10.0/AirNet.exe"
+          $out = "$env:RUNNER_TEMP/sites.txt"
+          $process = Start-Process -FilePath $exe -ArgumentList "--sites", $out -PassThru -NoNewWindow
+          if (-not $process.WaitForExit(300000)) {
+            $process.Kill()
+            throw "site latency CLI timed out"
+          }
+          if (-not (Test-Path $out)) { throw "site latency CLI did not write output" }
+          Get-Content $out
+          $text = Get-Content $out -Raw
+          foreach ($token in 'captured=', 'succeeded=', "`t") {
+            if ($text -notmatch [regex]::Escape($token)) { throw "site output is missing: $token" }
+          }
+          if ($text -match 'error=') { throw "site latency CLI reported an error" }
+
       - name: Report renders and is self contained
         shell: pwsh
         run: |
@@ -81,7 +99,7 @@ jobs:
           if (-not (Test-Path $html)) { throw "report was not written" }
 
           $content = Get-Content $html -Raw
-          foreach ($token in '<svg', 'class="score"', '<footer>', 'class="metric"') {
+          foreach ($token in '<svg', 'class="score"', '<footer>', 'class="metric"', '网站延迟') {
             if ($content -notmatch [regex]::Escape($token)) { throw "report is missing: $token" }
           }
           if ($content -match '<script') { throw "report must not contain scripts" }

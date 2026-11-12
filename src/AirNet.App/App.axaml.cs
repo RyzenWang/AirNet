@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using AirNet.App.ViewModels;
 using AirNet.App.Views;
+using AirNet.Core.Sites;
 
 namespace AirNet.App;
 
@@ -34,6 +35,13 @@ public partial class App : Application
             if (ReadStringArgument(desktop.Args, "--selftest") is { } reportPath)
             {
                 _ = RunSelfTestAsync(reportPath, desktop);
+                return;
+            }
+
+            // Headless website-latency run, used by CI and for a quick terminal check.
+            if (ReadStringArgument(desktop.Args, "--sites") is { } sitesPath)
+            {
+                _ = RunSitesAsync(sitesPath, desktop);
                 return;
             }
 
@@ -231,6 +239,60 @@ public partial class App : Application
         Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
     }
 
+    /// <summary>Runs the 11 default sites plus custom sites and writes a flat, greppable result.</summary>
+    private static async Task RunSitesAsync(
+        string outputPath,
+        IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        var report = new System.Text.StringBuilder();
+        try
+        {
+            var customSites = new CustomSiteStore().Load();
+            var sites = SiteCatalog.WithCustom(customSites);
+            using var overall = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            var result = await SiteLatencyProbe.RunAsync(
+                sites,
+                samplesPerSite: 3,
+                concurrency: 4,
+                timeoutMs: 4000,
+                cancellationToken: overall.Token).ConfigureAwait(true);
+
+            report.AppendLine($"captured={DateTimeOffset.Now:O}");
+            foreach (var site in result.Results)
+            {
+                var median = site.Median;
+                report.AppendLine(
+                    $"{site.Target.Name}\t{site.Target.Host}\t{site.Success}\t{site.FailureKind}\t"
+                    + $"{site.TotalMs:0.0}\t{(median?.DnsMs ?? 0):0.0}\t{(median?.TcpMs ?? 0):0.0}\t"
+                    + $"{(median?.TlsMs ?? 0):0.0}\t{(median?.TtfbMs ?? 0):0.0}\t"
+                    + $"{site.HttpStatus?.ToString() ?? "-"}\t{site.FailureNote}");
+            }
+
+            report.AppendLine($"succeeded={result.Succeeded}/{result.Results.Count} duration={result.Duration.TotalSeconds:0.0}s");
+            try
+            {
+                await new SiteHistoryStore().AppendAsync(result).ConfigureAwait(true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                report.AppendLine($"historyError={ex.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            report.AppendLine("error=" + ex);
+        }
+
+        var directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        await File.WriteAllTextAsync(outputPath, report.ToString(), System.Text.Encoding.UTF8).ConfigureAwait(false);
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
+    }
+
     /// <summary>One real scan plus route discovery, rendered straight to an HTML report.</summary>
     private static async Task RunReportAsync(
         string htmlPath,
@@ -242,8 +304,21 @@ public partial class App : Application
             var trace = await Core.Probes.TraceProbe.TraceAsync("223.5.5.5").ConfigureAwait(true);
             var mtu = await Core.Probes.MtuProbe.MeasureAsync("223.5.5.5").ConfigureAwait(true);
             var attribution = Core.Diagnostics.AttributionEngine.FromTrace(snapshot, trace, mtu);
+            Core.Sites.SiteLatencyReport? siteHistory = null;
+            try
+            {
+                siteHistory = await new SiteHistoryStore().LoadLatestAsync().ConfigureAwait(true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // A stale or locked sites.jsonl must not block the main report.
+            }
 
-            var html = Core.Reporting.ReportBuilder.Build(snapshot, attribution, mtu);
+            var html = Core.Reporting.ReportBuilder.Build(
+                snapshot,
+                attribution,
+                mtu,
+                siteLatency: siteHistory);
             var directory = Path.GetDirectoryName(Path.GetFullPath(htmlPath));
             if (!string.IsNullOrEmpty(directory))
             {

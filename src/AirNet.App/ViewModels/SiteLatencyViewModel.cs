@@ -28,7 +28,7 @@ public sealed class SiteRow
     public string TotalText { get; init; } = "—";
     public string UnitText { get; init; } = string.Empty;
     public string FailureText { get; init; } = string.Empty;
-    public string DetailText => IsFailed ? FailureText : Host;
+    public string DetailText => string.IsNullOrEmpty(FailureText) ? Host : FailureText;
     public string DeltaText { get; init; } = string.Empty;
     public bool HasDelta { get; init; }
     public bool IsDeltaDown { get; init; }
@@ -47,16 +47,20 @@ public sealed class SiteRow
         IsPending = true,
     };
 
-    public static SiteRow FromResult(SiteTarget target, SiteResult result, SiteResult? previous)
+    public static SiteRow FromResult(SiteTarget target, SiteResult result, double? previousTotal)
     {
         var median = result.Median;
         var total = result.TotalMs;
-        var status = !result.Success
+        var httpBlocked = result.FailureKind == SiteFailureKind.HttpBlocked;
+        var httpServerError = result.FailureKind == SiteFailureKind.HttpServerError;
+        var status = !result.Success || httpServerError
             ? Severity.Bad
-            : total > 200 ? Severity.Bad : total > 80 ? Severity.Warn : Severity.Ok;
+            : httpBlocked
+                ? Severity.Warn
+                : total > 200 ? Severity.Bad : total > 80 ? Severity.Warn : Severity.Ok;
 
-        var delta = result.Success && previous is { Success: true }
-            ? result.TotalMs - previous.TotalMs
+        var delta = result.Success && !httpBlocked && !httpServerError && previousTotal is { } previous
+            ? result.TotalMs - previous
             : (double?)null;
         var deltaValue = delta ?? 0;
         var hasDelta = delta is not null && Math.Abs(deltaValue) >= 0.5;
@@ -71,10 +75,18 @@ public sealed class SiteRow
             IsGood = status == Severity.Ok,
             IsWarn = status == Severity.Warn,
             IsBad = status == Severity.Bad,
-            StatusText = !result.Success ? "异常" : status == Severity.Ok ? "良好" : status == Severity.Warn ? "偏慢" : "异常",
+            StatusText = !result.Success
+                ? "异常"
+                : httpBlocked
+                    ? "HTTP 拦截"
+                    : httpServerError
+                        ? "HTTP 5xx"
+                        : status == Severity.Ok ? "良好" : status == Severity.Warn ? "偏慢" : "异常",
             TotalText = result.Success ? Fmt.Compact(total) : "—",
             UnitText = result.Success ? "ms" : string.Empty,
-            FailureText = result.Success ? string.Empty : result.FailureNote ?? "测试失败",
+            FailureText = !result.Success || httpBlocked || httpServerError
+                ? result.FailureNote ?? "测试失败"
+                : string.Empty,
             DeltaText = deltaText,
             HasDelta = hasDelta,
             IsDeltaDown = hasDelta && deltaValue < 0 && status != Severity.Bad,
@@ -145,8 +157,9 @@ public partial class SiteLatencyViewModel : ObservableObject
 
     private readonly ShellViewModel _shell;
     private readonly CustomSiteStore _customStore = new();
+    private readonly SiteHistoryStore _siteHistory = new();
     private readonly Dictionary<string, SiteResult> _results = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, SiteResult> _previous = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, double> _previousTotals = new(StringComparer.Ordinal);
     private readonly DispatcherTimer _ticker;
     private IReadOnlyList<SiteTarget> _customSites;
     private List<SiteTarget> _catalog;
@@ -178,6 +191,7 @@ public partial class SiteLatencyViewModel : ObservableObject
         UpdateCustomRows();
         RefreshRows();
         NotifyCounts();
+        _ = LoadPreviousAsync();
     }
 
     public ShellViewModel Shell => _shell;
@@ -299,7 +313,9 @@ public partial class SiteLatencyViewModel : ObservableObject
     {
         get
         {
-            var failed = _results.Values.Count(result => !result.Success);
+            var failed = _results.Values.Count(result =>
+                !result.Success
+                || result.FailureKind is SiteFailureKind.HttpBlocked or SiteFailureKind.HttpServerError);
             var duration = _lastReport?.Duration.TotalSeconds;
             return _results.Count == 0
                 ? "失败 0 · 等待测试"
@@ -387,10 +403,9 @@ public partial class SiteLatencyViewModel : ObservableObject
             return;
         }
 
-        _previous.Clear();
-        foreach (var (id, result) in _results)
+        foreach (var result in _results.Values.Where(IsUsableResult))
         {
-            _previous[id] = result;
+            _previousTotals[result.Target.Host] = result.TotalMs;
         }
 
         _results.Clear();
@@ -432,6 +447,23 @@ public partial class SiteLatencyViewModel : ObservableObject
                     : $"{report.Succeeded}/{report.Results.Count} 站点成功 · 用时 {report.Duration.TotalSeconds:0.0} s";
             RefreshRows();
             NotifySummary();
+
+            if (_shell.Preferences.KeepHistory)
+            {
+                try
+                {
+                    await _siteHistory.AppendAsync(report).ConfigureAwait(true);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // A history write failure must not turn a valid measurement into an error.
+                }
+            }
+
+            foreach (var result in report.Results.Where(IsUsableResult))
+            {
+                _previousTotals[result.Target.Host] = result.TotalMs;
+            }
         }
         catch (OperationCanceledException)
         {
@@ -563,13 +595,15 @@ public partial class SiteLatencyViewModel : ObservableObject
             next.Add(target);
         }
 
-        PersistCustom(next);
+        var persisted = PersistCustom(next);
         _editingId = null;
         DraftName = string.Empty;
         DraftHost = string.Empty;
-        DraftError = string.Empty;
+        DraftError = persisted ? string.Empty : "站点已加入本次列表，但写入 sites.json 失败；重启后会丢失。";
         DraftTestText = string.Empty;
-        _shell.StatusMessage = $"已保存自定义站点：{target.Name}";
+        _shell.StatusMessage = persisted
+            ? $"已保存自定义站点：{target.Name}"
+            : $"自定义站点已加入列表，但写入 sites.json 失败：{target.Name}";
     }
 
     public void EditCustom(SiteTarget target)
@@ -590,8 +624,15 @@ public partial class SiteLatencyViewModel : ObservableObject
         {
             var remaining = _customSites.Where(site => site.Id != target.Id).ToList();
             _pendingDeleteId = null;
-            PersistCustom(remaining);
-            _shell.StatusMessage = $"已删除自定义站点：{target.Name}";
+            var persisted = PersistCustom(remaining);
+            _shell.StatusMessage = persisted
+                ? $"已删除自定义站点：{target.Name}"
+                : $"自定义站点已从列表移除，但写入 sites.json 失败：{target.Name}";
+            if (!persisted)
+            {
+                DraftError = "站点已从本次列表移除，但写入 sites.json 失败；重启后会恢复。";
+            }
+
             return;
         }
 
@@ -618,9 +659,9 @@ public partial class SiteLatencyViewModel : ObservableObject
         return null;
     }
 
-    private void PersistCustom(IReadOnlyList<SiteTarget> sites)
+    private bool PersistCustom(IReadOnlyList<SiteTarget> sites)
     {
-        _customStore.Save(sites);
+        var persisted = _customStore.Save(sites);
         _customSites = sites;
         _catalog = SiteCatalog.WithCustom(sites).ToList();
         foreach (var removed in _results.Keys.Where(id => _catalog.All(site => site.Id != id)).ToList())
@@ -632,6 +673,7 @@ public partial class SiteLatencyViewModel : ObservableObject
         NotifyCounts();
         RefreshRows();
         NotifySummary();
+        return persisted;
     }
 
     private void UpdateCustomRows()
@@ -696,7 +738,45 @@ public partial class SiteLatencyViewModel : ObservableObject
     }
 
     private IEnumerable<SiteResult> Successful() =>
-        _results.Values.Where(result => result.Success).OrderBy(result => result.TotalMs);
+        _results.Values
+            .Where(IsUsableResult)
+            .OrderBy(result => result.TotalMs);
+
+    private async Task LoadPreviousAsync()
+    {
+        if (!_shell.Preferences.KeepHistory)
+        {
+            return;
+        }
+
+        try
+        {
+            var report = await _siteHistory.LoadLatestAsync().ConfigureAwait(true);
+            if (report is null)
+            {
+                return;
+            }
+
+            _lastReport ??= report;
+            foreach (var result in report.Results.Where(IsUsableResult))
+            {
+                _previousTotals[result.Target.Host] = result.TotalMs;
+            }
+
+            if (_results.Count > 0)
+            {
+                RefreshRows();
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // No previous run is not an error; the page simply starts without a delta.
+        }
+    }
+
+    private static bool IsUsableResult(SiteResult result) =>
+        result.Success
+        && result.FailureKind is not (SiteFailureKind.HttpBlocked or SiteFailureKind.HttpServerError);
 
     private void RefreshRows()
     {
@@ -704,10 +784,12 @@ public partial class SiteLatencyViewModel : ObservableObject
         if (_sortByTotal)
         {
             targets = targets
-                .OrderBy(target => _results.TryGetValue(target.Id, out var result) && result.Success
+                .OrderBy(target => _results.TryGetValue(target.Id, out var result) && IsUsableResult(result)
                     ? result.TotalMs
                     : double.MaxValue)
-                .ThenBy(target => _results.TryGetValue(target.Id, out var result) && result.Success ? 0 : 1)
+                .ThenBy(target => _results.TryGetValue(target.Id, out var result)
+                    ? IsUsableResult(result) ? 0 : result.Success ? 1 : 2
+                    : 3)
                 .ThenBy(target => _catalog.IndexOf(target))
                 .ToList();
         }
@@ -719,7 +801,7 @@ public partial class SiteLatencyViewModel : ObservableObject
                 return SiteRow.Pending(target);
             }
 
-            _previous.TryGetValue(target.Id, out var previous);
+            double? previous = _previousTotals.TryGetValue(target.Host, out var value) ? value : null;
             return SiteRow.FromResult(target, result, previous);
         }).ToList();
     }

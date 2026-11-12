@@ -10,6 +10,8 @@ public enum SiteFailureKind
     Tcp,
     Tls,
     Ttfb,
+    HttpBlocked,
+    HttpServerError,
     Cancelled,
     Unknown,
 }
@@ -22,18 +24,28 @@ public sealed record SiteSample(
     double TtfbMs,
     bool Success,
     SiteFailureKind FailureKind,
-    string? FailureNote)
+    string? FailureNote,
+    int? HttpStatus = null)
 {
     public double TotalMs => Math.Round(DnsMs + TcpMs + TlsMs + TtfbMs, 1);
 
-    public static SiteSample FromTiming(LayerTiming timing) => new(
-        timing.DnsMs,
-        timing.TcpMs,
-        timing.TlsMs,
-        timing.TtfbMs,
-        timing.Succeeded,
-        SiteLatencyProbe.ClassifyFailure(timing.FailureNote, timing.Succeeded),
-        timing.FailureNote);
+    public static SiteSample FromTiming(LayerTiming timing)
+    {
+        var kind = SiteLatencyProbe.ClassifyFailure(timing.FailureNote, timing.Succeeded, timing.HttpStatus);
+        var note = kind is SiteFailureKind.HttpBlocked or SiteFailureKind.HttpServerError
+            ? $"HTTP {timing.HttpStatus}"
+            : timing.FailureNote;
+
+        return new(
+            timing.DnsMs,
+            timing.TcpMs,
+            timing.TlsMs,
+            timing.TtfbMs,
+            timing.Succeeded,
+            kind,
+            note,
+            timing.HttpStatus);
+    }
 
     public static SiteSample Cancelled() =>
         new(0, 0, 0, 0, false, SiteFailureKind.Cancelled, "已取消");
@@ -51,6 +63,7 @@ public sealed record SiteResult(
     DateTimeOffset At)
 {
     public double TotalMs => Median?.TotalMs ?? 0;
+    public int? HttpStatus => Median?.HttpStatus;
 }
 
 public sealed record SiteLatencyReport(
@@ -58,7 +71,8 @@ public sealed record SiteLatencyReport(
     DateTimeOffset StartedAt,
     TimeSpan Duration)
 {
-    public int Succeeded => Results.Count(result => result.Success);
+    public int Succeeded => Results.Count(result =>
+        result.Success && result.FailureKind is not (SiteFailureKind.HttpBlocked or SiteFailureKind.HttpServerError));
 }
 
 /// <summary>
@@ -168,6 +182,8 @@ public static class SiteLatencyProbe
         var failure = median is null
             ? samples.FirstOrDefault(sample => !sample.Success)
             : null;
+        var failureKind = median?.FailureKind ?? failure?.FailureKind ?? SiteFailureKind.None;
+        var failureNote = median?.FailureNote ?? failure?.FailureNote;
 
         return new SiteResult(
             site,
@@ -175,8 +191,8 @@ public static class SiteLatencyProbe
             median,
             median is not null,
             successful.Count,
-            failure?.FailureKind ?? SiteFailureKind.None,
-            failure?.FailureNote,
+            failureKind,
+            failureNote,
             DateTimeOffset.Now);
     }
 
@@ -203,8 +219,18 @@ public static class SiteLatencyProbe
         "已取消",
         DateTimeOffset.Now);
 
-    internal static SiteFailureKind ClassifyFailure(string? note, bool success)
+    internal static SiteFailureKind ClassifyFailure(string? note, bool success, int? httpStatus = null)
     {
+        if (httpStatus is 403 or 429 or 451)
+        {
+            return SiteFailureKind.HttpBlocked;
+        }
+
+        if (httpStatus >= 500)
+        {
+            return SiteFailureKind.HttpServerError;
+        }
+
         if (success)
         {
             return SiteFailureKind.None;

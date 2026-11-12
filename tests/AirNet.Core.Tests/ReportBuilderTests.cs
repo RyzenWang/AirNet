@@ -79,4 +79,18 @@ public sealed class ReportBuilderTests
         Assert.DoesNotContain("网站延迟", withoutSites);
         Assert.DoesNotContain("<script", withSites);
     }
+
+    [Fact]
+    public void HttpBlockedSiteIsMarkedInTheReport()
+    {
+        var sample = new SiteSample(4, 8, 16, 2, true, SiteFailureKind.HttpBlocked, "HTTP 403", 403);
+        var result = new SiteResult(
+            SiteCatalog.Default[0], [sample], sample, true, 1, SiteFailureKind.HttpBlocked, "HTTP 403", DateTimeOffset.Now);
+        var report = new SiteLatencyReport([result], DateTimeOffset.Now, TimeSpan.FromSeconds(1));
+
+        var html = ReportBuilder.Build(DemoSnapshotFactory.CreateSnapshot(), siteLatency: report);
+
+        Assert.Contains("HTTP 403", html);
+        Assert.Contains("warn", html);
+    }
 }

@@ -83,7 +83,7 @@ public sealed class CustomSiteStore
         }
     }
 
-    public void Save(IEnumerable<SiteTarget> customSites)
+    public bool Save(IEnumerable<SiteTarget> customSites)
     {
         try
         {
@@ -111,10 +111,12 @@ public sealed class CustomSiteStore
             File.WriteAllText(
                 _filePath,
                 JsonSerializer.Serialize(document, CustomSiteJsonContext.Default.CustomSiteDocument));
+            return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // A preference write failure must not take down the page.
+            // A preference write failure must not take down the page, but callers may surface it.
+            return false;
         }
     }
 }

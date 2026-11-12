@@ -98,20 +98,46 @@ public static class ApplicationTimingProbe
             timeout.CancelAfter(timeoutMs);
             await secure.WriteAsync(request, timeout.Token).ConfigureAwait(false);
 
-            var first = new byte[1];
-            var read = await secure.ReadAsync(first, timeout.Token).ConfigureAwait(false);
+            var buffer = new byte[256];
+            var read = await secure.ReadAsync(buffer, timeout.Token).ConfigureAwait(false);
             if (read == 0)
             {
                 return Failed(host, dnsMs, tcpMs, tlsMs, 0, "空响应");
             }
+
+            ttfbWatch.Stop();
+            var status = ParseStatus(buffer.AsSpan(0, read));
+            return new LayerTiming(
+                host,
+                dnsMs,
+                tcpMs,
+                tlsMs,
+                Round(ttfbWatch.Elapsed.TotalMilliseconds),
+                true,
+                HttpStatus: status);
         }
         catch (Exception ex) when (ex is IOException or OperationCanceledException)
         {
             return Failed(host, dnsMs, tcpMs, tlsMs, 0, "首包读取失败");
         }
+    }
 
-        ttfbWatch.Stop();
-        return new LayerTiming(host, dnsMs, tcpMs, tlsMs, Round(ttfbWatch.Elapsed.TotalMilliseconds), true);
+    /// <summary>Reads the numeric code from "HTTP/1.1 200 OK"; null when the chunk is incomplete.</summary>
+    internal static int? ParseStatus(ReadOnlySpan<byte> data)
+    {
+        var text = Encoding.ASCII.GetString(data);
+        var line = text.Split('\n')[0].TrimEnd('\r');
+        if (!line.StartsWith("HTTP/", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2
+               && int.TryParse(parts[1], out var status)
+               && status is >= 100 and <= 599
+            ? status
+            : null;
     }
 
     private static LayerTiming Failed(

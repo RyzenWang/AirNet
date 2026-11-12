@@ -4,7 +4,8 @@
 > 这是一次**按需**测试，不进入 3 秒主扫描，也不并入健康分。
 >
 > **状态：已实现（2026-11）**。六页导航、11 个默认站、最多 8 个自定义站、`sites.json`、
-> 报告表格、59 项单元测试都已接入；实现截图见 [04-sites-light.png](shots/04-sites-light.png)。
+> HTTP 状态识别、`sites.jsonl` 历史、`--sites` CLI、报告表格、70 项单元测试都已接入；
+> 实现截图见 [04-sites-light.png](shots/04-sites-light.png)。
 >
 > 视觉稿：[主页面](site-latency-mockup.png) · [管理站点](site-latency-manage-mockup.png) ·
 > [HTML 源稿](site-latency-mockup.html)
@@ -182,7 +183,8 @@
 
 ### 5.4 持久化
 
-- 路径：`%LOCALAPPDATA%\AirNet\sites.json`（与 `settings.json`、`history.jsonl` 同目录）。
+- 路径：`%LOCALAPPDATA%\AirNet\sites.json`（与 `settings.json`、`history.jsonl` 同目录）；
+  `sites.jsonl` 保存每轮站点结果。
 - 源生成 JSON，裁剪安全；结构：
 
 ```json
@@ -205,11 +207,13 @@
 
 ## 6. 历史、报告与设置
 
-- **历史**：首版只在**同一次运行会话内**保留"本次 + 上次"的差值；重启应用后差值清空，
-  趋势图放 M3。若要做趋势，新建 `sites.jsonl`，每行一次测试的紧凑结果（30 天/500 条），
-  不改现有 `history.jsonl`。
+- **历史**：每次站点测试追加一行到 `sites.jsonl`（30 天 / 500 条），重启后仍能读到上一轮，
+  "较上次"跨会话保留；趋势图放 M3。不混入现有 `history.jsonl`。
+- **HTTP 状态**：解析响应首行的状态码；403/429/451 标"HTTP 拦截"（琥珀），5xx 标"HTTP 5xx"
+  （红色），不把它们误判为网络故障；行内仍保留四段耗时。
 - **报告**：`ReportBuilder` 增加可选 `SiteLatencyReport`，在 HTML 报告里加一张"站点延迟"表；
-  不传则报告保持现状。自定义站点名称做 HTML encode。
+  不传则报告保持现状。UI 用当前一轮，`--report` 自动读取 `sites.jsonl` 最近一轮；
+  自定义站点名称做 HTML encode，HTTP 问题在分段列追加状态说明。
 - **设置**：首版不增加开关；站点清单、采样次数（3）、超时（4s）作为常量。
   M3 再加"是否包含国际站点/默认站点隐藏"。
 - **隐私**：只发匿名 GET，不带 Cookie/Referer/登录态；不保存页面内容；结果只落本地。
@@ -277,6 +281,7 @@ src/AirNet.Core/
     SiteTarget.cs          Id / Name / Host / Group / IsCustom
     SiteCatalog.cs         11 个默认站点 + 合并自定义
     CustomSiteStore.cs     sites.json 读写（源生成 JSON）
+    SiteHistoryStore.cs    sites.jsonl 追加/读取/裁剪
   Probes/
     SiteLatencyProbe.cs    并发 4、每站 3 次、中位数、失败分类
   Diagnostics/
@@ -290,7 +295,8 @@ src/AirNet.Core/
 - **取消**：每个请求带 `CancellationToken`；取消后把未完成站点标 `Cancelled`。
 - **失败分类**：把 `LayerTiming.FailureNote` 映射为 `Dns/Tcp/Tls/Ttfb/Timeout`；不抛异常到 UI。
 - **不自带评分**：`SiteLatencyProbe` 只产出原始数据；分档/文案在 ViewModel 或 `SiteDiagnosis` 中做。
-- **CLI**：`--sites <out.txt>`（开发/CI 烟测）尚未实现，放 M3；本次用临时控制台验证了探针。
+- **CLI**：`--sites <out.txt>` 已实现，输出每个站点的状态、四段耗时、HTTP 状态和失败原因；
+  同时把本轮写入 `sites.jsonl`，供随后 `--report` 使用。
 
 ### 8.2 App
 
@@ -376,11 +382,11 @@ SiteLatencyView [开始测试]
 
 ---
 
-## 11. 需要确认的决策
+## 11. 已确认的决策（2026-11）
 
-1. 自定义站点固定归入「自定义」分组（不混进国内/国际计数），是否同意？
-2. 自定义站点上限 **8 个**、只支持 **HTTPS 443**，是否合适？
-3. 测试失败时**允许保存为未验证**，还是必须测试通过才能保存？
-4. 默认 11 站固定不可删；M3 再支持隐藏，是否接受？
-5. 分档阈值继续用 80/200ms（仅展示，不评分）？
-6. 是否坚持"站点延迟不并入健康分"？我建议坚持。
+1. ✅ 自定义站点固定归入「自定义」分组，不混进国内/国际计数。
+2. ✅ 自定义站点上限 **8 个**，只支持 **HTTPS 443**。
+3. ✅ 测试失败时**允许保存为未验证**。
+4. ✅ 默认 11 站固定不可删；M3 再支持隐藏。
+5. ✅ 分档阈值继续用 80/200ms，仅展示，不评分。
+6. ✅ 坚持"站点延迟不并入健康分"。

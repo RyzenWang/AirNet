@@ -272,13 +272,20 @@ public static class ReportBuilder
         html.AppendLine("<table class=\"sitetable\"><thead><tr><th>站点</th><th class=\"num\">总耗时</th><th>分段</th><th></th></tr></thead><tbody>");
         foreach (var result in report.Results)
         {
-            var status = !result.Success || result.TotalMs > 200
+            var httpBlocked = result.FailureKind == SiteFailureKind.HttpBlocked;
+            var httpServerError = result.FailureKind == SiteFailureKind.HttpServerError;
+            var status = !result.Success || httpServerError || result.TotalMs > 200
                 ? "bad"
-                : result.TotalMs > 80 ? "warn" : "ok";
+                : httpBlocked || result.TotalMs > 80 ? "warn" : "ok";
             var total = result.Success ? $"{result.TotalMs:0} ms" : "—";
             var segments = result.Success && result.Median is { } median
                 ? $"DNS {median.DnsMs:0} · TCP {median.TcpMs:0} · TLS {median.TlsMs:0} · 等待 {median.TtfbMs:0}"
                 : result.FailureNote ?? "未完成";
+            if ((httpBlocked || httpServerError) && !string.IsNullOrWhiteSpace(result.FailureNote))
+            {
+                segments = $"{segments} · {result.FailureNote}";
+            }
+
             html.AppendLine($"<tr><td><strong>{Encode(result.Target.Name)}</strong><div class=\"muted\">{Encode(result.Target.Host)}</div></td>");
             html.AppendLine($"<td class=\"num mono\">{Encode(total)}</td><td class=\"segments-cell\">{Encode(segments)}</td>");
             html.AppendLine($"<td><span class=\"dot {status}\"></span></td></tr>");

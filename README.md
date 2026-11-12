@@ -29,16 +29,16 @@
 | 评分、场景估计、规则诊断 | ✅ M1 |
 | 历史（JSONL，30 天，裁剪安全） | ✅ M1 |
 | 带宽测速（单流下行） | 🟡 只测下行；未测速显示"未测速"，不写假值 |
-| **网站延迟**（11 默认 + 自定义） | ✅ 首字节四段分解，3 次中位数；自定义站点落 `sites.json` |
+| **网站延迟**（11 默认 + 自定义） | ✅ 首字节四段分解、3 次中位数、HTTP 状态识别；自定义站点落 `sites.json`，历史落 `sites.jsonl` |
 | **出口 IP**（Cloudflare / 3322，best-effort） | ✅ 被拦截时显示"未获取"，不阻塞扫描 |
 | **三段归因**（局域网 / 运营商 / 对端） | ✅ M2 粗定位 + 逐跳定位 |
 | **逐跳路径**（系统 traceroute，本地化无关解析） | ✅ M2 实测 14 跳 / 17s；目标未响应时不误判对端 |
 | **MTU**（DF 二分） | ✅ M2 实测 1480（PPPoE） |
 | **报告导出**（自包含 HTML，可打印 PDF） | ✅ M2 7.8KB / 零脚本 / 地址掩码 |
 | **一键 DNS + 还原**（Windows 提权） | ✅ M2 命令先展示，还原记录落盘 |
-| **单元测试**（xUnit） | ✅ 59 项：统计 / 分档 / 解析 / 掩码 / 历史 / 站点目录与自定义站点 |
+| **单元测试**（xUnit） | ✅ 70 项：统计 / 分档 / 解析 / 掩码 / 历史 / 站点目录、HTTP 状态与站点历史 |
 | **设置**（持久化 / 自动刷新 / 键盘快捷键） | ✅ M2，写入 `settings.json`；60s 自动刷新仅在窗口可见时执行 |
-| 裁剪 + R2R 单文件发布 | ✅ 52.1MB / 0.9–2.3s / ~217MB（本机 2026-11 复测） |
+| 裁剪 + R2R 单文件发布 | ✅ 52.2MB / 0.9–2.3s / ~217MB（本机 2026-11 复测） |
 | CI（构建 + 单元测试 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | **动效**（扫描/测速/追踪扫描带、实时读数、环/条填充、数字滚动、曲线扫入、页面淡入） | ✅ M2，截图模式可关闭 |
 | 双栈、邻区扫描、游戏/会议模式 | ⬜ 见 [技术方案](docs/TECH_PLAN.md) |
@@ -54,7 +54,8 @@ git clone <repo> ; cd AirNet
 
 dotnet run --project src/AirNet.App                              # 启动应用
 dotnet run --project src/AirNet.App -- --selftest out.txt        # 跑一轮真实探测 + 历史往返，输出报告
-dotnet run --project src/AirNet.App -- --report report.html      # 真测一轮并导出 HTML 报告
+dotnet run --project src/AirNet.App -- --sites sites.txt          # 真实跑 11+ 个站点，输出四段/HTTP 状态
+dotnet run --project src/AirNet.App -- --report report.html      # 真测一轮并导出 HTML 报告（含最近站点表）
 dotnet run --project src/AirNet.App -- --export docs/shots --scale 1   # 重新生成全部截图（动效自动关闭）
 dotnet run --project src/AirNet.App -- --scan-shot scan.png      # 抓一张"检测中"的界面（动效开启）
 dotnet test tests/AirNet.Core.Tests/AirNet.Core.Tests.csproj     # 纯逻辑单元测试
@@ -89,7 +90,7 @@ src/AirNet.Core/         探测与诊断内核（无 UI 依赖）
                          ApplicationTimingProbe · TraceProbe · MtuProbe · WlanRadio · MeasurementRunner
   Diagnostics/           NetworkSnapshot · LatencyAnalyzer · DiagnosisEngine
                          AttributionEngine（三段归因）· PathAnalysis（逐跳/MTU 模型）
-  Sites/                 SiteCatalog（11 站）· CustomSiteStore（sites.json）· SiteLatencyProbe
+  Sites/                 SiteCatalog（11 站）· CustomSiteStore · SiteHistoryStore · SiteLatencyProbe
   History/               JSONL 历史（裁剪安全，源生成序列化）
   Demo/                  确定性样例数据
 src/AirNet.App/          Avalonia 应用
@@ -128,11 +129,11 @@ docs/
   监控页"导出报告 / 复制诊断信息"和诊断建议按钮也已接命令。主扫描仍**不含** 12MB 带宽测速，
   测速是独立动作，避免把 3 秒承诺拖成十几秒。
 - **网站延迟**：默认 11 站 + 最多 8 个自定义站点；只支持 HTTPS 443，首字节四段分解；
-  Google/YouTube/X 被拦截时标"不可达/被拦截"，不归因本机网络。差值只在同一次运行会话内保留，
-  重启后清空；趋势放 M3。
+  HTTP 403/429/451 标"HTTP 拦截"、5xx 标"HTTP 5xx"，不误判为网络故障。每轮写入
+  `sites.jsonl`，"较上次"跨重启保留；趋势图放 M3。
 - **带宽只测下行、单流**：未测速时 UI、报告和历史都显示"未测速"，不会用 0 或样例值填充；
   在真实快照上测速会写一条历史记录，近 6 次趋势来自这些记录（样例数据上的测速不落盘）。
-- **本机 R2R 包比旧记录重**：2026-11 复测为 52.1MB / 0.9–2.3s / ~217MB，旧记录是
+- **本机 R2R 包比旧记录重**：2026-11 复测为 52.2MB / 0.9–2.3s / ~217MB，旧记录是
   40.7MB / 0.9–1.3s / 150–170MB；功能不受影响，但体积与启动口径需要复核（SDK / R2R 产物差异）。
 - **出口 IP 是 best-effort**：Cloudflare / 3322 任一端点可用即可；被网络拦截时显示"未获取"，
   不阻塞扫描，也不参与评分。
