@@ -199,9 +199,23 @@
                          TextWrapping="Wrap" />
 
               <Grid ColumnDefinitions="*,*" ColumnSpacing="7" Margin="0,3,0,0">
-                <Button Classes="ghost" Height="30" MinHeight="30" Content="测试连通"
-                        Command="{Binding TestDraftCommand}" IsEnabled="{Binding !IsTestingDraft}" />
-                <Button Grid.Column="1" Classes="primary" Height="30" MinHeight="30" Content="保存站点"
+                <Button Classes="ghost"
+                        Height="30"
+                        MinHeight="30"
+                        Padding="10,0"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Content="测试连通"
+                        Command="{Binding TestDraftCommand}"
+                        IsEnabled="{Binding !IsTestingDraft}" />
+                <Button Grid.Column="1"
+                        Classes="primary"
+                        Height="30"
+                        MinHeight="30"
+                        Padding="10,0"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Content="保存站点"
                         Command="{Binding SaveDraftCommand}" />
               </Grid>
               <TextBlock Text="最多 8 个；不允许重复域名；可在列表里删除。"
