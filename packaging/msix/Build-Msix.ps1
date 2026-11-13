@@ -183,8 +183,8 @@ function New-PackageImage {
 }
 
 $images = @(
-    @{ Name = 'Square44x44Logo.png'; Width = 44; Height = 44; Scale = 0.92; Paper = $false },
-    @{ Name = 'Square150x150Logo.png'; Width = 150; Height = 150; Scale = 0.82; Paper = $false },
+    @{ Name = 'Square44x44Logo.png'; Width = 44; Height = 44; Scale = 0.96; Paper = $false },
+    @{ Name = 'Square150x150Logo.png'; Width = 150; Height = 150; Scale = 1.0; Paper = $false },
     @{ Name = 'StoreLogo.png'; Width = 50; Height = 50; Scale = 0.92; Paper = $false },
     @{ Name = 'Wide310x150Logo.png'; Width = 310; Height = 150; Scale = 0.60; Paper = $false },
     @{ Name = 'SplashScreen.png'; Width = 620; Height = 300; Scale = 0.42; Paper = $false }
@@ -196,6 +196,22 @@ foreach ($image in $images) {
     Write-Host "  $($image.Name) $($image.Width)x$($image.Height)"
 }
 
+# Windows asks for a scale-specific file before it upscales the 100% one. Providing the
+# common DPI steps keeps the tile crisp on 125-400% displays instead of resampling.
+$scaleVariants = @(125, 150, 200, 400)
+foreach ($percent in $scaleVariants) {
+    $factor = $percent / 100.0
+
+    foreach ($base in $images) {
+        $width = [int][Math]::Round($base.Width * $factor)
+        $height = [int][Math]::Round($base.Height * $factor)
+        $name = [System.IO.Path]::GetFileNameWithoutExtension($base.Name) + ".scale-$percent.png"
+        New-PackageImage -SourcePath $sourceIcon -Target (Join-Path $assetsDirectory $name) `
+            -Width $width -Height $height -ContentScale $base.Scale -Paper $base.Paper
+    }
+}
+
+Write-Host "  scale variants: $($scaleVariants -join ', ')%"
 # Windows picks target-size variants for Start, the taskbar and the app list. Without
 # them the single 44px asset gets scaled, which makes the icon look oversized.
 foreach ($size in 16, 20, 24, 32, 40, 48, 64, 256) {
