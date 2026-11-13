@@ -45,7 +45,8 @@ public partial class MainWindow : Window
                 Key.D3 or Key.NumPad3 => "Speed",
                 Key.D4 or Key.NumPad4 => "Sites",
                 Key.D5 or Key.NumPad5 => "Path",
-                Key.D6 or Key.NumPad6 => "Settings",
+                Key.D6 or Key.NumPad6 => "History",
+                Key.D7 or Key.NumPad7 => "Settings",
                 _ => null,
             };
 
@@ -95,6 +96,7 @@ public partial class MainWindow : Window
             ("Sites", "04-sites"),
             ("Path", "05-path"),
             ("Settings", "06-settings"),
+            ("History", "07-history"),
         };
 
         await Task.Delay(800);
@@ -118,6 +120,12 @@ public partial class MainWindow : Window
         viewModel.NavigateCommand.Execute("Overview");
         viewModel.SetThemeModeCommand.Execute("Light");
         await Task.Delay(400);
+
+        // Render the share card in the same isolated data context as the screenshots.
+        ShareCardRenderer.Save(
+            new ShareCardViewModel(viewModel.View),
+            Path.Combine(directory, "share-card.png"));
+
         Close();
     }
 

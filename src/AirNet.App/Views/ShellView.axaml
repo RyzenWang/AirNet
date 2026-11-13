@@ -234,6 +234,12 @@
                   <TextBlock Classes="navLabel" Text="链路路径" FontSize="12.5" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
+              <Button Classes="nav" Classes.active="{Binding IsHistorySelected}" Command="{Binding NavigateCommand}" CommandParameter="History">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Path Classes="navIcon" Data="{StaticResource IconHistory}" />
+                  <TextBlock Classes="navLabel" Text="历史趋势" FontSize="12.5" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
               <Button Classes="nav" Classes.active="{Binding IsSettingsSelected}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Path Classes="navIcon" Data="{StaticResource IconSliders}" />
@@ -297,6 +303,9 @@
         </Border>
         <Border Classes="pageHost" IsVisible="{Binding IsPathSelected}">
           <views:PathView DataContext="{Binding Path}" />
+        </Border>
+        <Border Classes="pageHost" IsVisible="{Binding IsHistorySelected}">
+          <views:HistoryView DataContext="{Binding Trends}" />
         </Border>
         <Border Classes="pageHost" IsVisible="{Binding IsSettingsSelected}">
           <views:SettingsView DataContext="{Binding Settings}" />

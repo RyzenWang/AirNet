@@ -63,6 +63,7 @@ public partial class ShellViewModel : ObservableObject
         Speed = new SpeedViewModel(this);
         SiteLatency = new SiteLatencyViewModel(this);
         Path = new PathViewModel(this);
+        Trends = new TrendsViewModel(this);
         Settings = new SettingsViewModel(this);
 
         Overview.Refresh(_view);
@@ -78,6 +79,7 @@ public partial class ShellViewModel : ObservableObject
     public SpeedViewModel Speed { get; }
     public SiteLatencyViewModel SiteLatency { get; }
     public PathViewModel Path { get; }
+    public TrendsViewModel Trends { get; }
     public SettingsViewModel Settings { get; }
 
     public HistoryStore History => _history;
@@ -116,6 +118,7 @@ public partial class ShellViewModel : ObservableObject
                 OnPropertyChanged(nameof(IsSpeedSelected));
                 OnPropertyChanged(nameof(IsSitesSelected));
                 OnPropertyChanged(nameof(IsPathSelected));
+                OnPropertyChanged(nameof(IsHistorySelected));
                 OnPropertyChanged(nameof(IsSettingsSelected));
             }
         }
@@ -126,7 +129,8 @@ public partial class ShellViewModel : ObservableObject
     public bool IsSpeedSelected => PageIndex == 2;
     public bool IsSitesSelected => PageIndex == 3;
     public bool IsPathSelected => PageIndex == 4;
-    public bool IsSettingsSelected => PageIndex == 5;
+    public bool IsHistorySelected => PageIndex == 5;
+    public bool IsSettingsSelected => PageIndex == 6;
 
     /// <summary>The echo/TCP target, also used as the trace destination.</summary>
     public string ReferenceHost => _runner.ReferenceHost;
@@ -190,7 +194,8 @@ public partial class ShellViewModel : ObservableObject
             "Speed" => 2,
             "Sites" => 3,
             "Path" => 4,
-            "Settings" => 5,
+            "History" => 5,
+            "Settings" => 6,
             _ => PageIndex,
         };
     }
@@ -271,6 +276,7 @@ public partial class ShellViewModel : ObservableObject
                 await Overview.LoadHistoryAsync().ConfigureAwait(true);
                 await Settings.RefreshHistoryCountAsync().ConfigureAwait(true);
                 await Speed.RefreshHistoryAsync().ConfigureAwait(true);
+                await Trends.LoadAsync().ConfigureAwait(true);
             }
         }
         catch (OperationCanceledException)
@@ -390,6 +396,7 @@ public partial class ShellViewModel : ObservableObject
 
                 await Overview.LoadHistoryAsync().ConfigureAwait(true);
                 await Settings.RefreshHistoryCountAsync().ConfigureAwait(true);
+                await Trends.LoadAsync().ConfigureAwait(true);
             }
         }
 

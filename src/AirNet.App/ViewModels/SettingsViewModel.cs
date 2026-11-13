@@ -252,6 +252,7 @@ public partial class SettingsViewModel : ObservableObject
         await Shell.History.ClearAsync().ConfigureAwait(true);
         await RefreshHistoryCountAsync().ConfigureAwait(true);
         Shell.Overview.ResetRecentRuns();
+        await Shell.Trends.LoadAsync().ConfigureAwait(true);
         HistoryStatusText = "已清空本机历史";
     }
 

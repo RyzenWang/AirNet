@@ -1,0 +1,193 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AirNet.App.ViewModels"
+             xmlns:controls="using:AirNet.App.Controls"
+             x:Class="AirNet.App.Views.ShareCardView"
+             x:DataType="vm:ShareCardViewModel"
+             Width="1080"
+             Height="1350">
+  <Border Background="{DynamicResource AppBackgroundBrush}" Padding="64">
+    <Grid RowDefinitions="Auto,*,Auto">
+      <!-- Brand -->
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="13">
+          <Border Width="46" Height="46" CornerRadius="13" Background="{DynamicResource AccentBrush}">
+            <Path Data="{StaticResource IconPulse}"
+                  Width="26"
+                  Height="26"
+                  Stroke="White"
+                  StrokeThickness="2.2"
+                  StrokeLineCap="Round"
+                  StrokeJoin="Round"
+                  Stretch="Uniform"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center" />
+          </Border>
+          <StackPanel VerticalAlignment="Center" Spacing="1">
+            <TextBlock Text="AirNet" FontSize="23" FontWeight="SemiBold" LetterSpacing="-0.5" />
+            <TextBlock Text="NETWORK DIAGNOSTICS"
+                       Classes="eyebrow"
+                       FontSize="9"
+                       LetterSpacing="1.5" />
+          </StackPanel>
+        </StackPanel>
+        <Border Grid.Column="1"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="20"
+                Padding="13,6"
+                VerticalAlignment="Center">
+          <TextBlock Text="{Binding SourceText}" Classes="caption" FontSize="11" />
+        </Border>
+      </Grid>
+
+      <!-- Main report -->
+      <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="30">
+        <StackPanel Spacing="5">
+          <TextBlock Text="NETWORK REPORT" Classes="eyebrow" FontSize="10" LetterSpacing="2" />
+          <TextBlock Text="网络体检报告" FontSize="29" FontWeight="SemiBold" LetterSpacing="-0.8" />
+        </StackPanel>
+
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="30">
+          <StackPanel Spacing="10" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Bottom">
+              <TextBlock Text="{Binding ScoreText}"
+                         FontSize="148"
+                         FontWeight="SemiBold"
+                         LetterSpacing="-8"
+                         LineHeight="135"
+                         Foreground="{DynamicResource TextPrimaryBrush}" />
+              <TextBlock Text="/ 100"
+                         Classes="caption"
+                         FontSize="16"
+                         Margin="0,0,0,22"
+                         VerticalAlignment="Bottom" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Border Width="7" Height="7" CornerRadius="4" Background="{DynamicResource GoodBrush}" VerticalAlignment="Center" />
+              <TextBlock Text="{Binding GradeLabel}" FontSize="20" FontWeight="SemiBold" />
+              <TextBlock Text="{Binding Verdict}" FontSize="20" Foreground="{DynamicResource TextSecondaryBrush}" />
+            </StackPanel>
+            <TextBlock Text="{Binding Summary}"
+                       Classes="caption"
+                       FontSize="13"
+                       LineHeight="20"
+                       TextWrapping="Wrap"
+                       MaxWidth="620" />
+          </StackPanel>
+
+          <Grid Grid.Column="1" Width="244" Height="244">
+            <controls:ScoreRing Width="244"
+                                Height="244"
+                                Thickness="16"
+                                Value="{Binding Score}"
+                                TrackBrush="{DynamicResource TrackBrush}"
+                                ProgressBrush="{DynamicResource GoodBrush}" />
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="1">
+              <TextBlock Text="{Binding ScoreText}" FontSize="42" FontWeight="SemiBold" HorizontalAlignment="Center" />
+              <TextBlock Text="SCORE" Classes="eyebrow" FontSize="9" LetterSpacing="1.5" HorizontalAlignment="Center" />
+            </StackPanel>
+          </Grid>
+        </Grid>
+
+        <!-- Key numbers -->
+        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+          <Border Background="{DynamicResource SurfaceBrush}"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="18"
+                  Padding="20,16">
+            <StackPanel Spacing="3">
+              <TextBlock Text="延迟 / LATENCY" Classes="eyebrow" FontSize="9" />
+              <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Bottom">
+                <TextBlock Text="{Binding LatencyText}" FontSize="35" FontWeight="SemiBold" LetterSpacing="-1" />
+                <TextBlock Text="ms" Classes="unit" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,5" />
+              </StackPanel>
+              <TextBlock Text="平均往返" Classes="micro" FontSize="10" />
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="1"
+                  Background="{DynamicResource SurfaceBrush}"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="18"
+                  Padding="20,16">
+            <StackPanel Spacing="3">
+              <TextBlock Text="抖动 / JITTER" Classes="eyebrow" FontSize="9" />
+              <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Bottom">
+                <TextBlock Text="{Binding JitterText}" FontSize="35" FontWeight="SemiBold" LetterSpacing="-1" />
+                <TextBlock Text="ms" Classes="unit" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,5" />
+              </StackPanel>
+              <TextBlock Text="相邻样本差" Classes="micro" FontSize="10" />
+            </StackPanel>
+          </Border>
+          <Border Grid.Row="1"
+                  Background="{DynamicResource SurfaceBrush}"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="18"
+                  Padding="20,16">
+            <StackPanel Spacing="3">
+              <TextBlock Text="丢包 / LOSS" Classes="eyebrow" FontSize="9" />
+              <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Bottom">
+                <TextBlock Text="{Binding LossText}" FontSize="35" FontWeight="SemiBold" LetterSpacing="-1" />
+                <TextBlock Text="%" Classes="unit" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,5" />
+              </StackPanel>
+              <TextBlock Text="ICMP 探测" Classes="micro" FontSize="10" />
+            </StackPanel>
+          </Border>
+          <Border Grid.Row="1"
+                  Grid.Column="1"
+                  Background="{DynamicResource SurfaceBrush}"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="18"
+                  Padding="20,16">
+            <StackPanel Spacing="3">
+              <TextBlock Text="下行 / DOWNLOAD" Classes="eyebrow" FontSize="9" />
+              <TextBlock Text="{Binding DownloadText}" FontSize="28" FontWeight="SemiBold" LetterSpacing="-0.8" Margin="0,3,0,0" />
+              <TextBlock Text="{Binding UploadText}" Classes="micro" FontSize="10" />
+            </StackPanel>
+          </Border>
+        </Grid>
+
+        <Border Background="{DynamicResource AccentSoftBrush}"
+                CornerRadius="14"
+                Padding="18,14">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border Width="28" Height="28" CornerRadius="8" Background="{DynamicResource AccentBrush}" VerticalAlignment="Center">
+              <Path Data="{StaticResource IconCheck}"
+                    Width="15"
+                    Height="15"
+                    Stroke="White"
+                    StrokeThickness="2.4"
+                    StrokeLineCap="Round"
+                    StrokeJoin="Round"
+                    Stretch="Uniform"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center" />
+            </Border>
+            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding Verdict}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextBrush}" />
+              <TextBlock Text="{Binding NetworkText}" Classes="caption" FontSize="10.5" />
+            </StackPanel>
+          </Grid>
+        </Border>
+      </StackPanel>
+
+      <!-- Footer -->
+      <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="2">
+          <TextBlock Text="AirNet · 无驱动 · 无常驻进程" Classes="micro" FontSize="10" />
+          <TextBlock Text="github.com/RyzenWang/AirNet" Classes="mono" FontSize="9.5" />
+        </StackPanel>
+        <TextBlock Grid.Column="1"
+                   Text="{Binding CapturedText}"
+                   Classes="micro"
+                   FontSize="10"
+                   VerticalAlignment="Bottom" />
+      </Grid>
+    </Grid>
+  </Border>
+</UserControl>

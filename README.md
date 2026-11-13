@@ -20,15 +20,15 @@
 
 ## 当前状态
 
-**M3 主要能力已落地**：六页界面、评分与诊断、真实探测（含亚毫秒抖动）、三段归因、逐跳路径、
+**M3 主要能力已落地**：七页界面、评分与诊断、真实探测（含亚毫秒抖动）、三段归因、逐跳路径、
 MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈、代理/VPN 识别、DNS 三方对比、
-`--probe --json`、历史差值、Wi-Fi 邻区扫描、游戏/会议模式、报告导出、一键 DNS（含还原）、
-设置持久化、快捷键、五平台 Native AOT 发布矩阵、CI 都已跑通。
+`--probe --json`、历史差值、历史趋势页、分享卡片、Wi-Fi 邻区扫描、游戏/会议模式、报告导出、
+一键 DNS（含还原）、设置持久化、快捷键、五平台 Native AOT 发布矩阵、CI 都已跑通。
 
 | 部分 | 状态 |
 | --- | --- |
 | 平台支持 | Windows x64 / Linux x64 ✅ Native AOT 运行验证；Linux arm64、macOS x64/arm64 ✅ CI AOT 构建通过，🟡 运行待真机验证 |
-| 视觉系统（六页 × 深浅色） | ✅ M0/M2 |
+| 视觉系统（七页 × 深浅色） | ✅ M0/M2 |
 | 真实探测：ICMP 丢包 / TCP 计时 / DNS·TCP·TLS·TTFB | ✅ M1 |
 | 亚毫秒抖动（`Stopwatch` 计时 TCP 握手） | ✅ 本机实测 2.6ms（原先恒为 0） |
 | Wi-Fi 信号 / 速率 / PHY（wlanapi） | ✅ 2026-11-12 在真实无线网卡上验证可用（SSID / 信号 / 速率 / PHY 代际） |
@@ -42,7 +42,7 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **MTU**（DF 二分） | ✅ M2 实测 1480（PPPoE） |
 | **报告导出**（自包含 HTML，可打印 PDF） | ✅ M2 7.8KB / 零脚本 / 地址掩码 |
 | **一键 DNS + 还原**（Windows 提权） | ✅ M2 命令先展示，还原记录落盘 |
-| **单元测试**（xUnit） | ✅ 137 项：统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / 邻区 / 模式 / 站点目录与 HTTP 状态 |
+| **单元测试**（xUnit） | ✅ 141 项：统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / 邻区 / 模式 / 站点目录与 HTTP 状态 |
 | **设置**（持久化 / 自动刷新 / 键盘快捷键） | ✅ M2，写入 `settings.json`；60s 自动刷新仅在窗口可见时执行 |
 | Windows 正式发布 | ✅ Native AOT：16.83MB zip（CI）；本机启动 411ms / 内存 118.9MB；需保留同目录原生 DLL |
 | macOS / Linux 发布 | ✅ CI AOT 构建通过：Linux x64/arm64 约 16MB，macOS 约 27–29MB；Linux x64 实机运行通过，arm64/macOS 待验证 |
@@ -53,6 +53,8 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **DNS 三方对比** | ✅ 同一域名实测「当前 / 223.5.5.5 / 1.1.1.1」，差 20% 且 ≥5ms 才建议更换 |
 | **CLI JSON** | ✅ `--probe --json out.json`，稳定 schema + 退出码（0 健康 / 1 一般 / 2 较差 / 3 失败） |
 | **历史差值** | ✅ 每条历史显示与上次的分数 / 延迟 / 抖动 / 下行变化，一眼看出改动是否有效 |
+| **历史趋势页** | ✅ 7 / 30 天延迟与评分曲线、凌晨/上午/下午/晚间时段观察、最近记录 |
+| **分享卡片** | ✅ 一键生成 1080 × 1350 PNG，复用当前体检结论和纸面视觉 |
 | **Wi-Fi 邻区** | ✅ Windows WLAN API 只读扫描 SSID/BSSID/信号/PHY/速率；有线连接明确跳过，不伪造信道 |
 | **游戏模式** | ✅ UDP/STUN RTT、抖动、丢包 + NAT 映射行为启发式；不是实际游戏服务器 RTT |
 | **会议模式** | ✅ 2MB 上行 + TCP 抖动/丢包，给出 1080p / 720p / 风险结论 |
@@ -130,7 +132,7 @@ src/AirNet.App/          Avalonia 应用
   Styles/                Colors(token) · Icons · Controls(字号/按钮/卡片/开关)
   Controls/              ScoreRing · Sparkline · MeterBar · SignalBars · ScanSweep（自绘）
   Views/                 ShellView + Overview / Monitor / Speed / Sites / Path / Settings
-  ViewModels/            Shell（导航与扫描生命周期）· 六个页面 VM · SnapshotView（展示投影）
+  ViewModels/            Shell（导航与扫描生命周期）· 七个页面 VM · SnapshotView（展示投影）
   Services/              SettingsStore（settings.json）
 packaging/publish.ps1    裁剪 + R2R 发布，并打印体积/启动/内存
 packaging/pack-all.ps1   Windows / macOS / Linux 便携 zip（无 setup）
@@ -144,7 +146,7 @@ docs/
   WEBSITE_LATENCY.md     网站延迟：功能、交互、视觉与实现方案
   design/                评审用视觉/动效稿（不随应用发布）
   icon-concepts/         已选脉冲图标 + 4 个备选
-  shots/                 浅色/深色共 12 张截图
+  shots/                 浅色/深色 14 张 + 1 张分享卡片
 ```
 
 ## 设计要点
@@ -153,7 +155,7 @@ docs/
   浅色主操作、品牌和导航选中用暖橙 `#E3563B`，健康分、图表和状态灯继续用青绿语义色。
   深色主题保持原来的青绿 accent，不改色。
 - **数字有口径**：每个指标都带单位、P95、采样数或满量程，不给出无法解释的分数。
-- **结构可读**：44px 品牌条 + 46px 状态条 + 216px 侧栏 + 30px 状态栏，六页共用，不做导航栈重建。
+- **结构可读**：44px 品牌条 + 46px 状态条 + 216px 侧栏 + 30px 状态栏，七页共用，不做导航栈重建。
 
 细节见 [docs/DESIGN.md](docs/DESIGN.md)。
 
@@ -166,7 +168,7 @@ docs/
 - 内存/启动以本机 2026-11 复测为准：约 176MB / 1.6–1.9s。这是 Avalonia + Skia + Inter 的固定成本；"轻"体现在无驱动、无后台常驻，而不是内存数字。
 - 截图导出必须用 `--scale 1`：Avalonia 的 `RenderTargetBitmap` 在 2× DPI 下会复用 1× 字形缓存，文字发糊（已记录，未绕开）。
 - TCP 握手 RTT 比 ICMP 高 3–5ms（多一层本地协议栈），评分阈值已按此校准；TCP 也观测不到丢包，所以丢包仍由 ICMP 给出。
-- **设置页三个开关已接通并持久化**（自动刷新 / 双探测 / 保留历史），Ctrl+R / Ctrl+1–6 / Ctrl+T / Esc、
+- **设置页三个开关已接通并持久化**（自动刷新 / 双探测 / 保留历史），Ctrl+R / Ctrl+1–7 / Ctrl+T / Esc、
   监控页"导出报告 / 复制诊断信息"和诊断建议按钮也已接命令。主扫描仍**不含** 12MB 带宽测速，
   测速是独立动作，避免把 3 秒承诺拖成十几秒。
 - **网站延迟**：默认 11 站 + 最多 8 个自定义站点；只支持 HTTPS 443，首字节四段分解；

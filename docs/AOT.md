@@ -53,7 +53,7 @@ Windows 本机运行验证：
 | 工作集 | 约 170–176 MB | **118.9 MB** |
 | `--probe --json` | ✅ | ✅ 退出码 0 |
 | `--selftest` | ✅ | ✅ 历史/双栈/逐跳正常 |
-| `--export` | ✅ 12 张 | ✅ 12 张 |
+| `--export` | ✅ 14 页 + 分享卡 | ✅ 14 页 + 分享卡 |
 | GUI | ✅ | ✅ |
 
 CI 原生 runner 全平台 AOT 构建（workflow dispatch，未发 Release）：

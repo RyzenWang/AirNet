@@ -50,7 +50,7 @@ AirNet.sln
 │  └─ Demo/                   确定性样例数据（评审与演示用）
 └─ src/AirNet.App             Avalonia
    ├─ ViewModels/             Shell(导航+扫描生命周期), Overview, Monitor, Speed, SiteLatency, Path, Settings
-   ├─ Views/                  ShellView + 六个页面（UserControl，非 Window）+ SiteManagerView
+   ├─ Views/                  ShellView + 七个页面（UserControl，非 Window）+ SiteManagerView
    ├─ Controls/               ScoreRing, Sparkline, MeterBar, SignalBars, ScanSweep
    └─ Styles/                 Colors, Icons, Controls
 ```
@@ -277,10 +277,10 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 | 层级 | 手段 | 覆盖 |
 | --- | --- | --- |
-| 单元 | xUnit（`tests/AirNet.Core.Tests`，137 项） | `LatencyAnalyzer`、`DiagnosisEngine`、`TraceProbe.Parse`、`ReportBuilder`、`EgressProbe`、`DnsAdvisor`/`DnsProbe`/`DnsComparison`、`DualStack`、`Interference`、`HistoryDelta`、`ProbeJson`、`SiteCatalog`/`CustomSiteStore`/`SiteHistoryStore` |
+| 单元 | xUnit（`tests/AirNet.Core.Tests`，141 项） | `LatencyAnalyzer`、`DiagnosisEngine`、`TraceProbe.Parse`、`ReportBuilder`、`EgressProbe`、`DnsAdvisor`/`DnsProbe`/`DnsComparison`、`DualStack`、`Interference`、`HistoryDelta`、`ProbeJson`、`SiteCatalog`/`CustomSiteStore`/`SiteHistoryStore` |
 | 集成 | 本机 `--selftest` 模式（已实现） | 探针链路真实可用性，CI 上可跳过 |
 | 网络伪造 | `tc netem`（Linux）/ Clumsy（Windows）注入丢包抖动 | 归因是否正确 |
-| 视觉回归 | `--export` 截图 + 像素 diff | 深浅色 × 六页，防样式回退 |
+| 视觉回归 | `--export` 截图 + 像素 diff | 深浅色 × 七页，防样式回退 |
 | 持续集成 | GitHub Actions（`.github/workflows/ci.yml`） | `-warnaserror` 构建、单元测试、探针冒烟断言、报告断言、截图工件 |
 | 现场 | 手动矩阵：Wi-Fi/有线、VPN、双栈、热点、移动网络 | 降级路径 |
 
@@ -316,7 +316,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 | 能力 | 状态 |
 | --- | --- |
-| 设计系统 + 六页视觉 + 深浅色 | ✅ M0/M2 |
+| 设计系统 + 七页视觉 + 深浅色 | ✅ M0/M2 |
 | ICMP 丢包 / TCP 握手计时（亚毫秒抖动） | ✅ M1，本机实测 jitter 2.6ms |
 | 接口识别（虚拟网卡过滤 + 网关优先） | ✅ M1 |
 | Wi-Fi 信号 / 速率 / PHY（wlanapi P/Invoke） | ✅ 2026-11-12 真机验证：SSID / 信号质量 / 速率 / PHY 代际；dBm 仍为估算 |
@@ -335,10 +335,10 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 跨平台便携包 | ✅ Windows / macOS（arm64+x64）/ Linux（x64+arm64）zip；Linux x64 已在真实环境启动验证；Linux arm64 与 macOS 尚未验证（macOS 未签名/未公证） |
 | 报告导出（自包含 HTML，可打印 PDF） | ✅ M2，7.8KB，零脚本 |
 | 一键 DNS + 还原（Windows 提权，UAC 可取消） | ✅ M2，实测命令生成与还原记录；**提权执行未自动化验证** |
-| 单元测试（xUnit，137 项） | ✅ M3，覆盖统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / JSON / 邻区 / 模式 / 站点目录与 HTTP 状态 |
+| 单元测试（xUnit，141 项） | ✅ M3，覆盖统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / JSON / 邻区 / 模式 / 站点目录与 HTTP 状态 |
 | CI（构建 + 单元测试 + 探针/站点冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | 动效（扫描/测速/追踪扫描带 + 实时读数 + 落地过冲/高亮） | ✅ M2，样本真实回传，截图模式可关闭 |
-| 设置项持久化 + 60s 自动刷新 + 快捷键 | ✅ M2，写入 `settings.json`；Ctrl+R / Ctrl+1–6 / Ctrl+T / Esc |
+| 设置项持久化 + 60s 自动刷新 + 快捷键 | ✅ M2，写入 `settings.json`；Ctrl+R / Ctrl+1–7 / Ctrl+T / Esc |
 | 双栈（IPv4/IPv6 对照） | ✅ 同步测两条路，IPv6 偏慢时给 Warn 结论 |
 | 代理 / VPN 识别 | ✅ `HttpClient.DefaultProxy` + 隧道网卡枚举；区分「只影响 HTTP 探测」与「影响全部」 |
 | 邻区扫描、游戏/会议模式 | ✅ Windows 邻区只读扫描；游戏 UDP/STUN + NAT 启发式；会议上行/抖动/丢包 |

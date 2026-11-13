@@ -3,6 +3,15 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
+## [Unreleased]
+
+### Added
+
+- History trend page: 7/30-day latency and score curves, local time-of-day buckets and
+  recent runs.
+- Share card: a 1080 × 1350 PNG generated from the current snapshot, with a preview
+  window and file picker.
+
 ## [0.2.7] - 2026-11-13
 
 ### Changed

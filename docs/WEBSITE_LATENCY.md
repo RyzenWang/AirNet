@@ -3,8 +3,8 @@
 > 目标：回答"我常去的网站，现在打开得快不快；慢是慢在解析、连接、握手，还是对方首包"。
 > 这是一次**按需**测试，不进入 3 秒主扫描，也不并入健康分。
 >
-> **状态：已实现（2026-11）**。六页导航、11 个默认站、最多 8 个自定义站、`sites.json`、
-> HTTP 状态识别、`sites.jsonl` 历史、`--sites` CLI、报告表格、137 项单元测试都已接入；
+> **状态：已实现（2026-11）**。七页导航、11 个默认站、最多 8 个自定义站、`sites.json`、
+> HTTP 状态识别、`sites.jsonl` 历史、`--sites` CLI、报告表格、141 项单元测试都已接入；
 > 实现截图见 [04-sites-light.png](shots/04-sites-light.png)。
 >
 > 视觉稿：[主页面](design/site-latency-mockup.png) · [HTML 源稿](design/site-latency-mockup.html)；
@@ -315,7 +315,7 @@ Views/SiteManagerView.axaml(.cs)       管理弹层（可拆）
   - 复用 `SpeedViewModel` 的 200ms timer 写法。
 - `ShellViewModel`：
   - 增加 `Sites` 页面 VM、`Navigate("Sites")`、`PageIndex` 映射、`IsSitesSelected`。
-  - 导航快捷键 Ctrl+1–6（六页）。
+  - 导航快捷键 Ctrl+1–7（七页）。
 - 主页面按 §7 布局；行模板绑定 `SiteRow`（展示投影），不直接把 Core record 绑到 XAML。
 - 弹层用应用内 Overlay，不做新 Window；`Esc` 关闭，焦点圈定在弹层内。
 - 分段条新建 `StackedBar` 自绘控件，参数 `Segments` + 四档透明度；或叠加 `MeterBar`。
@@ -373,7 +373,7 @@ SiteLatencyView [开始测试]
 | 阶段 | 内容 | 估时 |
 | --- | --- | --- |
 | Phase 1 Core | `SiteCatalog` + `SiteLatencyProbe` + 中位数/失败/取消 + 单元测试 | 1.5 天 |
-| Phase 2 主页面 | 第六页 + 汇总/表格/分组 + 空/加载/失败态 + 动效 | 2 天 |
+| Phase 2 主页面 | 网站延迟页 + 汇总/表格/分组 + 空/加载/失败态 + 动效 | 2 天 |
 | Phase 3 自定义站点 | `CustomSiteStore` + 管理弹层 + 校验/编辑/删除 + 持久化 | 1.5 天 |
 | Phase 4 联调 | Shell 导航/快捷键、报告表格、`--sites` 烟测 | 1 天 |
 | Phase 5 校准 | 11 站真跑、阈值/文案、截图、文档 | 1 天 |
