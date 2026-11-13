@@ -72,7 +72,8 @@ Linux/macOS 目前只验证了 AOT **构建与归档**；GUI/CLI 运行还需要
 
 ## 限制
 
-- Windows x64 已本机验证；Linux/macOS 已通过 CI AOT 构建，运行仍待真机验收。
+- Windows x64 已本机验证；Linux x64 AOT 已于 2026-11-13 在真实环境运行验证。
+  Linux arm64 与 macOS 已通过 CI AOT 构建，运行仍待真机验收。
 - Linux AOT 要求 **glibc ≥ 2.35**（Ubuntu 22.04 构建基线）；更老的发行版需要自行从源码构建。
 - AOT 没有 JIT，崩溃栈、动态加载和部分反射行为与普通版不同。
 - Native PDB 很大（约 83 MB），发布包已剥离；需要符号时单独归档。

@@ -250,7 +250,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 安装包 | ≤ 25MB | Windows **16.83MB**；Linux x64/arm64 tar.gz **15.96/14.88MB**；macOS x64/arm64 **28.50/26.73MB**（均含说明） | CI 原生矩阵 AOT；只出便携 zip/tar.gz，不做 setup |
 | 扫描 CPU | < 3% | 未测 | ICMP 90ms / TCP 70ms 间隔；UI 250ms 合并刷新 |
 
-> 结论：Windows AOT 为 16.24MB zip / 41.6MB 解压 / 411ms / 118.9MB；五平台 AOT 构建已通过 CI，Linux/macOS 运行待真机。
+> 结论：Windows AOT 为 16.24MB zip / 41.6MB 解压 / 411ms / 118.9MB；五平台 AOT 构建已通过 CI，Linux x64 已实机运行验证，arm64/macOS 待真机。
 > 体积和内存已回到预算内，启动仍略高于 1.4s。此前 52.2MB / 217MB 的记录包含增量发布残留，
 > 已通过 `publish.ps1` 的清理步骤修正。复现：`powershell -File packaging/pack-all.ps1`。
 
@@ -331,7 +331,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 出口 IP（Cloudflare / 3322，best-effort） | ✅ M2，被拦截时显示"未获取" |
 | 带宽测速（单流，上下行） | ✅ 下行 4s 时间预算 + 上行 4MB 流式，任一向失败显"未测出" |
 | 网站延迟（11 默认 + 最多 8 自定义） | ✅ M2，四段分解/3 次中位数/HTTP 状态；自定义落 `sites.json`，历史落 `sites.jsonl`，`--sites` 可无 UI 烟测 |
-| 五平台 Native AOT 发布 | ✅ Windows 本机验证 16.24MB zip / 411ms / 118.9MB；Linux/macOS CI 构建通过，运行待真机 |
+| 五平台 Native AOT 发布 | ✅ Windows / Linux x64 运行验证；Linux arm64、macOS CI 构建通过，运行待真机 |
 | 跨平台便携包 | ✅ Windows / macOS（arm64+x64）/ Linux（x64+arm64）zip；Linux x64 已在真实环境启动验证；Linux arm64 与 macOS 尚未验证（macOS 未签名/未公证） |
 | 报告导出（自包含 HTML，可打印 PDF） | ✅ M2，7.8KB，零脚本 |
 | 一键 DNS + 还原（Windows 提权，UAC 可取消） | ✅ M2，实测命令生成与还原记录；**提权执行未自动化验证** |
