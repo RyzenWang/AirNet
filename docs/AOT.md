@@ -1,3 +1,8 @@
+---
+layout: default
+title: Native AOT
+---
+
 # Native AOT
 
 正式发布包全部使用 Native AOT，由 GitHub Actions 的原生 runner 分别构建：

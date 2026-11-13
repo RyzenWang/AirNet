@@ -1,3 +1,9 @@
+---
+layout: default
+title: 隐私政策 / Privacy Policy
+permalink: /PRIVACY.html
+---
+
 # AirNet 隐私政策 / Privacy Policy
 
 最后更新：2026-11-13 · Last updated: 13 November 2026

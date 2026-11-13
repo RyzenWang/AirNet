@@ -1,3 +1,8 @@
+---
+layout: default
+title: 设计规范
+---
+
 # AirNet 视觉规范 v0.1
 
 > 与 `F:\AirPdf`（AirPDF）同一套"纸张"语言的产品族版本。本文记录**继承了什么、改了什么、为什么**，

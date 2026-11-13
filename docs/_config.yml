@@ -1,0 +1,12 @@
+title: AirNet
+description: 轻量、快速的网络检测与优化工具
+theme: minima
+markdown: kramdown
+
+# The site exists so the Microsoft Store has a public privacy-policy URL and so the
+# design notes are readable without cloning. Pages that are not linked from index.md
+# still deploy, which is fine: TEMP files and drafts are not kept under docs/.
+show_excerpts: false
+
+exclude:
+  - "**/*.ps1"
