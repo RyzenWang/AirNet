@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1680px;height:1020px;overflow:hidden;background:#E9E3D8;color:#1D232C;
+    font-family:"Segoe UI","Microsoft YaHei UI","Inter",sans-serif}
+  .board{padding:34px 42px}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px}
+  h1{font-size:25px;margin:0;letter-spacing:-.6px}
+  .sub{font-size:11px;color:#69645C;margin-top:5px}
+  .note{font-size:10px;color:#9A9286;text-align:right;line-height:1.6}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .option{background:#FBFAF7;border:1px solid #DED7CB;border-radius:15px;padding:18px;box-shadow:0 12px 30px #2A1E1610}
+  .iconStage{height:210px;display:flex;align-items:center;justify-content:center;background:#F6F2EB;border-radius:11px;border:1px solid #E7E0D4}
+  .iconStage img{width:150px;height:150px}
+  .label{display:flex;justify-content:space-between;align-items:center;margin-top:15px}
+  .label b{font-size:16px;letter-spacing:-.2px}
+  .label span{font-size:9px;color:#9A9286;letter-spacing:1px}
+  .desc{font-size:10.5px;line-height:1.55;color:#69645C;min-height:48px;margin-top:5px}
+  .sizes{display:flex;align-items:center;gap:13px;margin-top:8px;padding-top:12px;border-top:1px solid #E7E0D4}
+  .sizes span{font-size:8.5px;color:#9A9286}
+  .sizes img{display:block}
+  .context{display:flex;align-items:center;gap:9px;background:#F1EEE7;border-radius:8px;padding:8px 10px;margin-top:12px}
+  .context img{width:30px;height:30px}
+  .context b{font-size:12px;display:block}
+  .context small{font-size:7px;color:#69645C;letter-spacing:1.2px;display:block;margin-top:2px}
+  .footer{margin-top:22px;font-size:10px;color:#9A9286}
+</style>
+</head>
+<body>
+<div class="board">
+  <div class="head">
+    <div>
+      <h1>分享卡片图标 · 四个方向</h1>
+      <div class="sub">去掉旧的心电图，换一个更像“网络诊断”的标记</div>
+    </div>
+    <div class="note">展示尺寸：150 / 56 / 30 / 20 px<br>同一枚图标需在 30px 仍可辨认</div>
+  </div>
+
+  <div class="grid">
+    <div class="option">
+      <div class="iconStage"><img src="a-signal.svg"></div>
+      <div class="label"><b>A · 信号</b><span>SIGNAL</span></div>
+      <div class="desc">三层信号弧 + 端点。最直观的“网络连接”语义，缩小后仍然清楚。</div>
+      <div class="sizes">
+        <span>150</span><img src="a-signal.svg" width="56" height="56">
+        <span>30</span><img src="a-signal.svg" width="30" height="30">
+        <span>20</span><img src="a-signal.svg" width="20" height="20">
+      </div>
+      <div class="context"><img src="a-signal.svg"><div><b>AirNet</b><small>NETWORK DIAGNOSTICS</small></div></div>
+    </div>
+
+    <div class="option">
+      <div class="iconStage"><img src="b-nodes.svg"></div>
+      <div class="label"><b>B · 节点</b><span>NODES</span></div>
+      <div class="desc">三个节点连成网络。更像“诊断路径/拓扑”，品牌辨识度比通用 Wi-Fi 更强。</div>
+      <div class="sizes">
+        <span>150</span><img src="b-nodes.svg" width="56" height="56">
+        <span>30</span><img src="b-nodes.svg" width="30" height="30">
+        <span>20</span><img src="b-nodes.svg" width="20" height="20">
+      </div>
+      <div class="context"><img src="b-nodes.svg"><div><b>AirNet</b><small>NETWORK DIAGNOSTICS</small></div></div>
+    </div>
+
+    <div class="option">
+      <div class="iconStage"><img src="c-radar.svg"></div>
+      <div class="label"><b>C · 雷达</b><span>RADAR</span></div>
+      <div class="desc">同心弧 + 中心点，强调“扫描/探测/定位”，和实时检测的扫描动效呼应。</div>
+      <div class="sizes">
+        <span>150</span><img src="c-radar.svg" width="56" height="56">
+        <span>30</span><img src="c-radar.svg" width="30" height="30">
+        <span>20</span><img src="c-radar.svg" width="20" height="20">
+      </div>
+      <div class="context"><img src="c-radar.svg"><div><b>AirNet</b><small>NETWORK DIAGNOSTICS</small></div></div>
+    </div>
+
+    <div class="option">
+      <div class="iconStage"><img src="d-monogram.svg"></div>
+      <div class="label"><b>D · 字标</b><span>MONOGRAM</span></div>
+      <div class="desc">用 N 的折线做字标，末端加一个信号点。更像独立品牌，但网络语义最弱。</div>
+      <div class="sizes">
+        <span>150</span><img src="d-monogram.svg" width="56" height="56">
+        <span>30</span><img src="d-monogram.svg" width="30" height="30">
+        <span>20</span><img src="d-monogram.svg" width="20" height="20">
+      </div>
+      <div class="context"><img src="d-monogram.svg"><div><b>AirNet</b><small>NETWORK DIAGNOSTICS</small></div></div>
+    </div>
+  </div>
+
+  <div class="footer">建议优先看 A / C：A 最易读，C 最符合“扫描诊断”；B 更差异化，D 需要配合字标才成立。</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1680px;height:980px;overflow:hidden;background:#E9E3D8;color:#1D232C;
+    font-family:"Segoe UI","Microsoft YaHei UI","Inter",sans-serif}
+  .board{padding:34px 42px}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px}
+  h1{font-size:25px;margin:0;letter-spacing:-.6px}
+  .sub{font-size:11px;color:#69645C;margin-top:5px}
+  .note{font-size:10px;color:#9A9286;text-align:right;line-height:1.6}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .option{background:#FBFAF7;border:1px solid #DED7CB;border-radius:15px;padding:18px;box-shadow:0 12px 30px #2A1E1610}
+  .iconStage{height:205px;display:flex;align-items:center;justify-content:center;background:#F6F2EB;border-radius:11px;border:1px solid #E7E0D4}
+  .iconStage img{width:132px;height:132px}
+  .label{display:flex;justify-content:space-between;align-items:center;margin-top:15px}
+  .label b{font-size:16px;letter-spacing:-.2px}
+  .label span{font-size:9px;color:#9A9286;letter-spacing:1px}
+  .desc{font-size:10.5px;line-height:1.55;color:#69645C;min-height:48px;margin-top:5px}
+  .sizes{display:flex;align-items:center;gap:13px;margin-top:8px;padding-top:12px;border-top:1px solid #E7E0D4}
+  .sizes span{font-size:8.5px;color:#9A9286}
+  .sizes img{display:block}
+  .demo{display:flex;align-items:center;gap:10px;margin-top:13px}
+  .button{display:flex;align-items:center;gap:7px;border:1px solid #C7BEB0;border-radius:9px;padding:7px 11px;background:#FBFAF7}
+  .button img{width:16px;height:16px}
+  .button b{font-size:10.5px;font-weight:600}
+  .corner{display:flex;align-items:center;gap:5px;border:1px solid #F1C8BB;background:#FBE4DD;border-radius:20px;padding:5px 9px}
+  .corner img{width:13px;height:13px}
+  .corner span{font-size:8.5px;color:#A93620}
+  .footer{margin-top:22px;font-size:10px;color:#9A9286}
+</style>
+</head>
+<body>
+<div class="board">
+  <div class="head">
+    <div>
+      <h1>分享图标 · 四个方向</h1>
+      <div class="sub">用于「分享卡片」按钮和卡片角标；不替换 AirNet 品牌字标</div>
+    </div>
+    <div class="note">展示尺寸：132 / 32 / 20 / 16 px<br>同一枚图标要在 16px 按钮里仍像“分享”</div>
+  </div>
+
+  <div class="grid">
+    <div class="option">
+      <div class="iconStage"><img src="share-nodes.svg"></div>
+      <div class="label"><b>A · 三点分享</b><span>NODES</span></div>
+      <div class="desc">最通用的分享符号：三个节点向外连接。按钮和角标都最不容易误解。</div>
+      <div class="sizes"><span>132</span><img src="share-nodes.svg" width="32" height="32"><span>20</span><img src="share-nodes.svg" width="20" height="20"><span>16</span><img src="share-nodes.svg" width="16" height="16"></div>
+      <div class="demo"><div class="button"><img src="share-nodes.svg"><b>分享卡片</b></div><div class="corner"><img src="share-nodes.svg"><span>分享</span></div></div>
+    </div>
+
+    <div class="option">
+      <div class="iconStage"><img src="share-tray.svg"></div>
+      <div class="label"><b>B · 托盘箭头</b><span>TRAY</span></div>
+      <div class="desc">系统分享面板的经典语义：从托盘向上送出。熟悉、动作明确。</div>
+      <div class="sizes"><span>132</span><img src="share-tray.svg" width="32" height="32"><span>20</span><img src="share-tray.svg" width="20" height="20"><span>16</span><img src="share-tray.svg" width="16" height="16"></div>
+      <div class="demo"><div class="button"><img src="share-tray.svg"><b>分享卡片</b></div><div class="corner"><img src="share-tray.svg"><span>分享</span></div></div>
+    </div>
+
+    <div class="option">
+      <div class="iconStage"><img src="share-plane.svg"></div>
+      <div class="label"><b>C · 纸飞机</b><span>PLANE</span></div>
+      <div class="desc">更轻、更“发出去”的语义，适合社交分享；比三点图标更活泼。</div>
+      <div class="sizes"><span>132</span><img src="share-plane.svg" width="32" height="32"><span>20</span><img src="share-plane.svg" width="20" height="20"><span>16</span><img src="share-plane.svg" width="16" height="16"></div>
+      <div class="demo"><div class="button"><img src="share-plane.svg"><b>分享卡片</b></div><div class="corner"><img src="share-plane.svg"><span>分享</span></div></div>
+    </div>
+
+    <div class="option">
+      <div class="iconStage"><img src="share-forward.svg"></div>
+      <div class="label"><b>D · 转发箭头</b><span>FORWARD</span></div>
+      <div class="desc">从框内向外转发，偏“转给别人”的动作；比标准分享符号更强调方向。</div>
+      <div class="sizes"><span>132</span><img src="share-forward.svg" width="32" height="32"><span>20</span><img src="share-forward.svg" width="20" height="20"><span>16</span><img src="share-forward.svg" width="16" height="16"></div>
+      <div class="demo"><div class="button"><img src="share-forward.svg"><b>分享卡片</b></div><div class="corner"><img src="share-forward.svg"><span>分享</span></div></div>
+    </div>
+  </div>
+
+  <div class="footer">建议：A 最像“分享”、最稳妥；B 最像系统分享；C 更有传播感；D 更偏“转发”。</div>
+</div>
+</body>
+</html>

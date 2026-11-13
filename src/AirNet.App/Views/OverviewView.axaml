@@ -62,8 +62,8 @@
                   Click="OnShareCardClick"
                   ToolTip.Tip="生成一张 1080 × 1350 的分享卡片">
             <StackPanel Orientation="Horizontal" Spacing="6">
-              <Path Classes="icon small muted"
-                    Data="{StaticResource IconArrowUpRight}"
+              <Path Classes="icon small accent"
+                    Data="{StaticResource IconShare}"
                     Width="14"
                     Height="14"
                     VerticalAlignment="Center" />

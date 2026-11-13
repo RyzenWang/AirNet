@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <!-- Line icons adapted from Lucide (ISC License), drawn on a 24x24 grid at 1.8 stroke. -->
   <StreamGeometry x:Key="IconPulse">M2 13H6L8 6.5L11.5 19L14 11.5H20</StreamGeometry>
@@ -38,5 +38,6 @@
   <StreamGeometry x:Key="IconBars">M4 20v-4M9 20v-8M14 20v-12M19 20V5</StreamGeometry>
   <StreamGeometry x:Key="IconTarget">M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z</StreamGeometry>
   <StreamGeometry x:Key="IconCopy">M9 9h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2ZM5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1</StreamGeometry>
+  <StreamGeometry x:Key="IconShare">M12 15V3M8 7l4-4 4 4M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5</StreamGeometry>
   <StreamGeometry x:Key="IconLayers">M12 3l9 5-9 5-9-5 9-5ZM3 13l9 5 9-5M3 17.5l9 5 9-5</StreamGeometry>
 </ResourceDictionary>
