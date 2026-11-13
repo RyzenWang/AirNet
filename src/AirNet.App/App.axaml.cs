@@ -257,7 +257,9 @@ public partial class App : Application
             report.AppendLine($"culprit={attribution.Culprit} precise={attribution.IsPrecise} headline={attribution.Headline}");
 
             // Report rendering and the DNS plan are deterministic; CI asserts on these lines.
-            var html = Core.Reporting.ReportBuilder.Build(snapshot, attribution, mtu);
+            var history = await new Core.History.HistoryStore().LoadAsync(400).ConfigureAwait(true);
+            var trends = Core.History.HistoryTrendAnalyzer.Analyze(history, days: 7, now: DateTimeOffset.Now);
+            var html = Core.Reporting.ReportBuilder.Build(snapshot, attribution, mtu, trends: trends);
             report.AppendLine($"reportChars={html.Length}");
             report.AppendLine($"reportHasSvg={html.Contains("<svg", StringComparison.Ordinal)}");
             report.AppendLine($"reportHasScore={html.Contains("class=\"score\"", StringComparison.Ordinal)}");
@@ -354,11 +356,15 @@ public partial class App : Application
                 // A stale or locked sites.jsonl must not block the main report.
             }
 
+            var history = await new Core.History.HistoryStore().LoadAsync(400).ConfigureAwait(true);
+            var trends = Core.History.HistoryTrendAnalyzer.Analyze(history, days: 7, now: DateTimeOffset.Now);
+
             var html = Core.Reporting.ReportBuilder.Build(
                 snapshot,
                 attribution,
                 mtu,
-                siteLatency: siteHistory);
+                siteLatency: siteHistory,
+                trends: trends);
             var directory = Path.GetDirectoryName(Path.GetFullPath(htmlPath));
             if (!string.IsNullOrEmpty(directory))
             {

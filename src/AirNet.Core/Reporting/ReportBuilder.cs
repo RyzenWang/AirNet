@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using AirNet.Core.Diagnostics;
+using AirNet.Core.History;
 using AirNet.Core.Sites;
 
 namespace AirNet.Core.Reporting;
@@ -19,7 +20,8 @@ public static class ReportBuilder
         Attribution? attribution = null,
         MtuResult? mtu = null,
         bool maskAddresses = true,
-        SiteLatencyReport? siteLatency = null)
+        SiteLatencyReport? siteLatency = null,
+        HistoryTrendSummary? trends = null)
     {
         var html = new StringBuilder();
         var captured = snapshot.CapturedAt.ToLocalTime();
@@ -48,6 +50,7 @@ public static class ReportBuilder
             AppendPath(html, attribution, mtu, snapshot.DualStack);
         }
 
+        AppendTrends(html, trends);
         AppendSiteLatency(html, siteLatency);
         AppendFooter(html, maskAddresses);
         html.AppendLine("</main></body></html>");
@@ -288,6 +291,47 @@ public static class ReportBuilder
         return isPrivate
             ? $"{octets[0]}.{octets[1]}.x.x"
             : $"{octets[0]}.{octets[1]}.{octets[2]}.x";
+    }
+
+    /// <summary>
+    /// A report of one run is not enough to answer "is it always like this", so the last week of
+    /// measurements rides along when the caller has history.
+    /// </summary>
+    private static void AppendTrends(StringBuilder html, HistoryTrendSummary? trends)
+    {
+        if (trends is null || !trends.HasData)
+        {
+            return;
+        }
+
+        html.AppendLine("<section class=\"card\"><div class=\"cardhead\">");
+        html.AppendLine("<h2>近期趋势</h2>");
+        html.AppendLine($"<span class=\"muted\">近 7 天 · {trends.Count} 次检测</span></div>");
+        html.AppendLine("<div class=\"segments\">");
+
+        void Cell(string name, string value, string foot)
+        {
+            html.AppendLine("<div class=\"segment\">");
+            html.AppendLine($"<div class=\"segname\">{Encode(name)}</div>");
+            html.AppendLine($"<div class=\"segvalue\">{Encode(value)}</div>");
+            html.AppendLine($"<div class=\"foot\">{Encode(foot)}</div>");
+            html.AppendLine("</div>");
+        }
+
+        Cell("平均评分", $"{trends.AverageScore:0.0}", "近 7 天");
+        Cell("平均延迟", $"{trends.AverageLatencyMs:0.0} ms", "每次检测的平均");
+        Cell("平均抖动", $"{trends.AverageJitterMs:0.0} ms", "相邻样本差");
+        Cell("平均丢包", $"{trends.AverageLossPercent:0.0}%", "ICMP 探测");
+        html.AppendLine("</div>");
+
+        if (trends.WorstBucket is { HasData: true } worst)
+        {
+            html.AppendLine(
+                $"<p class=\"lead\">最差时段 {Encode(worst.Label)}（{Encode(worst.RangeText)}）"
+                + $"平均 {worst.AverageLatencyMs:0.0} ms，共 {worst.Count} 次。</p>");
+        }
+
+        html.AppendLine("</section>");
     }
 
     private static void AppendSiteLatency(StringBuilder html, SiteLatencyReport? report)

@@ -1,3 +1,4 @@
+using AirNet.Core.History;
 using AirNet.Core.Demo;
 using AirNet.Core.Diagnostics;
 using AirNet.Core.Reporting;
@@ -92,5 +93,41 @@ public sealed class ReportBuilderTests
 
         Assert.Contains("HTTP 403", html);
         Assert.Contains("warn", html);
+    }
+
+    [Fact]
+    public void TrendSectionIsAppendedOnlyWhenThereIsHistory()
+    {
+        var point = new TrendPoint(DateTimeOffset.Now.AddDays(-1), 88, 24.0, 2.0, 0, 400);
+        var worst = new TimeOfDayBucket("晚间", "18–24", 6, 48.3, 74, 0.4);
+        var trends = new HistoryTrendSummary(
+            Count: 12,
+            Points: [point],
+            Buckets: [worst],
+            AverageScore: 86.3,
+            AverageLatencyMs: 25.6,
+            AverageJitterMs: 3.2,
+            AverageLossPercent: 0.2,
+            AverageDownMbps: 400,
+            WorstBucket: worst);
+
+        var withTrends = ReportBuilder.Build(DemoSnapshotFactory.CreateSnapshot(), trends: trends);
+        var withoutTrends = ReportBuilder.Build(DemoSnapshotFactory.CreateSnapshot());
+
+        Assert.Contains("近期趋势", withTrends);
+        Assert.Contains("86.3", withTrends);
+        Assert.Contains("最差时段", withTrends);
+        Assert.Contains("48.3", withTrends);
+        Assert.DoesNotContain("近期趋势", withoutTrends);
+    }
+
+    [Fact]
+    public void EmptyHistoryDoesNotProduceAnEmptyTrendSection()
+    {
+        var empty = new HistoryTrendSummary(0, [], [], 0, 0, 0, 0, 0, null);
+
+        var html = ReportBuilder.Build(DemoSnapshotFactory.CreateSnapshot(), trends: empty);
+
+        Assert.DoesNotContain("近期趋势", html);
     }
 }

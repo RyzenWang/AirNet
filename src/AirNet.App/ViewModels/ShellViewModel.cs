@@ -386,12 +386,17 @@ public partial class ShellViewModel : ObservableObject
     /// <summary>Writes the self-contained HTML report and returns the path it used.</summary>
     public async Task<string> WriteReportAsync(string path)
     {
+        // Recent history rides along so a shared report answers "is it always like this".
+        var records = await History.LoadAsync(400).ConfigureAwait(true);
+        var trends = Core.History.HistoryTrendAnalyzer.Analyze(records, days: 7, now: DateTimeOffset.Now);
+
         var html = Core.Reporting.ReportBuilder.Build(
             Snapshot,
             Path.Attribution,
             Path.LastMtu,
             maskAddresses: true,
-            siteLatency: SiteLatency.LastReport);
+            siteLatency: SiteLatency.LastReport,
+            trends: trends);
 
         await File.WriteAllTextAsync(path, html, System.Text.Encoding.UTF8).ConfigureAwait(true);
         StatusMessage = $"报告已导出：{System.IO.Path.GetFileName(path)}";
