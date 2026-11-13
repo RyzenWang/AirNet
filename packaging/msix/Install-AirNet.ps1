@@ -17,7 +17,8 @@
 param(
     [string] $Package,
     [string] $Certificate,
-    [switch] $VerifyOnly
+    [switch] $VerifyOnly,
+    [switch] $KeepExisting
 )
 
 $ErrorActionPreference = 'Stop'
@@ -117,6 +118,15 @@ if (-not (Test-Trusted 'Root' $cerThumbprint) -or -not (Test-Trusted 'TrustedPeo
 }
 
 Write-Step 'Installing the package'
+
+# Iterating locally means reinstalling the same version, which Add-AppxPackage refuses;
+# removing the old copy first keeps "run this script again" working.
+$existing = Get-AppxPackage -Name AirNet
+if ($existing -and -not $KeepExisting) {
+    Write-Step "Removing the installed copy ($($existing.Version))"
+    Remove-AppxPackage -Package $existing.PackageFullName
+}
+
 Add-AppxPackage -Path $Package
 
 $app = Get-AppxPackage -Name AirNet

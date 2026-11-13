@@ -134,9 +134,9 @@ New-Item -ItemType Directory -Path $assetsDirectory -Force | Out-Null
 
 Add-Type -AssemblyName System.Drawing
 
-# The repository ships an .ico, not a PNG; take its largest frame as the source so the
-# package images and the exe icon can never drift apart.
-$sourceIcon = Join-Path $root 'src/AirNet.App/Assets/AirNet.ico'
+# The source is the 512px PNG master, not the .ico: System.Drawing decodes PNG-compressed
+# ICO frames as noise, which is how the first package shipped a rainbow tile.
+$sourceIcon = Join-Path $root 'docs/icon-concepts/01-pulse.png'
 if (-not (Test-Path $sourceIcon)) { throw "Missing icon: $sourceIcon" }
 
 function New-PackageImage {
@@ -149,10 +149,8 @@ function New-PackageImage {
         [bool] $Paper = $false
     )
 
-    $icon = New-Object System.Drawing.Icon($SourcePath)
+    $image = [System.Drawing.Image]::FromFile($SourcePath)
     try {
-        $image = $icon.ToBitmap()
-        try {
             $bitmap = New-Object System.Drawing.Bitmap($Width, $Height)
             try {
                 $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
@@ -181,17 +179,15 @@ function New-PackageImage {
             }
             finally { $bitmap.Dispose() }
         }
-        finally { $image.Dispose() }
-    }
-    finally { $icon.Dispose() }
+    finally { $image.Dispose() }
 }
 
 $images = @(
-    @{ Name = 'Square44x44Logo.png'; Width = 44; Height = 44; Scale = 0.64; Paper = $false },
-    @{ Name = 'Square150x150Logo.png'; Width = 150; Height = 150; Scale = 0.44; Paper = $true },
-    @{ Name = 'StoreLogo.png'; Width = 50; Height = 50; Scale = 1.0; Paper = $false },
-    @{ Name = 'Wide310x150Logo.png'; Width = 310; Height = 150; Scale = 0.62; Paper = $true },
-    @{ Name = 'SplashScreen.png'; Width = 620; Height = 300; Scale = 0.50; Paper = $true }
+    @{ Name = 'Square44x44Logo.png'; Width = 44; Height = 44; Scale = 0.92; Paper = $false },
+    @{ Name = 'Square150x150Logo.png'; Width = 150; Height = 150; Scale = 0.82; Paper = $false },
+    @{ Name = 'StoreLogo.png'; Width = 50; Height = 50; Scale = 0.92; Paper = $false },
+    @{ Name = 'Wide310x150Logo.png'; Width = 310; Height = 150; Scale = 0.60; Paper = $false },
+    @{ Name = 'SplashScreen.png'; Width = 620; Height = 300; Scale = 0.42; Paper = $false }
 )
 
 foreach ($image in $images) {
@@ -205,7 +201,7 @@ foreach ($image in $images) {
 foreach ($size in 16, 20, 24, 32, 40, 48, 64, 256) {
     $name = "Square44x44Logo.targetsize-$size.png"
     New-PackageImage -SourcePath $sourceIcon -Target (Join-Path $assetsDirectory $name) `
-        -Width $size -Height $size -ContentScale 0.64 -Paper $false
+        -Width $size -Height $size -ContentScale 0.92 -Paper $false
     Write-Host "  $name ${size}x${size}"
 }
 
