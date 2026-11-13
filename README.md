@@ -2,7 +2,7 @@
 
 **轻量、快速的网络检测与优化工具** —— 点一下，三秒告诉你网络好不好、问题在路由器还是运营商。
 
-基于 .NET 10 + Avalonia 11.3，沿用 AirPDF 的"纸张"设计语言；Windows 使用 Native AOT，macOS/Linux 使用单文件发布。
+基于 .NET 10 + Avalonia 11.3，沿用 AirPDF 的"纸张"设计语言；Windows/macOS/Linux 正式包均使用 Native AOT。
 
 [![CI](https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml/badge.svg)](https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/RyzenWang/AirNet?display_name=tag)](https://github.com/RyzenWang/AirNet/releases/latest)
@@ -23,11 +23,11 @@
 **M3 主要能力已落地**：六页界面、评分与诊断、真实探测（含亚毫秒抖动）、三段归因、逐跳路径、
 MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈、代理/VPN 识别、DNS 三方对比、
 `--probe --json`、历史差值、Wi-Fi 邻区扫描、游戏/会议模式、报告导出、一键 DNS（含还原）、
-设置持久化、快捷键、Windows Native AOT / macOS/Linux 单文件发布、CI 都已跑通。
+设置持久化、快捷键、五平台 Native AOT 发布矩阵、CI 都已跑通。
 
 | 部分 | 状态 |
 | --- | --- |
-| 平台支持 | Windows x64 ✅ Native AOT 正式包；Linux x64 ✅ 真实环境启动验证（R2R）；Linux arm64 / macOS arm64+x64 🟡 已构建，未真机验证 |
+| 平台支持 | Windows x64 ✅ Native AOT 运行验证；Linux x64/arm64、macOS x64/arm64 ✅ CI AOT 构建通过，🟡 运行待真机验证 |
 | 视觉系统（六页 × 深浅色） | ✅ M0/M2 |
 | 真实探测：ICMP 丢包 / TCP 计时 / DNS·TCP·TLS·TTFB | ✅ M1 |
 | 亚毫秒抖动（`Stopwatch` 计时 TCP 握手） | ✅ 本机实测 2.6ms（原先恒为 0） |
@@ -44,8 +44,8 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **一键 DNS + 还原**（Windows 提权） | ✅ M2 命令先展示，还原记录落盘 |
 | **单元测试**（xUnit） | ✅ 137 项：统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / 邻区 / 模式 / 站点目录与 HTTP 状态 |
 | **设置**（持久化 / 自动刷新 / 键盘快捷键） | ✅ M2，写入 `settings.json`；60s 自动刷新仅在窗口可见时执行 |
-| Windows 正式发布 | ✅ Native AOT：16.24MB zip / 411ms 启动 / 118.9MB 内存；非单文件，需保留同目录原生 DLL |
-| macOS / Linux 发布 | 🟡 已切换到 AOT 构建矩阵；Linux x64/arm64 与 macOS x64/arm64 待 CI 原生 runner 验证 |
+| Windows 正式发布 | ✅ Native AOT：16.83MB zip（CI）；本机启动 411ms / 内存 118.9MB；需保留同目录原生 DLL |
+| macOS / Linux 发布 | ✅ CI AOT 构建通过：Linux x64/arm64 约 16MB，macOS 约 27–29MB；🟡 运行待真机验证 |
 | CI（构建 + 单元测试 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | **动效**（扫描/测速/追踪扫描带、实时读数、环/条填充、数字滚动、曲线扫入、页面淡入） | ✅ M2，截图模式可关闭 |
 | **IPv4/IPv6 双栈** | ✅ 同一主机两条路各 5 次握手，给出「均衡 / IPv6 更快 / IPv6 偏慢」，偏慢时进诊断 |
