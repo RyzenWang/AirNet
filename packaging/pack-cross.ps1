@@ -1,4 +1,4 @@
-# Builds portable macOS and Linux assets. With -Aot the build must run on the
+﻿# Builds portable macOS and Linux assets. With -Aot the build must run on the
 # target OS because Native AOT needs that platform's native toolchain.
 #
 #   pwsh packaging/pack-cross.ps1
