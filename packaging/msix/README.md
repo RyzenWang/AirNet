@@ -63,3 +63,27 @@ powershell -File packaging/msix/Install-AirNet.ps1
 | 数据位置 | `%LOCALAPPDATA%\AirNet` | 包私有目录（重定向） |
 | 更新 | 手动下载 | 商店负责 |
 | 类路径 / CLI 参数 | 可用 | 商店启动不带参数 |
+
+## 验证记录
+
+2026-11-13，Windows 11 x64，AOT 包 sideload：
+
+| 检查 | 结果 |
+| --- | --- |
+| 安装（提权脚本） | ✅ 证书信任 + `Add-AppxPackage` 一次通过 |
+| 开始菜单 / 任务栏 / 应用列表图标 | ✅ 橙底白脉冲，尺寸正常 |
+| 检测功能 | ✅ 评分、双栈、DNS 三方对比均正常 |
+| Store 版 DNS 降级文案 | ✅ 显示「Microsoft Store 版无法自动修改系统 DNS」 |
+| 历史持久化 | ✅ 重启后仍在（重定向目录可写） |
+
+安装过程中踩过的两个坑，都已修在脚本里：
+
+1. **`Import-Certificate` 往 `LocalMachine\Root` 会静默跳过**（交互确认被吞），表现为 `0x800B0109` 而日志无异常——改用 `certutil -addstore -f` 并安装前自检。
+2. **`System.Drawing.Icon.ToBitmap()` 解不了 PNG 压缩的 ICO 帧**，会生成彩色噪点图——改用 PNG 母版 `docs/icon-concepts/01-pulse.png`。
+
+## 距离商店提交还差什么
+
+- 截图需 ≥1366×768（当前导出为 1240×860），窗口尺寸调整后重出，不要用 2× 缩放（已知字形发糊）；
+- 隐私政策页面（外发请求：出口 IP、测速、网站延迟）；
+- Partner Center 的产品标识（`Identity` 的 Name 与 `Publisher` 两值）；
+- listing 文案、分类、年龄分级。
