@@ -14,6 +14,9 @@ project uses semantic versioning for release tags.
 
 ### Fixed
 
+- Linux AOT packages are built in an Ubuntu 22.04 container (glibc 2.35), so the
+  binary no longer requires `GLIBC_2.38`. Linux releases now ship one `.tar.gz` per
+  architecture instead of both zip and tar.gz.
 - The startup sample no longer fabricates bandwidth (previously 384.2/92.6 Mbps).
   Until the user runs a speed test, the dashboard, speed page, report and history
   consistently show "未测速" instead of a fixed number.

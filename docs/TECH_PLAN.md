@@ -247,7 +247,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 解压体积 | ≤ 45MB | Windows AOT **41.6MB**（exe 25.7 + Skia 9.0 + ANGLE 5.2 + HarfBuzz 1.7）；压缩后 **16.24MB** | `PublishAot=true` + `PublishSingleFile=false`；**达标** |
 | 冷启动 | ≤ 1400ms | Windows AOT **411ms** 到窗口可见 | AOT 原生镜像；**达标** |
 | 运行内存 | ≤ 180MB | Windows AOT **118.9MB** 工作集 | AOT + 60 点图表，不缓存位图；**达标** |
-| 安装包 | ≤ 25MB | Windows **16.83MB**；Linux x64/arm64 **16.57/15.58MB**；macOS x64/arm64 **28.50/26.73MB**（均含说明） | CI 原生矩阵 AOT；只出便携 zip/tar.gz，不做 setup |
+| 安装包 | ≤ 25MB | Windows **16.83MB**；Linux x64/arm64 tar.gz **15.96/14.88MB**；macOS x64/arm64 **28.50/26.73MB**（均含说明） | CI 原生矩阵 AOT；只出便携 zip/tar.gz，不做 setup |
 | 扫描 CPU | < 3% | 未测 | ICMP 90ms / TCP 70ms 间隔；UI 250ms 合并刷新 |
 
 > 结论：Windows AOT 为 16.24MB zip / 41.6MB 解压 / 411ms / 118.9MB；五平台 AOT 构建已通过 CI，Linux/macOS 运行待真机。
@@ -264,7 +264,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 逐跳 | `tracert` 子进程 | `traceroute` | `traceroute`/`tracepath` |
 | 改 DNS | `netsh interface ip set dns` | `networksetup -setdnsservers` | `nmcli con mod` |
 | 自定义标题栏 | `BorderOnly + NoChrome` | 同 | 同 |
-| 便携包 | `win-x64-aot.zip` | `macos-arm64/x64.zip`（`.app`） | `linux-x64/arm64.zip` |
+| 便携包 | `win-x64-aot.zip` | `macos-arm64/x64-aot.zip`（`.app`） | `linux-x64/arm64-aot.tar.gz` |
 
 ## 10. 权限、隐私与安全
 

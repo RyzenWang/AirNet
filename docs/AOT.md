@@ -61,16 +61,19 @@ CI 原生 runner 全平台 AOT 构建（workflow dispatch，未发 Release）：
 | 资产 | 大小 | 构建 |
 | --- | --- | --- |
 | `win-x64-aot.zip` | 16.83 MB | ✅ |
-| `linux-x64-aot.zip` / `.tar.gz` | 16.57 / 15.96 MB | ✅ |
-| `linux-arm64-aot.zip` / `.tar.gz` | 15.58 / 14.88 MB | ✅ |
+| `linux-x64-aot.tar.gz` | 约 16 MB | ✅ |
+| `linux-arm64-aot.tar.gz` | 约 15 MB | ✅ |
 | `macos-x64-aot.zip` | 28.50 MB | ✅ |
 | `macos-arm64-aot.zip` | 26.73 MB | ✅ |
 
+Linux 构建在 Ubuntu 22.04 容器中完成（glibc 2.35），避免在 Ubuntu 24.04 上构建出要求
+`GLIBC_2.38` 的二进制。Linux 只发布一个 `tar.gz`，不再同时提供 zip。
 Linux/macOS 目前只验证了 AOT **构建与归档**；GUI/CLI 运行还需要在真实桌面环境验收。
 
 ## 限制
 
-- Windows x64 已本机验证；Linux/macOS 已通过 CI 原生 runner 的 AOT 构建，运行仍待真机验收。
+- Windows x64 已本机验证；Linux/macOS 已通过 CI AOT 构建，运行仍待真机验收。
+- Linux AOT 要求 **glibc ≥ 2.35**（Ubuntu 22.04 构建基线）；更老的发行版需要自行从源码构建。
 - AOT 没有 JIT，崩溃栈、动态加载和部分反射行为与普通版不同。
 - Native PDB 很大（约 83 MB），发布包已剥离；需要符号时单独归档。
 - 本次只切换了构建/打包路径，没有创建新 tag 或 Release；发版前仍需确认版本号和发布说明。

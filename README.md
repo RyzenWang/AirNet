@@ -93,12 +93,12 @@ powershell -File packaging/pack-all.ps1                          # Windows AOT +
 | --- | --- |
 | Windows x64 | `AirNet-<version>-win-x64-aot.zip`，解压双击 `AirNet.exe`；需保留同目录原生 DLL |
 | macOS Apple Silicon / Intel | `AirNet-<version>-macos-arm64-aot.zip` / `-macos-x64-aot.zip`，解压得到 `AirNet.app` |
-| Linux x64 / arm64 | `AirNet-<version>-linux-x64-aot.zip` / `-linux-arm64-aot.zip`（以及同名 `.tar.gz`）；直接 `bash run.sh` |
+| Linux x64 / arm64 | `AirNet-<version>-linux-x64-aot.tar.gz` / `-linux-arm64-aot.tar.gz`；解压后直接 `bash run.sh`（只提供一个归档，要求 glibc ≥ 2.35） |
 
 > 当前最新 Release 仍是 `v0.2.6`；`v0.2.7` 起 Windows/macOS/Linux 全部改走 AOT。
 
 
-Linux x64 已在真实 Linux 环境启动验证；需要 X11 或 Wayland（XWayland）及常见桌面库。macOS 包未签名/未公证，暂未在真机验证；Linux arm64 也待验证。CI 在 tag 上会把全部便携 zip/tar.gz 挂到对应 Release，不构建 setup。
+Linux 包要求 glibc ≥ 2.35，需要 X11 或 Wayland（XWayland）及常见桌面库；Linux x64 已启动验证，arm64 待验证。macOS 包未签名/未公证，暂未在真机验证。CI 会把 Windows/macOS 的 zip 与 Linux 的 tar.gz 挂到对应 Release，不构建 setup。
 
 `--selftest` 的输出示例（本机，有线 1000M）：
 

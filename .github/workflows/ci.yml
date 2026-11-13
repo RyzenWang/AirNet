@@ -134,7 +134,64 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  package:
+  package-linux:
+    name: AOT ${{ matrix.runtime }}
+    needs: build-test
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            runtime: linux-x64
+          - os: ubuntu-24.04-arm
+            runtime: linux-arm64
+    runs-on: ${{ matrix.os }}
+    # Ubuntu 22.04 container: glibc 2.35, so the AOT binary does not require 2.38.
+    container:
+      image: mcr.microsoft.com/powershell:lts-ubuntu-22.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+
+    steps:
+      - name: Install build prerequisites
+        run: apt-get update && apt-get install -y git clang zlib1g-dev binutils libicu-dev
+
+      - uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build AOT package
+        shell: pwsh
+        run: ./packaging/pack-cross.ps1 -Runtimes '${{ matrix.runtime }}' -Aot
+
+      - name: Verify Linux glibc floor
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem artifacts/publish/*-aot/AirNet -File | Select-Object -First 1
+          if (-not $exe) { throw "AOT binary not found" }
+          $matches = (& readelf --version-info $exe.FullName | Select-String -Pattern 'GLIBC_([0-9]+\.[0-9]+)' -AllMatches).Matches
+          $versions = @($matches | ForEach-Object { [version]$_.Groups[1].Value } | Sort-Object -Descending)
+          $max = $versions | Select-Object -First 1
+          Write-Host "max GLIBC=$max"
+          if (-not $max) { throw "no GLIBC versions found" }
+          if ($max -gt [version]'2.35') { throw "GLIBC floor $max exceeds 2.35" }
+
+      - name: Upload AOT artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: airnet-${{ matrix.runtime }}
+          path: |
+            artifacts/packages/AirNet-*.zip
+            artifacts/packages/AirNet-*.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+
+  package-native:
     name: AOT ${{ matrix.runtime }}
     needs: build-test
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
@@ -145,12 +202,6 @@ jobs:
           - os: windows-latest
             runtime: win-x64
             script: pack-aot
-          - os: ubuntu-latest
-            runtime: linux-x64
-            script: pack-cross
-          - os: ubuntu-24.04-arm
-            runtime: linux-arm64
-            script: pack-cross
           - os: macos-15-intel
             runtime: osx-x64
             script: pack-cross
@@ -169,10 +220,6 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
-
-      - name: Install Linux AOT prerequisites
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
 
       - name: Build AOT package
         shell: pwsh
@@ -195,7 +242,7 @@ jobs:
 
   release:
     name: attach AOT assets
-    needs: package
+    needs: [package-linux, package-native]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 15

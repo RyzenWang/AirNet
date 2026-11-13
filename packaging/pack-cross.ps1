@@ -103,10 +103,11 @@ $linuxReadme = @(
     "",
     "用法",
     "  1. 解压后进入 AirNet 目录",
-    "  2. 直接执行 bash run.sh（zip/tar 都适用，不依赖解压后的执行位）",
+    "  2. 直接执行 bash run.sh（tar.gz 解压后使用；不依赖解压后的执行位）",
     "  3. 也可以 chmod +x AirNet && ./AirNet",
     "",
     "依赖",
+    "  · glibc ≥ 2.35（Ubuntu 22.04 基线）",
     "  · X11 或 Wayland（Avalonia 通过 X11/XWayland 运行）",
     "  · libfontconfig1、libX11、libICE、libSM 等常见桌面库",
     "  · 不需要安装 .NET；运行时已自带",
@@ -214,8 +215,8 @@ exec ./AirNet "$@"
             $runScript.Replace("`r`n", "`n"),
             (New-Object System.Text.UTF8Encoding($false)))
 
-        $asset = Join-Path $Output "AirNet-$version-linux-$($runtime.Substring(6))$suffix.zip"
-        New-PortableZip -Stage $stageRoot -ZipPath $asset -ExecutableRelativePath "AirNet/AirNet"
+        # Linux ships one archive only: tar.gz preserves the executable bit and is smaller
+        # than a zip. Shipping both caused duplicate downloads with no added value.
         $tarAsset = Join-Path $Output "AirNet-$version-linux-$($runtime.Substring(6))$suffix.tar.gz"
         Remove-Item $tarAsset -Force -ErrorAction SilentlyContinue
         & tar -czf $tarAsset -C $stageRoot "AirNet"
@@ -224,8 +225,7 @@ exec ./AirNet "$@"
         }
     }
 
-    $assets = @($asset)
-    if ($isLinuxRuntime) { $assets += $tarAsset }
+    $assets = if ($isLinuxRuntime) { @($tarAsset) } else { @($asset) }
     foreach ($item in $assets) {
         $info = Get-Item $item
         Write-Host ("asset   : {0} ({1:N2} MB)" -f $item, ($info.Length / 1MB)) -ForegroundColor Green
