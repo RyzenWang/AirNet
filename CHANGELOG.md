@@ -3,9 +3,11 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
-## [1.0.0] - 2026-11-13
+## [0.3.0] - 2026-11-13
 
-First public release, and the first one that can be installed from the Microsoft Store.
+First release that ships through two channels: the GitHub portable archives and the
+Microsoft Store. Both come from the same commit; the Store package only carries a
+four-part version because Partner Center requires one (see [CHANNELS.md](docs/CHANNELS.md)).
 
 ### Added
 

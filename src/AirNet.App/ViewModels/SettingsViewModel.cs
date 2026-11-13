@@ -81,7 +81,7 @@ public partial class SettingsViewModel : ObservableObject
 
     public bool HasNeighborRows => NeighborRows.Count > 0;
 
-    public string VersionText => "1.0.0 · 正式版";
+    public string VersionText => "0.3.0 · M3";
     public string RuntimeText => ".NET 10 · Avalonia 11.3 · Windows / macOS / Linux";
     public string FootprintText => "R2R 单文件 · 无驱动 · 无后台常驻";
 

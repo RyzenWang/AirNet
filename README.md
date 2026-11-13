@@ -97,6 +97,7 @@ powershell -File packaging/pack-all.ps1                          # Windows AOT +
 | macOS Apple Silicon / Intel | `AirNet-<version>-macos-arm64-aot.zip` / `-macos-x64-aot.zip`，解压得到 `AirNet.app` |
 | Linux x64 / arm64 | `AirNet-<version>-linux-x64-aot.tar.gz` / `-linux-arm64-aot.tar.gz`；解压后直接 `bash run.sh`（只提供一个归档，要求 glibc ≥ 2.35） |
 
+> 同时从 GitHub 与 Microsoft Store 发布，版本规则见 [双渠道发布](docs/CHANNELS.md)。
 > `v0.2.7` 起 Windows/macOS/Linux 全部改走 Native AOT。**macOS 与 Linux arm64 为实验性**：构建通过、包能用，但没人真机跑过，且未签名未公证——遇到问题请附诊断包。
 
 
