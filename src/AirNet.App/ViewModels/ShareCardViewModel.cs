@@ -15,6 +15,7 @@ public sealed class ShareCardViewModel
         LossText = view.LossText;
         DownloadText = view.DownloadText;
         UploadText = view.UploadText;
+        UploadFootText = view.HasBandwidth ? $"上行 {view.UploadText}" : "未测速";
         NetworkText = view.SsidText;
         CapturedText = view.CapturedDateText;
         IsSample = view.IsSample;
@@ -22,6 +23,17 @@ public sealed class ShareCardViewModel
         IsGood = view.IsGood;
         IsWarn = view.IsWarn;
         IsBad = view.IsBad;
+        Scenarios = view.Scenarios
+            .Select(row => new ShareScenarioCard
+            {
+                Name = row.Name,
+                Hint = row.Hint,
+                ScoreText = row.ScoreText,
+                IsMeasured = !row.IsPlaceholder,
+                IsWarn = row.IsWarn,
+                IsBad = row.IsBad,
+            })
+            .ToList();
     }
 
     public double Score { get; }
@@ -34,6 +46,7 @@ public sealed class ShareCardViewModel
     public string LossText { get; }
     public string DownloadText { get; }
     public string UploadText { get; }
+    public string UploadFootText { get; }
     public string NetworkText { get; }
     public string CapturedText { get; }
     public string SourceText { get; }
@@ -41,4 +54,15 @@ public sealed class ShareCardViewModel
     public bool IsGood { get; }
     public bool IsWarn { get; }
     public bool IsBad { get; }
+    public IReadOnlyList<ShareScenarioCard> Scenarios { get; }
+}
+
+public sealed class ShareScenarioCard
+{
+    public required string Name { get; init; }
+    public required string Hint { get; init; }
+    public required string ScoreText { get; init; }
+    public bool IsMeasured { get; init; }
+    public bool IsWarn { get; init; }
+    public bool IsBad { get; init; }
 }

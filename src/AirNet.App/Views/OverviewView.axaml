@@ -30,7 +30,7 @@
         </StackPanel>
 
         <TextBlock Text="网络好不好，" Classes="h1" />
-        <TextBlock Text="三秒给答案。" Classes="h1" />
+        <TextBlock Text="带宽够不够。" Classes="h1" />
 
         <TextBlock Text="逐层测量延迟、抖动、丢包与带宽，用一句话说清问题出在路由器、运营商还是对端。"
                    Foreground="{DynamicResource TextSecondaryBrush}"
