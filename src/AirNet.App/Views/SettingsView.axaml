@@ -183,8 +183,13 @@
               </Grid>
               <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,0">
                 <Button Classes="mini" Content="清空历史" Command="{Binding ClearHistoryCommand}" />
-                <Button Classes="mini" Content="导出诊断包" />
+                <Button Classes="mini" Content="导出诊断包" Click="OnExportDiagnosticsClick" />
               </StackPanel>
+              <TextBlock Text="{Binding DiagnosticsStatusText}"
+                         Classes="micro"
+                         FontSize="9.5"
+                         Foreground="{DynamicResource TextTertiaryBrush}"
+                         TextWrapping="Wrap" />
             </StackPanel>
           </Border>
 

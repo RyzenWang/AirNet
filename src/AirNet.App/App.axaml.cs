@@ -12,6 +12,9 @@ public partial class App : Application
 {
     public override void Initialize()
     {
+        // Installed before anything else: a crash during startup is exactly the case where
+        // the user can tell us nothing but "it does not open".
+        Core.Diagnostics.CrashLog.Install();
         AvaloniaXamlLoader.Load(this);
     }
 

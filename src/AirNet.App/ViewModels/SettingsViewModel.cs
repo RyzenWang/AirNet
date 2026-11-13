@@ -1,4 +1,6 @@
 using AirNet.Core.Diagnostics;
+using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using AirNet.Core.Probes;
 using AirNet.Core.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -42,6 +44,11 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private string _historyStatusText = string.Empty;
+    /// <summary>Result of the last diagnostic bundle export, shown under the buttons.</summary>
+    [ObservableProperty]
+    private string _diagnosticsStatusText = string.Empty;
+    /// <summary>Optional note the user wants included in the bundle header.</summary>
+    public string? DiagnosticsNote { get; set; }
 
     [ObservableProperty]
     private DnsPlan _dnsPlan;
@@ -254,6 +261,44 @@ public partial class SettingsViewModel : ObservableObject
         Shell.Overview.ResetRecentRuns();
         await Shell.Trends.LoadAsync().ConfigureAwait(true);
         HistoryStatusText = "已清空本机历史";
+    }
+
+    /// <summary>
+    /// Writes the diagnostic bundle the "导出诊断包" button names: settings, history, crash log
+    /// and a header saying which build produced it. Without it a bug report is just "打不开".
+    /// </summary>
+    public async Task ExportDiagnosticsAsync(TopLevel top)
+    {
+
+        var file = await top.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "导出 AirNet 诊断包",
+            SuggestedFileName = $"airnet-diag-{DateTime.Now:yyyyMMdd-HHmm}",
+            DefaultExtension = "zip",
+            FileTypeChoices =
+            [
+                new FilePickerFileType("诊断包") { Patterns = ["*.zip"] },
+            ],
+        });
+
+        if (file?.Path is not { } uri)
+        {
+            return;
+        }
+
+        try
+        {
+            var summary = DiagnosticBundle.BuildSummary(AppVersion.Current, Shell.Snapshot, DiagnosticsNote);
+            var collected = DiagnosticBundle.Write(uri.LocalPath, AppPaths.DataDirectory(), summary);
+
+            DiagnosticsStatusText = collected == 0
+                ? $"已写出 {Path.GetFileName(uri.LocalPath)}（暂无本地数据）"
+                : $"已写出 {Path.GetFileName(uri.LocalPath)}，含 {collected} 个数据文件";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            DiagnosticsStatusText = "写出失败：" + ex.Message;
+        }
     }
 
     [RelayCommand]
