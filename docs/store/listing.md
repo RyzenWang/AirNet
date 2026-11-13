@@ -95,8 +95,8 @@ AirNet.exe --export docs/store/screenshots --scale 1 --size 1600x900
 
 ## 提交前检查
 
-1. `packaging/msix/Build-Msix.ps1 -Version 0.3.0.0 -ForStore -IdentityName RyzenWang.AirNet -Publisher "CN=D87D6846-5A2B-4D82-BDB7-8E739EB3F35B" -PublisherDisplayName RyzenWang`；
+1. `packaging/msix/Build-Msix.ps1 -Version 1.0.0.0 -ForStore -IdentityName RyzenWang.AirNet -Publisher "CN=D87D6846-5A2B-4D82-BDB7-8E739EB3F35B" -PublisherDisplayName RyzenWang`；
 2. 产物是**未签名**的 `.msix`——商店会重新签名，自己签了反而会被拒；
-3. 版本号四段、末位为 0，且高于上一次提交（当前产物 `0.3.0.0`，应用内仍显示 `0.2.8`；若要发布 1.0，需同步改版本字面量并重出截图）；
+3. 版本号四段、末位为 0，且高于上一次提交（当前产物 `1.0.0.0`，与应用内显示一致）；
 4. 隐私政策 URL 可打开、内容与 `docs/PRIVACY.md` 一致；
 5. 截图不含真实公网 IP、真实 SSID 或个人信息（导出已用样例数据规避）。

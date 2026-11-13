@@ -3,6 +3,61 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
+## [1.0.0] - 2026-11-13
+
+First public release, and the first one that can be installed from the Microsoft Store.
+
+### Added
+
+- Microsoft Store packaging. `packaging/msix` builds a signed package for local
+  sideload (`-SelfSign`) or an unsigned `.msixupload` for Partner Center (`-ForStore`,
+  which refuses to sign because the Store re-signs and a second signature gets the
+  submission rejected). The script generates all package images from the 512px PNG
+  master, expands the manifest, packs, then unpacks and asserts the twelve things
+  certification checks.
+- Crash log. `CrashLog.Install()` hooks `AppDomain` and `TaskScheduler` before any UI
+  exists and appends version, OS, runtime and the exception to `crash.log` beside the
+  history. The writer never throws and rolls over at 256 KB.
+- Diagnostic bundle. The settings button that used to do nothing now writes a zip with
+  a summary (build, last measurement, privacy note) plus whatever settings, history,
+  site history, DNS backup and crash log exist.
+- Shared reports carry the last seven days: average score, latency, jitter, loss and
+  the worst time-of-day bucket in words, so a report forwarded to an ISP answers "is
+  it always like this".
+- Radio data on macOS (`system_profiler`) and Linux (`iw` + `/proc/net/wireless`),
+  which previously reported only "无线" with no numbers.
+- One-click DNS works on macOS (`osascript` with administrator privileges) and Linux
+  (`pkexec`), not just Windows.
+- `--size WxH` for the screenshot pipeline, and the docs site under `docs/` published
+  by `.github/workflows/pages.yml`.
+
+### Changed
+
+- macOS and Linux arm64 are labelled **experimental**: they build in CI and the
+  packages install, but nobody has run them on real hardware. The app says so in its
+  About card on those platforms only, rather than warning everywhere.
+- The Store build cannot elevate, so 一键 DNS degrades to "copy the command" there.
+  `PackagedApp` detects package identity through `GetCurrentPackageFullName`; the
+  portable build keeps the one-click path.
+
+### Fixed
+
+- The package logos were rainbow noise: `System.Drawing.Icon.ToBitmap()` cannot decode
+  PNG-compressed ICO frames, which is what the repository's `.ico` contains.
+- The Start tile looked undersized because the 512px master already keeps a 4% margin
+  and the generator drew it at 0.82; it now fills 92%, and `.scale-125/150/200/400`
+  variants stop Windows from resampling the 100% asset on high-DPI displays.
+- Sideloading failed with `0x800B0109` even though the package was correctly signed:
+  importing the certificate into `LocalMachine\Root` via `Import-Certificate` pops a
+  confirmation that a non-interactive session silently skips. The install script now
+  uses `certutil -addstore -f` and verifies both machine stores before installing.
+
+### Verified
+
+- Windows 11 x64, AOT package, sideloaded: install, icons in all three surfaces, scan,
+  the Store-build DNS message, and history surviving a restart.
+- 182 unit tests.
+
 ## [0.2.8] - 2026-11-13
 
 ### Added
