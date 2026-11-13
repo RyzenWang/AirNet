@@ -64,7 +64,8 @@ if ($LASTEXITCODE -ne 0) {
 
 $files = Get-ChildItem $Output -File
 # Symbols are stripped from the shipping folder; keep them in artifacts if a crash needs a stack.
-Get-ChildItem $Output -Filter *.pdb -File | Remove-Item -Force
+# Linux Native AOT emits AirNet.dbg next to the executable (not a PDB).
+Get-ChildItem $Output -File | Where-Object { $_.Extension -in '.pdb', '.dbg' } | Remove-Item -Force
 $files = Get-ChildItem $Output -File
 $totalMb = [math]::Round(($files | Measure-Object Length -Sum).Sum / 1MB, 1)
 Write-Host ""

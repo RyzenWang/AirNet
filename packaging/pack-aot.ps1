@@ -45,8 +45,9 @@ dotnet publish (Join-Path $root "src/AirNet.App/AirNet.App.csproj") `
     -o $publishDir `
     --nologo
 
-# The native PDB is huge and has no value in a portable user package.
-Get-ChildItem $publishDir -Filter *.pdb -File | Remove-Item -Force
+# Native debug symbols are huge and have no value in a portable user package.
+# Linux emits AirNet.dbg; Windows emits a PDB.
+Get-ChildItem $publishDir -File | Where-Object { $_.Extension -in '.pdb', '.dbg' } | Remove-Item -Force
 $files = Get-ChildItem $publishDir -File
 if ($files.Count -eq 0) {
     throw "AOT publish produced no files"
