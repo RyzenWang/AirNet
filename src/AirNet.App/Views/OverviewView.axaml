@@ -284,61 +284,41 @@
                          TextWrapping="Wrap"
                          Margin="0,10,0,0" />
 
-              <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="0,12,0,0">
-                <Grid Width="62" Height="62">
-                  <controls:ScoreRing Width="62"
-                                      Height="62"
-                                      Thickness="6"
-                                      Value="{Binding Shell.View.Score}"
-                                      TrackBrush="#EDE5D8"
-                                      ProgressBrush="#2E6F63" />
-                  <TextBlock Text="{Binding Shell.View.ScoreText}"
-                             FontSize="18"
-                             FontWeight="SemiBold"
-                             LetterSpacing="-0.6"
-                             Foreground="#1D232C"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center" />
-                </Grid>
-                <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="2" VerticalAlignment="Center">
-                  <TextBlock Text="健康分" FontSize="10" FontWeight="Bold" LetterSpacing="1" Foreground="#A69D90" LineHeight="14" />
-                  <TextBlock Text="{Binding Shell.View.GradeLabel}"
-                             FontSize="13"
-                             FontWeight="SemiBold"
-                             Foreground="#1D232C" />
-                </StackPanel>
-              </Grid>
+              <StackPanel Grid.Row="2" Spacing="4" Margin="0,16,0,0">
+                <TextBlock Text="NETWORK / HEALTH"
+                           FontSize="9"
+                           FontWeight="Bold"
+                           LetterSpacing="1.3"
+                           Foreground="#A69D90" />
+                <TextBlock Text="一次检测，读懂网络。"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           LetterSpacing="-0.4"
+                           Foreground="#1D232C" />
+              </StackPanel>
 
-              <controls:Sparkline Grid.Row="3"
-                                  Height="34"
-                                  Margin="0,14,0,0"
-                                  Series="{Binding Shell.View.Series}"
-                                  Stroke="#2E6F63"
-                                  Fill="#402E6F63"
-                                  StrokeThickness="1.6" />
+              <Border Grid.Row="3"
+                      Height="70"
+                      Margin="0,12,0,0"
+                      Background="#F6F2EB"
+                      CornerRadius="7"
+                      Padding="12,10">
+                <Viewbox Stretch="Uniform" HorizontalAlignment="Left">
+                  <Path Data="{StaticResource IconPulse}"
+                        Width="150"
+                        Height="42"
+                        Stroke="#2E6F63"
+                        StrokeThickness="1.6"
+                        StrokeLineCap="Round"
+                        StrokeJoin="Round"
+                        Stretch="Uniform" />
+                </Viewbox>
+              </Border>
 
               <Grid Grid.Row="4" ColumnDefinitions="*,*,*" Margin="0,12,0,0">
-                <StackPanel Spacing="1">
-                  <StackPanel Orientation="Horizontal" Spacing="2">
-                    <TextBlock Text="{Binding Shell.View.LatencyAvgText}" FontSize="13" FontWeight="SemiBold" Foreground="#1D232C" />
-                    <TextBlock Text="ms" FontSize="9" Foreground="#8A8175" VerticalAlignment="Bottom" Margin="0,0,0,2" />
-                  </StackPanel>
-                  <TextBlock Text="延迟" FontSize="10" Foreground="#A69D90" LineHeight="14" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Spacing="1">
-                  <StackPanel Orientation="Horizontal" Spacing="2">
-                    <TextBlock Text="{Binding Shell.View.LossText}" FontSize="13" FontWeight="SemiBold" Foreground="#1D232C" />
-                    <TextBlock Text="%" FontSize="9" Foreground="#8A8175" VerticalAlignment="Bottom" Margin="0,0,0,2" />
-                  </StackPanel>
-                  <TextBlock Text="丢包" FontSize="10" Foreground="#A69D90" LineHeight="14" />
-                </StackPanel>
-                <StackPanel Grid.Column="2" Spacing="1">
-                  <StackPanel Orientation="Horizontal" Spacing="2">
-                    <TextBlock Text="{Binding Shell.View.JitterText}" FontSize="13" FontWeight="SemiBold" Foreground="#1D232C" />
-                    <TextBlock Text="ms" FontSize="9" Foreground="#8A8175" VerticalAlignment="Bottom" Margin="0,0,0,2" />
-                  </StackPanel>
-                  <TextBlock Text="抖动" FontSize="10" Foreground="#A69D90" LineHeight="14" />
-                </StackPanel>
+                <TextBlock Text="延迟" FontSize="10" Foreground="#A69D90" LineHeight="14" />
+                <TextBlock Grid.Column="1" Text="丢包" FontSize="10" Foreground="#A69D90" LineHeight="14" />
+                <TextBlock Grid.Column="2" Text="带宽" FontSize="10" Foreground="#A69D90" LineHeight="14" />
               </Grid>
 
               <Grid Grid.Row="5" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Bottom" Margin="0,10,0,0">

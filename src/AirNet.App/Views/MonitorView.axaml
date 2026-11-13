@@ -92,19 +92,19 @@
                                            LetterSpacing="-1.8"
                                            Foreground="{DynamicResource TextPrimaryBrush}"
                                            HorizontalAlignment="Center"
-                                           IsVisible="{Binding !Shell.IsScanning}" />
+                                           IsVisible="{Binding Shell.ShowScore}" />
                   <TextBlock Text="—"
                              FontSize="34"
                              FontWeight="SemiBold"
                              Foreground="{DynamicResource TextTertiaryBrush}"
                              HorizontalAlignment="Center"
-                             IsVisible="{Binding Shell.IsScanning}" />
+                             IsVisible="{Binding Shell.HideScore}" />
                   <TextBlock Text="{Binding View.GradeLabel}"
                              Classes="eyebrow"
                              FontSize="10"
                              HorizontalAlignment="Center"
                              Margin="0,-2,0,0"
-                             IsVisible="{Binding !Shell.IsScanning}" />
+                             IsVisible="{Binding Shell.ShowScore}" />
                 </StackPanel>
               </Grid>
 

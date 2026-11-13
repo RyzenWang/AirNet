@@ -69,7 +69,7 @@ public partial class App : Application
             // Developer aid: capture the window while a real scan is in flight.
             var scanShotPath = ReadStringArgument(desktop.Args, "--scan-shot");
 
-            var shell = new ShellViewModel();
+            var shell = new ShellViewModel(demo: exportDirectory is not null);
             var window = new MainWindow { DataContext = shell };
             desktop.MainWindow = window;
 

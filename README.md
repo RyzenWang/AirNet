@@ -42,7 +42,7 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **MTU**（DF 二分） | ✅ M2 实测 1480（PPPoE） |
 | **报告导出**（自包含 HTML，可打印 PDF） | ✅ M2 7.8KB / 零脚本 / 地址掩码 |
 | **一键 DNS + 还原**（Windows 提权） | ✅ M2 命令先展示，还原记录落盘 |
-| **单元测试**（xUnit） | ✅ 141 项：统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / 邻区 / 模式 / 站点目录与 HTTP 状态 |
+| **单元测试**（xUnit） | ✅ 142 项：统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / 邻区 / 模式 / 站点目录与 HTTP 状态 |
 | **设置**（持久化 / 自动刷新 / 键盘快捷键） | ✅ M2，写入 `settings.json`；60s 自动刷新仅在窗口可见时执行 |
 | Windows 正式发布 | ✅ Native AOT：16.83MB zip（CI）；本机启动 411ms / 内存 118.9MB；需保留同目录原生 DLL |
 | macOS / Linux 发布 | ✅ CI AOT 构建通过：Linux x64/arm64 约 16MB，macOS 约 27–29MB；Linux x64 实机运行通过，arm64/macOS 待验证 |
@@ -60,8 +60,8 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **会议模式** | ✅ 2MB 上行 + TCP 抖动/丢包，给出 1080p / 720p / 风险结论 |
 | 邻区信道分析、游戏/会议以外的场景 | ⬜ 见 [技术方案](docs/TECH_PLAN.md) |
 
-程序启动时展示**确定性样例数据**（右上角标"示例数据"），点"开始检测"即切换为真实测量并写入历史。
-样例不预填带宽：未测速时统一显示"未测速"，不会写死一个 384 Mbps 之类的数字。
+正常启动不预填样例/固定值：界面显示等待检测，点"开始检测"后才写入本次测量。
+`--export` 截图模式仍使用确定性样例数据，仅用于视觉评审，不会进入真实历史。
 
 Release 下载：<https://github.com/RyzenWang/AirNet/releases/latest>。  
 参与开发前请读 [CONTRIBUTING.md](CONTRIBUTING.md)；安全问题见 [SECURITY.md](SECURITY.md)；
@@ -127,7 +127,7 @@ src/AirNet.Core/         探测与诊断内核（无 UI 依赖）
                          AttributionEngine（三段归因）· PathAnalysis（逐跳/MTU 模型）
   Sites/                 SiteCatalog（11 站）· CustomSiteStore · SiteHistoryStore · SiteLatencyProbe
   History/               JSONL 历史（裁剪安全，源生成序列化）
-  Demo/                  确定性样例数据
+  Demo/                  确定性样例数据（仅截图/演示）
 src/AirNet.App/          Avalonia 应用
   Styles/                Colors(token) · Icons · Controls(字号/按钮/卡片/开关)
   Controls/              ScoreRing · Sparkline · MeterBar · SignalBars · ScanSweep（自绘）

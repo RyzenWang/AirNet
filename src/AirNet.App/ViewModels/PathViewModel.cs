@@ -43,8 +43,10 @@ public partial class PathViewModel : ObservableObject
     public PathViewModel(ShellViewModel shell)
     {
         Shell = shell;
-        _attribution = AttributionEngine.FromSnapshot(shell.Snapshot);
+        _attribution = shell.View.IsPending ? PendingAttribution() : AttributionEngine.FromSnapshot(shell.Snapshot);
         Segments = BuildSegments(_attribution);
+        StatusText = shell.View.IsPending ? "点击开始检测后显示路径归因" : "先用上次检测做粗定位；追踪会给出逐跳证据";
+        TraceModeText = shell.View.IsPending ? "等待检测" : "粗定位";
         _traceTicker = new DispatcherTimer(
             TimeSpan.FromMilliseconds(200),
             DispatcherPriority.Normal,
@@ -102,6 +104,19 @@ public partial class PathViewModel : ObservableObject
     /// <summary>Called by the shell after every scan so the coarse verdict follows the data.</summary>
     public void RefreshFromSnapshot()
     {
+        if (Shell.View.IsPending)
+        {
+            Attribution = PendingAttribution();
+            Segments = BuildSegments(Attribution);
+            StatusText = "点击开始检测后显示路径归因";
+            TraceModeText = "等待检测";
+            OnPropertyChanged(nameof(Verdict));
+            OnPropertyChanged(nameof(VerdictDetail));
+            OnPropertyChanged(nameof(IsWarn));
+            OnPropertyChanged(nameof(IsGood));
+            return;
+        }
+
         if (Attribution.IsPrecise)
         {
             return;   // a precise trace outranks a coarse re-read
@@ -109,11 +124,25 @@ public partial class PathViewModel : ObservableObject
 
         Attribution = AttributionEngine.FromSnapshot(Shell.Snapshot);
         Segments = BuildSegments(Attribution);
+        StatusText = "先用上次检测做粗定位；追踪会给出逐跳证据";
+        TraceModeText = "粗定位";
         OnPropertyChanged(nameof(Verdict));
         OnPropertyChanged(nameof(VerdictDetail));
         OnPropertyChanged(nameof(IsWarn));
         OnPropertyChanged(nameof(IsGood));
     }
+
+    private static Attribution PendingAttribution() => new(
+        "pending",
+        "等待检测",
+        "完成一次检测后，这里会显示局域网、运营商和对端的路径归因。",
+        Severity.Info,
+        [
+            new PathSegment("局域网", "未测", "本机 → 网关", Severity.Info, "等待检测"),
+            new PathSegment("运营商", "未测", "网关 → 参考主机", Severity.Info, "等待检测"),
+            new PathSegment("对端", "未测", "需逐跳追踪", Severity.Info, "等待检测"),
+        ],
+        IsPrecise: false);
 
     partial void OnIsTracingChanged(bool value)
     {

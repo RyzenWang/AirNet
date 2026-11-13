@@ -127,7 +127,8 @@ public sealed record NetworkSnapshot(
     double UploadMbps,
     DateTimeOffset CapturedAt,
     ProbeDiagnostics Diagnostics,
-    bool IsSample = false)
+    bool IsSample = false,
+    bool IsPending = false)
 {
     public string ScoreText => Score.ToString();
 

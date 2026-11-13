@@ -38,10 +38,14 @@ public partial class ShellViewModel : ObservableObject
     private double _scanTarget;
     private DateTimeOffset _scanStartedAt;
 
-    public ShellViewModel()
+    public ShellViewModel(bool demo = false)
     {
-        var snapshot = DemoSnapshotFactory.CreateSnapshot();
+        IsDemo = demo;
+        var snapshot = demo ? DemoSnapshotFactory.CreateSnapshot() : PendingSnapshot.Create();
         _view = new SnapshotView(snapshot);
+        StatusMessage = demo
+            ? "示例数据 · 点击「开始检测」运行真实测量"
+            : "等待检测 · 点击「开始检测」开始测量";
 
         // Preferences are loaded before the page view models so their initial values match disk.
         Preferences = _settingsStore.Load();
@@ -74,6 +78,8 @@ public partial class ShellViewModel : ObservableObject
         _ = Overview.LoadHistoryAsync();
     }
 
+    public bool IsDemo { get; }
+
     public OverviewViewModel Overview { get; }
     public MonitorViewModel Monitor { get; }
     public SpeedViewModel Speed { get; }
@@ -102,6 +108,8 @@ public partial class ShellViewModel : ObservableObject
                 OnPropertyChanged(nameof(FooterTimestampText));
                 OnPropertyChanged(nameof(SourceChipText));
                 OnPropertyChanged(nameof(IsSample));
+                OnPropertyChanged(nameof(ShowScore));
+                OnPropertyChanged(nameof(HideScore));
             }
         }
     }
@@ -138,8 +146,17 @@ public partial class ShellViewModel : ObservableObject
     [ObservableProperty]
     private bool _isScanning;
 
+    public bool ShowScore => !IsScanning && !View.IsPending;
+    public bool HideScore => !ShowScore;
+
+    partial void OnIsScanningChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowScore));
+        OnPropertyChanged(nameof(HideScore));
+    }
+
     [ObservableProperty]
-    private string _statusMessage = "示例数据 · 点击「开始检测」运行真实测量";
+    private string _statusMessage = "等待检测 · 点击「开始检测」开始测量";
 
     [ObservableProperty]
     private string _scanPhaseText = string.Empty;
@@ -165,12 +182,12 @@ public partial class ShellViewModel : ObservableObject
         }
     }
 
-    public string ConnectionChip => View.InterfaceChip;
-    public string LastScanText => $"上次检测 {View.CapturedAtText}";
+    public string ConnectionChip => View.IsPending ? "等待检测" : View.InterfaceChip;
+    public string LastScanText => View.IsPending ? "尚未检测" : $"上次检测 {View.CapturedAtText}";
     public string FooterLatencyText => $"延迟 {View.LatencyAvgText} ms";
     public string FooterLossText => $"丢包 {View.LossText}%";
-    public string FooterTimestampText => View.IsSample ? "示例数据" : $"采集于 {View.CapturedAtText}";
-    public string SourceChipText => View.IsSample ? "示例数据" : "本机实测";
+    public string FooterTimestampText => View.IsPending ? "尚未检测" : View.IsSample ? "示例数据" : $"采集于 {View.CapturedAtText}";
+    public string SourceChipText => View.IsPending ? "尚未检测" : View.IsSample ? "示例数据" : "本机实测";
     public bool IsSample => View.IsSample;
 
     public bool IsDarkMode => _theme == ThemeMode.Dark
@@ -224,6 +241,7 @@ public partial class ShellViewModel : ObservableObject
             return;
         }
 
+        var previousView = View;
         _scanCts?.Dispose();
         _scanCts = new CancellationTokenSource();
 
@@ -237,6 +255,15 @@ public partial class ShellViewModel : ObservableObject
         ScanElapsedText = "0.0 s";
         _scanTicker.Start();
         Navigate("Monitor");
+
+        // Clear every sample/previous value immediately. The live tiles and the final snapshot
+        // are the only data shown from this point on.
+        View = new SnapshotView(PendingSnapshot.Create());
+        Overview.Refresh(View);
+        Monitor.Apply(View);
+        Path.RefreshFromSnapshot();
+        Speed.RefreshFromSnapshot();
+        Settings.RefreshDnsPlan();
 
         var progress = new Progress<ScanProgress>(report =>
         {
@@ -285,12 +312,12 @@ public partial class ShellViewModel : ObservableObject
         catch (OperationCanceledException)
         {
             StatusMessage = "检测已取消";
-            Monitor.Apply(View);
+            RestoreView(previousView);
         }
         catch (Exception ex)
         {
             StatusMessage = $"检测失败：{ex.Message}";
-            Monitor.Apply(View);
+            RestoreView(previousView);
         }
         finally
         {
@@ -299,6 +326,16 @@ public partial class ShellViewModel : ObservableObject
             ScanStatusText = string.Empty;
             IsScanning = false;
         }
+    }
+
+    private void RestoreView(SnapshotView view)
+    {
+        View = view;
+        Overview.Refresh(View);
+        Monitor.Apply(View);
+        Path.RefreshFromSnapshot();
+        Speed.RefreshFromSnapshot();
+        Settings.RefreshDnsPlan();
     }
 
     [RelayCommand]

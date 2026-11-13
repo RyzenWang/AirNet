@@ -5,6 +5,12 @@ project uses semantic versioning for release tags.
 
 ## [Unreleased]
 
+### Fixed
+
+- Normal startup now begins in an explicit pending state instead of showing sample score,
+  latency, path or bandwidth values. Starting a scan clears the previous view and fills
+  the live/real values; cancel restores the last real view.
+
 ### Added
 
 - The manual "开始检测" now includes a download/upload bandwidth pass after the latency

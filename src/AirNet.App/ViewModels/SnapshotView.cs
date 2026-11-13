@@ -116,7 +116,7 @@ public sealed class SnapshotView
     {
         Source = snapshot;
         Series = snapshot.LatencySeries;
-        Metrics = BuildMetrics(snapshot);
+        Metrics = snapshot.IsPending ? DemoTiles() : BuildMetrics(snapshot);
         Scenarios = BuildScenarios(snapshot);
         Hops = BuildHops(snapshot);
         Findings = BuildFindings(snapshot);
@@ -134,10 +134,11 @@ public sealed class SnapshotView
     public NetworkSnapshot Source { get; }
 
     public int Score => Source.Score;
-    public string ScoreText => Source.Score.ToString(CultureInfo.InvariantCulture);
+    public string ScoreText => IsPending ? "—" : Source.Score.ToString(CultureInfo.InvariantCulture);
     public string GradeLabel => Source.GradeLabel;
     public string Verdict => Source.Verdict;
     public string Summary => Source.Summary;
+    public bool IsPending => Source.IsPending;
 
     public IReadOnlyList<double> Series { get; }
     public IReadOnlyList<MetricTile> Metrics { get; }
@@ -146,24 +147,26 @@ public sealed class SnapshotView
     public IReadOnlyList<FindingRow> Findings { get; }
 
     public double LatencyAvg => Source.Latency.AverageMs;
-    public string LatencyAvgText => Fmt.Fixed(Source.Latency.AverageMs);
-    public string LatencyP95Text => Fmt.Fixed(Source.Latency.P95Ms);
-    public string JitterText => Fmt.Fixed(Source.Latency.JitterMs);
-    public string LossText => Fmt.Fixed(Source.Latency.LossPercent);
+    public string LatencyAvgText => IsPending ? "—" : Fmt.Fixed(Source.Latency.AverageMs);
+    public string LatencyP95Text => IsPending ? "—" : Fmt.Fixed(Source.Latency.P95Ms);
+    public string JitterText => IsPending ? "—" : Fmt.Fixed(Source.Latency.JitterMs);
+    public string LossText => IsPending ? "—" : Fmt.Fixed(Source.Latency.LossPercent);
     public string DownloadText => Fmt.Mbps(Source.DownloadMbps);
     public string UploadText => Fmt.Mbps(Source.UploadMbps);
     public bool HasBandwidth => Source.HasBandwidth;
     public string DnsText => Source.DnsMs <= 0 ? "未测" : Fmt.Fixed(Source.DnsMs);
 
-    public string SampleCountText => $"{Source.Latency.Sent} 次采样";
+    public string SampleCountText => IsPending ? "—" : $"{Source.Latency.Sent} 次采样";
     public string PeakText => Series.Count == 0 ? "-" : $"峰值 {Series.Max():0} ms";
-    public string CapturedAtText => Source.CapturedAt.ToLocalTime().ToString("HH:mm:ss", CultureInfo.InvariantCulture);
-    public string CapturedDateText => Source.CapturedAt.ToLocalTime().ToString("M月d日 HH:mm", CultureInfo.InvariantCulture);
+    public string CapturedAtText => IsPending ? "—" : Source.CapturedAt.ToLocalTime().ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+    public string CapturedDateText => IsPending ? "尚未检测" : Source.CapturedAt.ToLocalTime().ToString("M月d日 HH:mm", CultureInfo.InvariantCulture);
 
-    public string InterfaceChip => Source.Interface.Kind;
-    public string SignalChip => Source.Interface.SignalPercent is { } signal
-        ? Source.Interface.RssiDbm is { } dbm ? $"{signal}% · {dbm} dBm" : $"{signal}% 信号"
-        : Source.Interface.IsWireless ? "无线" : "有线";
+    public string InterfaceChip => IsPending ? "未检测" : Source.Interface.Kind;
+    public string SignalChip => IsPending
+        ? "未检测"
+        : Source.Interface.SignalPercent is { } signal
+            ? Source.Interface.RssiDbm is { } dbm ? $"{signal}% · {dbm} dBm" : $"{signal}% 信号"
+            : Source.Interface.IsWireless ? "无线" : "有线";
     public string EgressChip => $"出口 {Source.EgressText}";
     public string EgressText => Source.EgressText;
     public string LocalAddress => Source.Interface.LocalAddress;
@@ -171,7 +174,7 @@ public sealed class SnapshotView
     public string DnsServer => Source.Interface.DnsServer;
     public double SignalPercent => Source.Interface.SignalPercent ?? (Source.Interface.IsWireless ? 0 : 100);
 
-    public string ProbeModeText => Source.ProbeModeText;
+    public string ProbeModeText => IsPending ? "等待检测" : Source.ProbeModeText;
     public string SsidText => string.IsNullOrEmpty(Source.Interface.Ssid)
         ? Source.Interface.Kind
         : $"{Source.Interface.Kind} · {Source.Interface.Ssid}";
@@ -201,9 +204,9 @@ public sealed class SnapshotView
 
     public bool IsSample => Source.IsSample;
 
-    public bool IsGood => Source.Grade is HealthGrade.Excellent;
-    public bool IsWarn => Source.Grade is HealthGrade.Good or HealthGrade.Fair;
-    public bool IsBad => Source.Grade is HealthGrade.Poor;
+    public bool IsGood => !IsPending && Source.Grade is HealthGrade.Excellent;
+    public bool IsWarn => !IsPending && Source.Grade is HealthGrade.Good or HealthGrade.Fair;
+    public bool IsBad => !IsPending && Source.Grade is HealthGrade.Poor;
 
     private static IReadOnlyList<MetricTile> BuildMetrics(NetworkSnapshot s)
     {

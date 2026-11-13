@@ -22,22 +22,34 @@ public partial class OverviewViewModel : ObservableObject
     private IReadOnlyList<RecentRun> _recentRuns = [];
 
     [ObservableProperty]
-    private string _latestScoreText = "92";
+    private string _latestScoreText = "—";
 
     [ObservableProperty]
-    private string _latestVerdict = "网络状态优秀";
+    private string _latestVerdict = "等待检测";
 
     [ObservableProperty]
-    private string _latestTimeText = "刚刚";
+    private string _latestTimeText = "未检测";
 
     [ObservableProperty]
-    private string _recentCaption = "示例";
+    private string _recentCaption = "本机实测";
 
     public void Refresh(SnapshotView view)
     {
         LatestScoreText = view.ScoreText;
         LatestVerdict = view.Verdict;
         LatestTimeText = view.CapturedAtText;
+
+        // Sample history is a screenshot-only affordance. A normal launch starts with no
+        // recent-run values, and a scan never re-seeds them.
+        if (!Shell.IsDemo)
+        {
+            if (RecentRuns.Count == 0)
+            {
+                RecentCaption = "本机实测";
+            }
+
+            return;
+        }
 
         _seedRuns =
         [
@@ -86,8 +98,8 @@ public partial class OverviewViewModel : ObservableObject
         var records = await Shell.History.LoadAsync(5).ConfigureAwait(true);
         if (records.Count == 0)
         {
-            RecentRuns = _seedRuns;
-            RecentCaption = "示例";
+            RecentRuns = Shell.IsDemo ? _seedRuns : [];
+            RecentCaption = Shell.IsDemo ? "示例" : "本机实测";
             return;
         }
 
@@ -104,8 +116,8 @@ public partial class OverviewViewModel : ObservableObject
 
     public void ResetRecentRuns()
     {
-        RecentRuns = _seedRuns;
-        RecentCaption = "示例";
+        RecentRuns = Shell.IsDemo ? _seedRuns : [];
+        RecentCaption = Shell.IsDemo ? "示例" : "本机实测";
     }
 
     private static RecentRun ToRow(HistoryRecord record, HistoryRecord? previous)
