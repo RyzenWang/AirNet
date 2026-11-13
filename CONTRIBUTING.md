@@ -49,6 +49,8 @@ This creates portable assets under `artifacts/packages`:
 - macOS arm64/x64 `.app` zip
 - Linux x64/arm64 zip and tar.gz
 
+MSIX packaging lives in `packaging/msix` (see its README): `Build-Msix.ps1` produces a signed package for local sideload or an unsigned one for a Store upload.
+
 No setup/installer is built. Release assets are attached by the tag CI workflow; do not
 upload local artifacts by hand unless the workflow failed or you are repairing a release.
 

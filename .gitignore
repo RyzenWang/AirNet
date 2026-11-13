@@ -8,3 +8,7 @@ publish/
 TestResults/
 *.trx
 *.log
+
+# MSIX test signing keys never leave the machine
+*.pfx
+artifacts/msix/

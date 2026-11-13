@@ -25,6 +25,14 @@ public static class ElevatedCommandRunner
             return CommandResult.Declined("没有可执行的命令");
         }
 
+        // MSIX cannot elevate: the UAC prompt path is not available to a packaged process,
+        // and Store certification does not accept a core feature that needs administrator.
+        if (OperatingSystem.IsWindows() && PackagedApp.IsPackaged)
+        {
+            return CommandResult.Declined(
+                "Microsoft Store 版无法自动修改系统 DNS：请复制上方命令，在管理员 PowerShell 中执行");
+        }
+
         if (!OperatingSystem.IsWindows())
         {
             return OperatingSystem.IsMacOS()
