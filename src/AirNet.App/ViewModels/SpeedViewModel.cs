@@ -108,9 +108,17 @@ public partial class SpeedViewModel : ObservableObject
         TestStatusText = $"{_testPhase} · {(DateTimeOffset.Now - _testStartedAt).TotalSeconds:0.0} s";
     }
 
-    /// <summary>Latency and jitter are read from the shell snapshot, so refresh them after a scan.</summary>
+    /// <summary>
+    /// The main scan now includes download/upload, so the speed page must consume those values
+    /// too. A scan without a successful bandwidth pass clears the page back to "未测速" instead
+    /// of leaving a stale previous result.
+    /// </summary>
     public void RefreshFromSnapshot()
     {
+        var view = Shell.View;
+        DownloadMbps = view.Source.DownloadMbps;
+        UploadMbps = view.Source.UploadMbps;
+        TestedAtText = view.HasBandwidth ? view.CapturedAtText : "未测速";
         OnPropertyChanged(nameof(LatencyText));
         OnPropertyChanged(nameof(JitterText));
     }

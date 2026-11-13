@@ -24,6 +24,9 @@ public sealed record LiveSample(
 /// </summary>
 public sealed class MeasurementRunner
 {
+    private const string DownloadUrl = "https://speed.cloudflare.com/__down?bytes=26214400";
+    private const string UploadUrl = "https://speed.cloudflare.com/__up";
+
     /// <summary>
     /// 15 echo requests at 90ms keeps the ICMP phase near 1.4s; the whole scan stays under the
     /// three seconds the product promises, while still giving P95 something to stand on.
@@ -62,6 +65,7 @@ public sealed class MeasurementRunner
                 progress: null,
                 live: null,
                 dualProbe: true,
+                includeBandwidth: false,
                 cancellationToken)
             .ConfigureAwait(false);
 
@@ -75,6 +79,7 @@ public sealed class MeasurementRunner
         IProgress<ScanProgress>? progress,
         IProgress<LiveSample>? live = null,
         bool dualProbe = true,
+        bool includeBandwidth = false,
         CancellationToken cancellationToken = default)
     {
         progress?.Report(new ScanProgress("识别网卡", 0.05));
@@ -156,12 +161,37 @@ public sealed class MeasurementRunner
 
         hops.Add(new HopReading("参考主机", ReferenceHost, Math.Round(stats.MedianMs, 1), stats.Received > 0, true));
 
-        progress?.Report(new ScanProgress("评分与归因", 0.96));
+        var downloadMbps = fallbackDownloadMbps;
+        var uploadMbps = fallbackUploadMbps;
+        if (includeBandwidth)
+        {
+            progress?.Report(new ScanProgress("带宽测速", 0.97));
+
+            // These run after all latency/TTFB probes: saturating the link first would make
+            // the latency numbers describe a busy line rather than the user's normal one.
+            var measuredDownload = await ThroughputProbe.MeasureDownloadMbpsAsync(
+                DownloadUrl, maxDurationMs: 4000, cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (measuredDownload > 0)
+            {
+                downloadMbps = measuredDownload;
+            }
+
+            var measuredUpload = await ThroughputProbe.MeasureUploadMbpsAsync(
+                UploadUrl, bytes: 4 * 1024 * 1024, cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (measuredUpload > 0)
+            {
+                uploadMbps = measuredUpload;
+            }
+        }
+
+        progress?.Report(new ScanProgress("评分与归因", 0.99));
 
         var measurement = new MeasurementResult(
             nic, stats, mode, diagnostics, timing, dualStack, interference, dns, series, hops, egress, DateTimeOffset.Now);
 
-        var snapshot = DiagnosisEngine.Evaluate(measurement, fallbackDownloadMbps, fallbackUploadMbps);
+        var snapshot = DiagnosisEngine.Evaluate(measurement, downloadMbps, uploadMbps);
         progress?.Report(new ScanProgress("完成", 1.0));
         return snapshot;
     }

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{
+    --bg:#F1EEE7;--surface:#FBFAF7;--alt:#F6F2EB;--ink:#1D232C;--muted:#69645C;
+    --faint:#9A9286;--line:#DED7CB;--soft:#E7E0D4;--accent:#E3563B;--accentSoft:#FBE4DD;
+    --accentText:#A93620;--good:#2E6F63;--warn:#A9701A;--mono:"Cascadia Mono","Consolas",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1080px;height:1350px;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI","Microsoft YaHei UI","Inter","Noto Sans CJK SC",sans-serif;-webkit-font-smoothing:antialiased}
+  .card{width:1080px;height:1350px;padding:54px 68px 48px;display:flex;flex-direction:column;background:var(--bg);position:relative;overflow:hidden}
+  .halo{position:absolute;width:510px;height:510px;border-radius:50%;background:var(--accentSoft);right:-190px;top:100px}
+  .rule{height:5px;background:var(--accent);width:90px;border-radius:3px;position:relative;z-index:1}
+  .top{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
+  .brand{display:flex;align-items:center;gap:13px;margin-top:24px}
+  .mark{width:46px;height:46px;border-radius:13px;background:var(--accent);display:flex;align-items:center;justify-content:center}
+  .mark svg{width:26px;height:26px}
+  .brandName{font-size:24px;font-weight:650;letter-spacing:-.5px;line-height:1}
+  .brandSub{font-size:8.5px;letter-spacing:1.7px;color:var(--muted);font-weight:600;margin-top:4px}
+  .sample{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:8px 14px;font-size:10.5px;color:var(--muted)}
+  .eyebrow{font-size:9.5px;letter-spacing:1.9px;color:var(--faint);font-weight:700}
+  .hero{margin-top:74px;position:relative;z-index:1}
+  .score{font-size:320px;line-height:.75;letter-spacing:-22px;font-weight:600;margin-left:-9px}
+  .score .slash{font-size:20px;letter-spacing:0;color:var(--muted);font-weight:500;vertical-align:top;margin-left:9px;position:relative;top:25px}
+  .gradeLine{display:flex;align-items:center;gap:12px;margin-top:23px}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--good)}
+  .grade{font-size:32px;font-weight:650;letter-spacing:-.6px}
+  .verdict{font-size:28px;color:var(--muted)}
+  .summary{font-size:14px;line-height:1.6;color:var(--muted);max-width:650px;margin-top:12px}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:38px;position:relative;z-index:1}
+  .metric{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 15px}
+  .metric .label{font-size:8px;letter-spacing:1.1px;color:var(--faint);font-weight:700}
+  .metric .value{display:flex;align-items:flex-end;gap:3px;margin-top:4px}
+  .metric b{font-size:29px;font-weight:600;letter-spacing:-1px;line-height:1}
+  .metric small{font-size:9px;color:var(--muted);margin-bottom:3px}
+  .metric .foot{font-size:8px;color:var(--faint);margin-top:3px}
+  .scenarios{margin-top:32px;position:relative;z-index:1}
+  .sectionHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+  .sectionHead h2{font-size:14px;margin:0;font-weight:650}
+  .sectionHead span{font-size:9px;color:var(--faint)}
+  .scenarioRow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .scenario{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 13px;min-height:99px;
+    display:flex;flex-direction:column;justify-content:space-between}
+  .scenario .name{font-size:10px;color:var(--muted)}
+  .scenario .num{font-family:var(--mono);font-size:25px;font-weight:600;color:var(--good);letter-spacing:-1px}
+  .scenario .bar{height:4px;background:var(--soft);border-radius:3px;overflow:hidden;margin-top:6px}
+  .scenario .bar i{display:block;height:100%;background:var(--good);border-radius:3px}
+  .scenario.warn .num{color:var(--warn)}
+  .scenario.warn .bar i{background:var(--warn)}
+  .footer{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;padding-top:22px;border-top:1px solid var(--line);position:relative;z-index:1}
+  .footer .meta{font-size:9.5px;color:var(--faint);line-height:1.6}
+  .footer .url{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px}
+  .footer .date{font-size:9.5px;color:var(--faint);text-align:right;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="halo"></div>
+  <div class="rule"></div>
+  <div class="top">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13h4l2-6.5L11.5 19 14 11.5H20"/></svg></div>
+      <div><div class="brandName">AirNet</div><div class="brandSub">NETWORK DIAGNOSTICS</div></div>
+    </div>
+    <div class="sample">示例数据</div>
+  </div>
+
+  <div class="hero">
+    <div class="eyebrow">NETWORK REPORT · 2026.11.13</div>
+    <div class="score">93<span class="slash">/100</span></div>
+    <div class="gradeLine"><i class="dot"></i><div class="grade">优秀</div><div class="verdict">网络状态优秀</div></div>
+    <div class="summary">延迟与丢包表现良好，但无线信号只有 56%，距离一远会先掉速。</div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric"><div class="label">延迟 / LATENCY</div><div class="value"><b>23.1</b><small>ms</small></div><div class="foot">P95 25.8 ms</div></div>
+    <div class="metric"><div class="label">抖动 / JITTER</div><div class="value"><b>2.2</b><small>ms</small></div><div class="foot">相邻样本差</div></div>
+    <div class="metric"><div class="label">丢包 / LOSS</div><div class="value"><b>0.0</b><small>%</small></div><div class="foot">60/60 已返回</div></div>
+    <div class="metric"><div class="label">带宽 / BANDWIDTH</div><div class="value"><b>384</b><small>↓</small></div><div class="foot">92.6 Mbps ↑</div></div>
+  </div>
+
+  <div class="scenarios">
+    <div class="sectionHead"><h2>场景体验</h2><span>5 项预测</span></div>
+    <div class="scenarioRow">
+      <div class="scenario"><div class="name">网页浏览</div><div><div class="num">93</div><div class="bar"><i style="width:93%"></i></div></div></div>
+      <div class="scenario"><div class="name">4K 视频</div><div><div class="num">100</div><div class="bar"><i style="width:100%"></i></div></div></div>
+      <div class="scenario warn"><div class="name">在线游戏</div><div><div class="num">81</div><div class="bar"><i style="width:81%"></i></div></div></div>
+      <div class="scenario"><div class="name">视频会议</div><div><div class="num">97</div><div class="bar"><i style="width:97%"></i></div></div></div>
+      <div class="scenario"><div class="name">大文件下载</div><div><div class="num">98</div><div class="bar"><i style="width:98%"></i></div></div></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="meta">AirNet · 无驱动 · 无常驻进程<div class="url">github.com/RyzenWang/AirNet</div></div>
+    <div class="date">Wi-Fi 6 · 示例网络<br>11 月 13 日 17:30</div>
+  </div>
+</div>
+</body>
+</html>

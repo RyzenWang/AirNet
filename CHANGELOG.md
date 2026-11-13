@@ -7,6 +7,8 @@ project uses semantic versioning for release tags.
 
 ### Added
 
+- The manual "开始检测" now includes a download/upload bandwidth pass after the latency
+  probes; the 60-second automatic refresh deliberately skips the upload.
 - History trend page: 7/30-day latency and score curves, local time-of-day buckets and
   recent runs.
 - Share card: a 1080 × 1350 PNG generated from the current snapshot, with a preview

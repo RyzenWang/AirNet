@@ -215,7 +215,9 @@ public partial class ShellViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task RunScanAsync()
+    private Task RunScanAsync() => RunScanCoreAsync(includeBandwidth: true);
+
+    private async Task RunScanCoreAsync(bool includeBandwidth)
     {
         if (IsScanning)
         {
@@ -255,7 +257,8 @@ public partial class ShellViewModel : ObservableObject
                 progress,
                 live,
                 Preferences.DualProbe,
-                _scanCts.Token).ConfigureAwait(true);
+                includeBandwidth: includeBandwidth,
+                cancellationToken: _scanCts.Token).ConfigureAwait(true);
 
             View = new SnapshotView(snapshot);
             Overview.Refresh(View);
@@ -434,10 +437,9 @@ public partial class ShellViewModel : ObservableObject
             return;
         }
 
-        if (RunScanCommand.CanExecute(null))
-        {
-            RunScanCommand.Execute(null);
-        }
+        // Automatic sampling must not upload 4MB every minute; only an explicit scan
+        // includes the bandwidth pass.
+        _ = RunScanCoreAsync(includeBandwidth: false);
     }
 
     private static ThemeMode ParseTheme(string? theme) => theme switch

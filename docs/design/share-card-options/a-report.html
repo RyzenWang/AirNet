@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{
+    --bg:#F1EEE7;--surface:#FBFAF7;--alt:#F6F2EB;--ink:#1D232C;--muted:#69645C;
+    --faint:#9A9286;--line:#DED7CB;--soft:#E7E0D4;--accent:#E3563B;--accentSoft:#FBE4DD;
+    --accentText:#A93620;--good:#2E6F63;--warn:#A9701A;
+    --mono:"Cascadia Mono","Consolas",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1080px;height:1350px;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI","Microsoft YaHei UI","Inter","Noto Sans CJK SC",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .card{width:1080px;height:1350px;padding:62px 68px 52px;display:flex;flex-direction:column;background:var(--bg)}
+  .top{display:flex;justify-content:space-between;align-items:center}
+  .brand{display:flex;align-items:center;gap:14px}
+  .mark{width:48px;height:48px;border-radius:13px;background:var(--accent);display:flex;align-items:center;justify-content:center}
+  .mark svg{width:27px;height:27px}
+  .brandName{font-size:25px;font-weight:650;letter-spacing:-.6px;line-height:1.05}
+  .brandSub{font-size:9px;letter-spacing:1.7px;color:var(--muted);font-weight:600;margin-top:3px}
+  .sample{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:8px 15px;
+    font-size:11px;color:var(--muted)}
+  .eyebrow{font-size:9.5px;letter-spacing:1.7px;color:var(--faint);font-weight:700}
+  .hero{display:grid;grid-template-columns:1fr 280px;gap:26px;align-items:center;margin-top:42px}
+  .scoreLine{display:flex;align-items:flex-end;gap:7px}
+  .score{font-size:164px;line-height:.86;letter-spacing:-11px;font-weight:600}
+  .outof{font-size:17px;color:var(--muted);margin-bottom:19px}
+  .gradeLine{display:flex;align-items:center;gap:11px;margin-top:14px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--good)}
+  .grade{font-size:23px;font-weight:650}
+  .verdict{font-size:22px;color:var(--muted)}
+  .summary{font-size:14px;line-height:1.65;color:var(--muted);max-width:600px;margin-top:12px}
+  .ringWrap{position:relative;width:250px;height:250px;justify-self:end}
+  .ring{width:250px;height:250px;border-radius:50%;background:conic-gradient(var(--good) 0 93%, var(--soft) 93% 100%);
+    display:flex;align-items:center;justify-content:center}
+  .ring:after{content:"";position:absolute;inset:18px;background:var(--bg);border-radius:50%}
+  .ringText{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .ringText b{display:block;font-size:48px;font-weight:600;letter-spacing:-2px;line-height:1}
+  .ringText span{display:block;font-size:9px;letter-spacing:1.8px;color:var(--faint);font-weight:700;margin-top:6px}
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
+  .metric{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:17px 20px}
+  .metric .label{font-size:9px;letter-spacing:1.2px;color:var(--faint);font-weight:700}
+  .metric .value{display:flex;align-items:flex-end;gap:4px;margin-top:5px}
+  .metric .value b{font-size:34px;font-weight:600;letter-spacing:-1px;line-height:1}
+  .metric .value small{font-size:11px;color:var(--muted);margin-bottom:4px}
+  .metric .foot{font-size:10px;color:var(--faint);margin-top:4px}
+  .scenarios{margin-top:28px;background:var(--surface);border:1px solid var(--line);border-radius:17px;padding:20px 22px}
+  .sectionHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}
+  .sectionHead h2{font-size:14px;margin:0;font-weight:650}
+  .sectionHead span{font-size:9.5px;color:var(--faint)}
+  .row{display:grid;grid-template-columns:135px 1fr 38px;gap:12px;align-items:center;margin:10px 0}
+  .row .name{font-size:11.5px}
+  .bar{height:6px;border-radius:4px;background:var(--soft);overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:4px;background:var(--good)}
+  .row .num{text-align:right;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .footer{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;padding-top:20px}
+  .footer .meta{font-size:10px;color:var(--faint);line-height:1.6}
+  .footer .url{font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:3px}
+  .footer .date{font-size:10px;color:var(--faint)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13h4l2-6.5L11.5 19 14 11.5H20"/></svg></div>
+      <div><div class="brandName">AirNet</div><div class="brandSub">NETWORK DIAGNOSTICS</div></div>
+    </div>
+    <div class="sample">示例数据</div>
+  </div>
+
+  <div class="hero">
+    <div>
+      <div class="eyebrow">NETWORK REPORT · 2026.11.13</div>
+      <div class="scoreLine"><div class="score">93</div><div class="outof">/ 100</div></div>
+      <div class="gradeLine"><i class="dot"></i><div class="grade">优秀</div><div class="verdict">网络状态优秀</div></div>
+      <div class="summary">延迟与丢包表现良好，但无线信号只有 56%，距离一远会先掉速。</div>
+    </div>
+    <div class="ringWrap"><div class="ring"></div><div class="ringText"><b>93</b><span>SCORE</span></div></div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric"><div class="label">延迟 / LATENCY</div><div class="value"><b>23.1</b><small>ms</small></div><div class="foot">P95 25.8 ms · 60 个采样</div></div>
+    <div class="metric"><div class="label">抖动 / JITTER</div><div class="value"><b>2.2</b><small>ms</small></div><div class="foot">相邻样本差均值</div></div>
+    <div class="metric"><div class="label">丢包 / LOSS</div><div class="value"><b>0.0</b><small>%</small></div><div class="foot">60/60 已返回</div></div>
+    <div class="metric"><div class="label">带宽 / BANDWIDTH</div><div class="value"><b>384</b><small>Mbps ↓</small></div><div class="foot">上行 92.6 Mbps · 示例</div></div>
+  </div>
+
+  <div class="scenarios">
+    <div class="sectionHead"><h2>场景体验</h2><span>按当前网络预测</span></div>
+    <div class="row"><div class="name">网页浏览</div><div class="bar"><i style="width:93%"></i></div><div class="num">93</div></div>
+    <div class="row"><div class="name">4K 视频</div><div class="bar"><i style="width:100%"></i></div><div class="num">100</div></div>
+    <div class="row"><div class="name">在线游戏</div><div class="bar"><i style="width:81%"></i></div><div class="num">81</div></div>
+    <div class="row"><div class="name">视频会议</div><div class="bar"><i style="width:97%"></i></div><div class="num">97</div></div>
+    <div class="row"><div class="name">大文件下载</div><div class="bar"><i style="width:98%"></i></div><div class="num">98</div></div>
+  </div>
+
+  <div class="footer">
+    <div class="meta">AirNet · 无驱动 · 无常驻进程<div class="url">github.com/RyzenWang/AirNet</div></div>
+    <div class="date">Wi-Fi 6 · 示例网络<br>11 月 13 日 17:30</div>
+  </div>
+</div>
+</body>
+</html>
