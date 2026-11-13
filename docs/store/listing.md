@@ -77,17 +77,26 @@ AirNet.exe --export docs/store/screenshots --scale 1 --size 1600x900
 
 | 字段 | 值 |
 | --- | --- |
-| 隐私政策 | `https://github.com/RyzenWang/AirNet/blob/main/docs/PRIVACY.md` |
+| 隐私政策 | `https://ryzenwang.github.io/AirNet/PRIVACY.html` |
 | 支持 | `https://github.com/RyzenWang/AirNet/issues` |
+| 网站 | `https://ryzenwang.github.io/AirNet/` |
 | 网站 | 可选；如启用 GitHub Pages，指向 `docs/` |
 
-> Store 要求隐私政策是一个**可公开访问的 URL**。GitHub 的 blob 页可用，但更稳妥的是
-> 开启 GitHub Pages 后指向渲染版；内容与 `docs/PRIVACY.md` 同源。
+> GitHub Pages 已启用（源为 GitHub Actions，工作流 `.github/workflows/pages.yml`），
+> 内容来自 `docs/`，与仓库内文档同源；`PRIVACY.md` 有固定 permalink，重命名文件不会断链。
+
+## 已注册的身份
+
+| 字段 | 值 |
+| --- | --- |
+| Package/Identity/Name | `RyzenWang.AirNet` |
+| Package/Identity/Publisher | `CN=D87D6846-5A2B-4D82-BDB7-8E739EB3F35B` |
+| 发布者显示名 | `RyzenWang` |
 
 ## 提交前检查
 
-1. `packaging/msix/Build-Msix.ps1 -Version x.y.z.0 -ForStore -IdentityName <name> -Publisher "CN=<id>"`；
+1. `packaging/msix/Build-Msix.ps1 -Version 0.3.0.0 -ForStore -IdentityName RyzenWang.AirNet -Publisher "CN=D87D6846-5A2B-4D82-BDB7-8E739EB3F35B" -PublisherDisplayName RyzenWang`；
 2. 产物是**未签名**的 `.msix`——商店会重新签名，自己签了反而会被拒；
-3. 版本号四段、末位为 0，且高于上一次提交；
+3. 版本号四段、末位为 0，且高于上一次提交（当前产物 `0.3.0.0`，应用内仍显示 `0.2.8`；若要发布 1.0，需同步改版本字面量并重出截图）；
 4. 隐私政策 URL 可打开、内容与 `docs/PRIVACY.md` 一致；
 5. 截图不含真实公网 IP、真实 SSID 或个人信息（导出已用样例数据规避）。

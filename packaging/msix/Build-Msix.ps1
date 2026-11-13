@@ -28,6 +28,7 @@ param(
 
     [switch] $SkipPublish,
     [switch] $SelfSign,
+    [switch] $ForStore,
     [switch] $NoAot,
 
     [ValidateSet('x64')]
@@ -230,6 +231,10 @@ $manifest = $manifest.Replace('{{VERSION}}', $Version)
 $manifest = $manifest.Replace('{{ARCH}}', $Architecture)
 Set-Content -Path (Join-Path $layoutDirectory 'AppxManifest.xml') -Value $manifest -Encoding utf8
 
+if ($ForStore -and $CertificatePath) {
+    throw '-ForStore publishes unsigned: the Store re-signs the package. Omit -CertificatePath/-SelfSign.'
+}
+
 if ($SelfSign -and -not $CertificatePath) {
     Write-Step 'Creating a self-signed certificate for this build'
     $certificatePath = Join-Path $outputDirectory 'AirNet-TestSigning.pfx'
@@ -273,6 +278,27 @@ if ($CertificatePath) {
 
     & $signTool @signArgs
     if ($LASTEXITCODE -ne 0) { throw "signtool failed with exit code $LASTEXITCODE." }
+}
+
+if ($ForStore) {
+    # Partner Center accepts .msixupload: a zip holding the package. Written through the zip
+    # API so the extension is exactly what the portal expects.
+    Write-Step 'Building the .msixupload for Partner Center'
+    $uploadName = "AirNet-$Version-$Architecture.msixupload"
+    $uploadPath = Join-Path $outputDirectory $uploadName
+    if (Test-Path $uploadPath) { Remove-Item $uploadPath -Force }
+
+    $uploadDirectory = Join-Path $outputDirectory 'upload'
+    if (Test-Path $uploadDirectory) { Remove-Item $uploadDirectory -Recurse -Force }
+    New-Item -ItemType Directory -Path $uploadDirectory -Force | Out-Null
+    Copy-Item $packagePath (Join-Path $uploadDirectory $packageName)
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [System.IO.Compression.ZipFile]::CreateFromDirectory(
+        $uploadDirectory, $uploadPath,
+        [System.IO.Compression.CompressionLevel]::Optimal, $false)
+
+    Write-Host "  $uploadName" -ForegroundColor Green
 }
 
 Write-Step 'Verifying the package'
