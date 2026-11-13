@@ -76,7 +76,7 @@
                            FontSize="128"
                            FontWeight="SemiBold"
                            LetterSpacing="-8"
-                           LineHeight="126"
+                           LineHeight="154"
                            VerticalAlignment="Bottom"
                            Foreground="{DynamicResource TextPrimaryBrush}" />
                 <TextBlock Text="/100"

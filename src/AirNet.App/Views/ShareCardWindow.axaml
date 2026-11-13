@@ -10,10 +10,11 @@
         MinWidth="640"
         MinHeight="760"
         CanResize="False"
+        SystemDecorations="None"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource AppBackgroundBrush}">
   <Grid Margin="18" RowDefinitions="Auto,*,Auto" RowSpacing="12">
-    <Grid ColumnDefinitions="*,Auto">
+    <Grid ColumnDefinitions="*,Auto" PointerPressed="OnTitleBarPointerPressed">
       <StackPanel Spacing="1">
         <TextBlock Text="分享卡片" Classes="h3" />
         <TextBlock Text="生成一张适合发群或社交平台的 PNG" Classes="caption" FontSize="10.5" />

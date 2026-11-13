@@ -1,6 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Media.Imaging;
+using Avalonia.Input;
 using Avalonia.Platform.Storage;
 
 namespace AirNet.App.Views;
@@ -16,6 +16,15 @@ public partial class ShareCardWindow : Window
     }
 
     private void OnCloseClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Close();
+
+    /// <summary>The window has no native title bar; the header row is the drag handle.</summary>
+    private void OnTitleBarPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            BeginMoveDrag(e);
+        }
+    }
 
     private async void OnSaveClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
