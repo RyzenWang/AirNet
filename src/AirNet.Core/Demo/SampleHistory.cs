@@ -103,4 +103,5 @@ public static class SampleHistory
 /// </summary>
 [System.Text.Json.Serialization.JsonSourceGenerationOptions(WriteIndented = false)]
 [System.Text.Json.Serialization.JsonSerializable(typeof(HistoryRecord))]
+[System.Text.Json.Serialization.JsonSerializable(typeof(Sites.SiteHistoryRecord))]
 internal sealed partial class DemoHistoryJsonContext : System.Text.Json.Serialization.JsonSerializerContext;

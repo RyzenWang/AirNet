@@ -38,12 +38,11 @@ public partial class App : Application
                 // own history is never touched.
                 try
                 {
-                    Core.Demo.SampleHistory
-                        .WriteAsync(
-                            Path.Combine(Path.GetTempPath(), "airnet-export-data"),
-                            DateTimeOffset.Now)
-                        .GetAwaiter()
-                        .GetResult();
+                    var exportData = Path.Combine(Path.GetTempPath(), "airnet-export-data");
+                    Core.Demo.SampleHistory.WriteAsync(exportData, DateTimeOffset.Now).GetAwaiter().GetResult();
+                    // The sites page hydrates from sites.jsonl; without a record its screenshot
+                    // documents eleven empty rows.
+                    Core.Demo.SampleSites.WriteAsync(exportData, DateTimeOffset.Now).GetAwaiter().GetResult();
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
@@ -113,6 +112,22 @@ public partial class App : Application
                 window.WindowStartupLocation = WindowStartupLocation.Manual;
                 window.Position = new PixelPoint(-4200, -4200);
                 window.ShowInTaskbar = false;
+
+                // Store listings need a larger canvas than the default window. Enlarging the
+                // window is the only correct way to get there: rendering the 1240x860 window at
+                // 2x corrupts CJK glyphs (the RenderTargetBitmap 1x text-cache bug).
+                if (ReadStringArgument(desktop.Args, "--size") is { } size
+                    && ParseSize(size) is { } wanted)
+                {
+                    window.Width = wanted.Width;
+                    window.Height = wanted.Height;
+                }
+
+                // Pages that only fill from a live run are seeded from the same sample data the
+                // rest of the demo shows, so a capture never documents an empty state.
+                shell.SiteLatency.ApplySampleReport(Core.Demo.SampleSites.Report(DateTimeOffset.Now));
+                shell.Speed.Apply(384.2, 92.6, "示例");
+
                 window.Show();
                 var scale = ReadIntArgument(desktop.Args, "--scale") ?? 2;
                 _ = window.ExportScreenshotsAsync(directory, scale);
@@ -143,6 +158,21 @@ public partial class App : Application
 
 
         return null;
+    }
+
+    /// <summary>Parses "--size 1600x900" for the screenshot window.</summary>
+    private static (double Width, double Height)? ParseSize(string text)
+    {
+        var parts = text.Split('x', 'X');
+        if (parts.Length != 2
+            || !double.TryParse(parts[0], out var width)
+            || !double.TryParse(parts[1], out var height)
+            || width < 1040 || height < 700)
+        {
+            return null;
+        }
+
+        return (width, height);
     }
 
     private static int? ReadIntArgument(string[]? args, string name)

@@ -783,6 +783,25 @@ public partial class SiteLatencyViewModel : ObservableObject
         result.Success
         && result.FailureKind is not (SiteFailureKind.HttpBlocked or SiteFailureKind.HttpServerError);
 
+    /// <summary>
+    /// Fills the table from a sample report instead of a live run. Used only by the screenshot
+    /// pipeline: the page hydrates history for its delta column but never renders history rows,
+    /// so without this its documentation would be eleven empty lines.
+    /// </summary>
+    public void ApplySampleReport(SiteLatencyReport report)
+    {
+        _lastReport = report;
+        foreach (var result in report.Results)
+        {
+            _results[result.Target.Id] = result;
+        }
+
+        _sortByTotal = true;
+        TestStatusText = $"{report.Succeeded}/{report.Results.Count} 站点成功 · 示例数据";
+        RefreshRows();
+        NotifySummary();
+    }
+
     private void RefreshRows()
     {
         var targets = _catalog.Where(MatchesFilter).ToList();
