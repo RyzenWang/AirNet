@@ -129,10 +129,12 @@ src/AirNet.App/          Avalonia 应用
   Services/              SettingsStore（settings.json）
 packaging/publish.ps1    裁剪 + R2R 发布，并打印体积/启动/内存
 packaging/pack-all.ps1   Windows / macOS / Linux 便携 zip（无 setup）
+packaging/pack-aot.ps1   实验 Native AOT 包（Windows x64，非单文件）
 tests/AirNet.Core.Tests/  xUnit：统计、分档、traceroute 解析、掩码、历史、站点目录/自定义站点
 docs/
   DESIGN.md              视觉规范：色板、字号、组件、图表、动效、无障碍
   TECH_PLAN.md           技术方案：架构、探针、评分与归因、性能预算、里程碑
+  AOT.md                 实验 Native AOT：构建、体积/启动/内存与限制
   FEATURES.md            功能清单（P0/P1/P2 + 验收口径）
   WEBSITE_LATENCY.md     网站延迟：功能、交互、视觉与实现方案
   design/                评审用视觉/动效稿（不随应用发布）
