@@ -27,7 +27,7 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 
 | 部分 | 状态 |
 | --- | --- |
-| 平台支持 | Windows x64 / Linux x64 ✅ Native AOT 运行验证；Linux arm64、macOS x64/arm64 ✅ CI AOT 构建通过，🟡 运行待真机验证 |
+| 平台支持 | Windows x64 / Linux x64 ✅ Native AOT 运行验证；**macOS x64/arm64 与 Linux arm64 🟡 实验性**：CI 构建通过，但从未在真机运行，应用内会明确标注 |
 | 视觉系统（七页 × 深浅色） | ✅ M0/M2 |
 | 真实探测：ICMP 丢包 / TCP 计时 / DNS·TCP·TLS·TTFB | ✅ M1 |
 | 亚毫秒抖动（`Stopwatch` 计时 TCP 握手） | ✅ 本机实测 2.6ms（原先恒为 0） |
@@ -97,7 +97,7 @@ powershell -File packaging/pack-all.ps1                          # Windows AOT +
 | macOS Apple Silicon / Intel | `AirNet-<version>-macos-arm64-aot.zip` / `-macos-x64-aot.zip`，解压得到 `AirNet.app` |
 | Linux x64 / arm64 | `AirNet-<version>-linux-x64-aot.tar.gz` / `-linux-arm64-aot.tar.gz`；解压后直接 `bash run.sh`（只提供一个归档，要求 glibc ≥ 2.35） |
 
-> `v0.2.7` 起 Windows/macOS/Linux 全部改走 Native AOT；`v0.2.8` 是第一个把这套包和趋势页、分享卡片一起发出去的版本。
+> `v0.2.7` 起 Windows/macOS/Linux 全部改走 Native AOT。**macOS 与 Linux arm64 为实验性**：构建通过、包能用，但没人真机跑过，且未签名未公证——遇到问题请附诊断包。
 
 
 Linux 包要求 glibc ≥ 2.35，需要 X11 或 Wayland（XWayland）及常见桌面库；Linux x64 AOT 已在真实环境验证，arm64 待验证。macOS 包未签名/未公证，暂未在真机验证。CI 会把 Windows/macOS 的 zip 与 Linux 的 tar.gz 挂到对应 Release，不构建 setup。

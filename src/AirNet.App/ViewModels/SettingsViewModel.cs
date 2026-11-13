@@ -84,6 +84,20 @@ public partial class SettingsViewModel : ObservableObject
     public string VersionText => "0.2.8 · M3";
     public string RuntimeText => ".NET 10 · Avalonia 11.3 · Windows / macOS / Linux";
     public string FootprintText => "R2R 单文件 · 无驱动 · 无后台常驻";
+
+    /// <summary>
+    /// Says "experimental" on the platforms nobody has run on real hardware yet. Hidden on the
+    /// two that were verified, because a permanent caveat everywhere stops being read.
+    /// </summary>
+    public string PlatformNote => OperatingSystem.IsMacOS()
+        ? "macOS 为实验性支持：未签名、未公证，也未在真机验证。"
+        : OperatingSystem.IsLinux()
+          && System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture
+             == System.Runtime.InteropServices.Architecture.Arm64
+            ? "Linux arm64 为实验性支持：CI 构建通过，未在真机验证。"
+            : string.Empty;
+
+    public bool HasPlatformNote => PlatformNote.Length > 0;
     public string PrivacyText =>
         "测量在本机完成；出口 IP 查询会访问 3322 / Cloudflare，不上传本地字段。历史记录仅保存在本地。";
 

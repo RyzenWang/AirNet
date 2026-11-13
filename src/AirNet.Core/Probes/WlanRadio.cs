@@ -29,7 +29,8 @@ internal static class WlanRadio
     {
         if (!OperatingSystem.IsWindows())
         {
-            return null;
+            // macOS and Linux go through command output; see UnixRadio for the trade-off.
+            return UnixRadio.TryRead();
         }
 
         IntPtr client = IntPtr.Zero;

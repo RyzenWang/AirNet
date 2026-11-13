@@ -211,6 +211,13 @@
                            MaxWidth="240"
                            TextAlignment="Right" />
               </Grid>
+              <!-- Only platforms that have not been run on real hardware say so. -->
+              <TextBlock Text="{Binding PlatformNote}"
+                         Classes="micro"
+                         FontSize="9.5"
+                         Foreground="{DynamicResource WarnBrush}"
+                         TextWrapping="Wrap"
+                         IsVisible="{Binding HasPlatformNote}" />
               <Border Classes="hairline" />
               <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Text="占用" Classes="caption" FontSize="10.5" />
