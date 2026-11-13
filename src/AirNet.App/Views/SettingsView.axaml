@@ -200,6 +200,12 @@
                 <TextBlock Text="AirNet" FontSize="13" FontWeight="SemiBold" />
                 <TextBlock Grid.Column="1" Text="{Binding VersionText}" Classes="micro" FontSize="10" />
               </Grid>
+              <!-- Only inside a package can the two channels disagree on the number. -->
+              <TextBlock Text="{Binding PackageText}"
+                         Classes="micro"
+                         FontSize="9.5"
+                         Foreground="{DynamicResource TextTertiaryBrush}"
+                         IsVisible="{Binding HasPackageNote}" />
               <Border Classes="hairline" />
               <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Text="运行环境" Classes="caption" FontSize="10.5" />

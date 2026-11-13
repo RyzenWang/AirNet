@@ -82,6 +82,17 @@ public partial class SettingsViewModel : ObservableObject
     public bool HasNeighborRows => NeighborRows.Count > 0;
 
     public string VersionText => "0.3.0 · M3";
+
+    /// <summary>
+    /// The Store channel versions packages on its own line (1.0.0.0, 1.1.0.0, …) while the
+    /// source keeps its semantic version. Showing both is the only way a bug report can be
+    /// traced back to a commit.
+    /// </summary>
+    public string PackageText => PackagedApp.PackageVersion is { } version
+        ? $"商店包 {version} · 源码 {AppVersion.Current}"
+        : string.Empty;
+
+    public bool HasPackageNote => PackageText.Length > 0;
     public string RuntimeText => ".NET 10 · Avalonia 11.3 · Windows / macOS / Linux";
     public string FootprintText => "R2R 单文件 · 无驱动 · 无后台常驻";
 

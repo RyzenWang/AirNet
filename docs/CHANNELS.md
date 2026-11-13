@@ -6,59 +6,70 @@ title: 双渠道发布
 # 双渠道发布
 
 AirNet 同时从两个渠道发布：**GitHub Releases（便携包）** 和 **Microsoft Store**。
-两者出自同一个 commit、同一份源码，但版本号的规则不同。
+两者出自同一个 commit，但**版本号各自一条线**。
 
-## 版本对应
+## 两条版本线
 
-| 渠道 | 版本写法 | 例子 | 谁要求 |
+| 渠道 | 版本写法 | 起点 | 谁决定 |
 | --- | --- | --- | --- |
-| GitHub Release / 便携包 | `X.Y.Z` + tag `vX.Y.Z` | `0.3.0` / `v0.3.0` | 语义化版本 |
-| Microsoft Store 包 | `X.Y.Z.0`（四段，末位必须 0） | `0.3.0.0` | Partner Center |
+| GitHub Release / 便携包 | `X.Y.Z` + tag `vX.Y.Z` | `0.x` 自然演进 | 语义化版本 |
+| Microsoft Store 包 | `X.Y.Z.0`（四段，末位必须 0） | **`1.0.0.0`** | Partner Center |
 
-**同号，只是商店多一个 `.0`**。应用内显示、CHANGELOG、tag 全部用三段版本；
-四段只出现在 `AppxManifest` 的 `Identity/@Version`。
+商店从 `1.0.0.0` 起步，因为商店是**面向普通用户的正式渠道**，`0.x` 在商店里容易被当成测试版；
+GitHub 那条线继续按 `0.x` 的节奏走，两者互不牵制。
 
-```powershell
-# 便携包（GitHub 渠道）
-powershell -File packaging/pack-all.ps1
+Partner Center 的硬性要求只有三条：四段数字、末位为 0、每次提交严格递增。
+**它不要求与程序内部版本一致。**
 
-# 商店包（Microsoft Store 渠道），-Version 补一个 .0
-powershell -File packaging/msix/Build-Msix.ps1 -Version 0.3.0.0 -ForStore `
-    -IdentityName RyzenWang.AirNet `
-    -Publisher "CN=D87D6846-5A2B-4D82-BDB7-8E739EB3F35B"
-```
+## 版本映射表
 
-## 为什么商店不用独立版本线
+每发一版追加一行，这就是"商店里那一版对应哪份源码"的唯一答案。
 
-很 tempting 的做法是让商店从 `1.0.0.0` 起步、GitHub 继续 `0.2.x`，但那样会带来两个长期成本：
+| 商店包版本 | 源码版本 / tag | 日期 | 内容 |
+| --- | --- | --- | --- |
+| `1.0.0.0` | `v0.3.0` | 2026-11-13 | 首个商店版本：趋势页、分享卡片、MSIX 管线 |
 
-1. **对不上号**：用户在商店看到 1.0.0、应用里显示 0.2.8，报障时说不清是哪个版本；
-2. **两份 CHANGELOG**：要么维护两条历史，要么每次发版手工换算。
+### 应用内如何解释
 
-商店只要求"四段 + 末位 0 + 每次提交比上次大"，从未要求主版本号从 1 开始。
-所以两条线保持同号最省事。
-
-## 这条规则带来的唯一约束
-
-商店每次提交的版本必须**严格递增**。如果只是修复商店包本身（例如清单写错、
-资源缺失）而应用版本不变，就需要把补丁号往上抬一位：
+商店版在「关于」卡片同时显示两个号：
 
 ```
-0.3.0.0  首次提交
-0.3.1.0  仅修包，不再动代码
+AirNet                        0.3.0 · M3
+商店包 1.0.0.0 · 源码 0.3.0
 ```
 
-这时 GitHub 也应同步打 `v0.3.1`——哪怕只是一个空提交，也要让两条线继续对齐。
-**不要**用第四段做递增：商店要求末位为 0。
+包版本取自 `GetCurrentPackageFullName`（格式 `Name_Version_Arch_x64__PublisherId`），
+便携版不显示这一行——只有包内才可能两个号不一致。
+
+## 换算规则
+
+商店版本**只随对外发布递增**，与源码版本解耦：
+
+| 源码动作 | 商店包版本 |
+| --- | --- |
+| 新功能发版 `0.4.0` | 抬次版本 → `1.1.0.0` |
+| 修复发版 `0.3.1` | 抬修订 → `1.0.1.0` |
+| 只修包本身（清单/资源），代码不动 | 抬修订 → `1.0.1.0`，源码打一个空 tag `v0.3.1` 保持对齐 |
+| 源码回退或重构 | 商店版本**不回退** |
+
+> 关键约束：**商店版本只能变大**。一旦提交 `1.1.0.0`，之后的包必须比它大。
+> 源码侧任何"版本倒退"的操作（回滚 tag）都不影响商店，但会让映射表出现非单调的行，需在表里注明。
 
 ## 发布顺序
 
 1. 改 `<Version>`（csproj）、`VersionText`（设置页）、页脚三处字面量；
-2. CHANGELOG 落版，`docs/release/vX.Y.Z.md` 写中文发布说明（商店正文用它）；
+2. CHANGELOG 落版，`docs/release/vX.Y.Z.md` 写中文发布说明；
 3. 重出截图——页脚带版本号，`--export docs/shots` 与 `--size 1600x900` 各一轮；
 4. `git tag vX.Y.Z` 并推送：CI 构建五平台 AOT 包并发布 Release；
-5. 打商店包：`Build-Msix.ps1 -Version X.Y.Z.0 -ForStore ...`，上传 `.msixupload`；
-6. 两边的产物都来自同一个 commit，`ProductVersion` 里带 commit hash，可反查。
+5. 查映射表得出商店版本，打商店包：
+
+```powershell
+powershell -File packaging/msix/Build-Msix.ps1 -Version 1.1.0.0 -ForStore `
+    -IdentityName RyzenWang.AirNet `
+    -Publisher "CN=D87D6846-5A2B-4D82-BDB7-8E739EB3F35B"
+```
+
+6. 上传 `.msixupload`，并在上面的映射表里追加一行。
 
 ## 渠道差异（用户可见）
 
@@ -69,5 +80,4 @@ powershell -File packaging/msix/Build-Msix.ps1 -Version 0.3.0.0 -ForStore `
 | 更新方式 | 手动下载新包 | 商店推送 |
 | 命令行参数 | 可用 | 商店启动不带参数 |
 
-这些差异在应用内也有提示：商店版会在「关于」卡片额外说明提权限制，
-macOS 与 Linux arm64 会标注实验性。
+商店版会在「关于」卡片说明提权限制；macOS 与 Linux arm64 会标注实验性。

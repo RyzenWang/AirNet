@@ -6,8 +6,8 @@ project uses semantic versioning for release tags.
 ## [0.3.0] - 2026-11-13
 
 First release that ships through two channels: the GitHub portable archives and the
-Microsoft Store. Both come from the same commit; the Store package only carries a
-four-part version because Partner Center requires one (see [CHANNELS.md](docs/CHANNELS.md)).
+Microsoft Store. The Store package starts its own version line at `1.0.0.0` while this
+source tree continues at `0.3.0`; the mapping lives in [CHANNELS.md](docs/CHANNELS.md).
 
 ### Added
 

@@ -8,6 +8,8 @@
 #
 # Notes:
 #   * MSIX cannot use PublishSingleFile, so the app is published as a folder.
+#   * The package version NEVER overrides the app version: the Store channel numbers
+#     packages on its own line, and the About card shows both so a report is traceable.
 #   * AOT is the default: half the size and well under a second to the first window.
 #   * The package is unsigned unless -CertificatePath is given. A Store submission is
 #     re-signed by Microsoft; a sideload needs a certificate the machine trusts.
@@ -47,7 +49,6 @@ if (-not (Test-Path (Join-Path $root 'AirNet.slnx'))) {
 }
 
 $outputDirectory = Join-Path $root $OutputDirectory
-$appVersion = ($Version -split '\.')[0..2] -join '.'   # the app itself uses a three-part version
 $publishDirectory = Join-Path $outputDirectory "app-$Architecture"
 $layoutDirectory = Join-Path $outputDirectory "layout-$Architecture"
 
@@ -108,7 +109,6 @@ if (-not $SkipPublish) {
         -r "win-$Architecture" `
         --self-contained true `
         -p:PublishSingleFile=false `
-        -p:Version=$appVersion `
         @aotArguments `
         -o $publishDirectory
 
