@@ -3,7 +3,7 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
-## [Unreleased]
+## [0.2.5] - 2026-11-13
 
 ### Added
 

@@ -4,7 +4,7 @@
 > 这是一次**按需**测试，不进入 3 秒主扫描，也不并入健康分。
 >
 > **状态：已实现（2026-11）**。六页导航、11 个默认站、最多 8 个自定义站、`sites.json`、
-> HTTP 状态识别、`sites.jsonl` 历史、`--sites` CLI、报告表格、70 项单元测试都已接入；
+> HTTP 状态识别、`sites.jsonl` 历史、`--sites` CLI、报告表格、123 项单元测试都已接入；
 > 实现截图见 [04-sites-light.png](shots/04-sites-light.png)。
 >
 > 视觉稿：[主页面](design/site-latency-mockup.png) · [HTML 源稿](design/site-latency-mockup.html)；

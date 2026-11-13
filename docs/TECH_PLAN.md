@@ -274,7 +274,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 | 层级 | 手段 | 覆盖 |
 | --- | --- | --- |
-| 单元 | xUnit（`tests/AirNet.Core.Tests`，70 项） | `LatencyAnalyzer`、`DiagnosisEngine`、`TraceProbe.Parse`、`ReportBuilder`、`EgressProbe`、`DnsAdvisor`、`HistoryStore`、`SiteCatalog`/`CustomSiteStore`/`SiteHistoryStore`/HTTP 状态 |
+| 单元 | xUnit（`tests/AirNet.Core.Tests`，123 项） | `LatencyAnalyzer`、`DiagnosisEngine`、`TraceProbe.Parse`、`ReportBuilder`、`EgressProbe`、`DnsAdvisor`/`DnsProbe`/`DnsComparison`、`DualStack`、`Interference`、`HistoryDelta`、`ProbeJson`、`SiteCatalog`/`CustomSiteStore`/`SiteHistoryStore` |
 | 集成 | 本机 `--selftest` 模式（已实现） | 探针链路真实可用性，CI 上可跳过 |
 | 网络伪造 | `tc netem`（Linux）/ Clumsy（Windows）注入丢包抖动 | 归因是否正确 |
 | 视觉回归 | `--export` 截图 + 像素 diff | 深浅色 × 六页，防样式回退 |
@@ -330,7 +330,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 跨平台便携包 | ✅ Windows / macOS（arm64+x64）/ Linux（x64+arm64）zip；Linux x64 已在真实环境启动验证；Linux arm64 与 macOS 尚未验证（macOS 未签名/未公证） |
 | 报告导出（自包含 HTML，可打印 PDF） | ✅ M2，7.8KB，零脚本 |
 | 一键 DNS + 还原（Windows 提权，UAC 可取消） | ✅ M2，实测命令生成与还原记录；**提权执行未自动化验证** |
-| 单元测试（xUnit，70 项） | ✅ M2，覆盖统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 站点目录、自定义站点、HTTP 状态与站点历史 |
+| 单元测试（xUnit，123 项） | ✅ M3，覆盖统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / JSON / 站点目录与 HTTP 状态 |
 | CI（构建 + 单元测试 + 探针/站点冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | 动效（扫描/测速/追踪扫描带 + 实时读数 + 落地过冲/高亮） | ✅ M2，样本真实回传，截图模式可关闭 |
 | 设置项持久化 + 60s 自动刷新 + 快捷键 | ✅ M2，写入 `settings.json`；Ctrl+R / Ctrl+1–6 / Ctrl+T / Esc |
