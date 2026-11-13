@@ -2,7 +2,7 @@
 
 **轻量、快速的网络检测与优化工具** —— 点一下，三秒告诉你网络好不好、问题在路由器还是运营商。
 
-基于 .NET 10 + Avalonia 11.3，沿用 AirPDF 的"纸张"设计语言；Windows/macOS/Linux 正式包均使用 Native AOT。
+基于 .NET 10 + Avalonia 11.3 的轻量网络诊断工具；Windows/macOS/Linux 正式包均使用 Native AOT。
 
 [![CI](https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml/badge.svg)](https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/RyzenWang/AirNet?display_name=tag)](https://github.com/RyzenWang/AirNet/releases/latest)
@@ -95,7 +95,7 @@ powershell -File packaging/pack-all.ps1                          # Windows AOT +
 | macOS Apple Silicon / Intel | `AirNet-<version>-macos-arm64-aot.zip` / `-macos-x64-aot.zip`，解压得到 `AirNet.app` |
 | Linux x64 / arm64 | `AirNet-<version>-linux-x64-aot.zip` / `-linux-arm64-aot.zip`（以及同名 `.tar.gz`）；直接 `bash run.sh` |
 
-> 当前最新 Release `v0.2.6` 仍是 R2R；下一次 tag 起 Windows/macOS/Linux 全部改走 AOT。
+> 当前最新 Release 仍是 `v0.2.6`；`v0.2.7` 起 Windows/macOS/Linux 全部改走 AOT。
 
 
 Linux x64 已在真实 Linux 环境启动验证；需要 X11 或 Wayland（XWayland）及常见桌面库。macOS 包未签名/未公证，暂未在真机验证；Linux arm64 也待验证。CI 在 tag 上会把全部便携 zip/tar.gz 挂到对应 Release，不构建 setup。
@@ -149,8 +149,8 @@ docs/
 
 ## 设计要点
 
-- **同一张纸，同一支橙笔**：沿用 AirPDF 的暖白纸面色板（`#F1EEE7` / `#FBFAF7` / `#DED7CB`）与字号阶梯；
-  浅色主操作、品牌和导航选中用暖橙 `#E3563B`；健康分、图表和状态灯继续用青绿语义色。
+- **暖白纸面，暖橙操作层**：应用底色 `#F1EEE7`，卡片 `#FBFAF7`，描边 `#DED7CB`；
+  浅色主操作、品牌和导航选中用暖橙 `#E3563B`，健康分、图表和状态灯继续用青绿语义色。
   深色主题保持原来的青绿 accent，不改色。
 - **数字有口径**：每个指标都带单位、P95、采样数或满量程，不给出无法解释的分数。
 - **结构可读**：44px 品牌条 + 46px 状态条 + 216px 侧栏 + 30px 状态栏，六页共用，不做导航栈重建。

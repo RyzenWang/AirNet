@@ -3,13 +3,14 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
-## [Unreleased]
+## [0.2.7] - 2026-11-13
 
 ### Changed
 
 - Windows, macOS and Linux release builds now use Native AOT through a native-runner
   matrix (`win-x64`, `linux-x64`, `linux-arm64`, `osx-x64`, `osx-arm64`). Assets carry
   an `-aot` suffix. The R2R single-file build remains available as a local fallback.
+- Version and footer now report 0.2.7.
 
 ### Fixed
 
