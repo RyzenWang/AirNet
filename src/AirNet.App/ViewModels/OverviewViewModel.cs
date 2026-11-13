@@ -2,6 +2,7 @@ using System.Globalization;
 using AirNet.Core.History;
 using AirNet.Core.Probes;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AirNet.App.ViewModels;
 
@@ -192,6 +193,30 @@ public partial class MonitorViewModel : ObservableObject
     private bool _isResultFlash;
 
     [ObservableProperty]
+    private bool _isModeTesting;
+
+    [ObservableProperty]
+    private string _modeStatusText = "按需深测游戏或会议路径；不会自动运行。";
+
+    [ObservableProperty]
+    private string _gameModeHeadline = string.Empty;
+
+    [ObservableProperty]
+    private string _gameModeDetail = string.Empty;
+
+    [ObservableProperty]
+    private string _meetingModeHeadline = string.Empty;
+
+    [ObservableProperty]
+    private string _meetingModeDetail = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasGameModeResult;
+
+    [ObservableProperty]
+    private bool _hasMeetingModeResult;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MonitorLiveHint))]
     private string _liveSourceText = string.Empty;
 
@@ -263,6 +288,68 @@ public partial class MonitorViewModel : ObservableObject
             : Pending("抖动 / JITTER", "ms", "ICMP 分辨率 1ms");
 
         LossTile = Tile("丢包 / LOSS", sample.LossPercent, 1, "%", $"{sample.Count} 个样本", sample.LossPercent <= 0.5);
+    }
+
+    [RelayCommand]
+    private async Task RunGameModeAsync()
+    {
+        if (IsModeTesting)
+        {
+            return;
+        }
+
+        IsModeTesting = true;
+        ModeStatusText = "正在探测 UDP / STUN 路径…";
+        try
+        {
+            var result = await GameModeProbe.RunAsync().ConfigureAwait(true);
+            HasGameModeResult = true;
+            GameModeHeadline = result.UdpReachable ? "UDP 可达" : "UDP 不可达";
+            GameModeDetail = result.UdpReachable
+                ? $"STUN 参考 RTT {result.RttMs:0.0} ms · 抖动 {result.JitterMs:0.0} ms · 丢包 {result.LossPercent:0.0}% · {result.NatSummary}"
+                : $"{result.NatSummary} · 目标 {result.Target}";
+            ModeStatusText = result.UdpReachable
+                ? "游戏模式完成：UDP 路径可用；NAT 结论是映射行为启发式。"
+                : "游戏模式完成：UDP 路径不可用，可能是网络/防火墙拦截。";
+        }
+        catch (Exception ex)
+        {
+            ModeStatusText = $"游戏模式失败：{ex.Message}";
+        }
+        finally
+        {
+            IsModeTesting = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task RunMeetingModeAsync()
+    {
+        if (IsModeTesting)
+        {
+            return;
+        }
+
+        IsModeTesting = true;
+        ModeStatusText = "正在测上行、抖动和丢包…";
+        try
+        {
+            var result = await MeetingModeProbe.RunAsync().ConfigureAwait(true);
+            HasMeetingModeResult = true;
+            MeetingModeHeadline = result.Verdict;
+            MeetingModeDetail = result.HasUpload
+                ? $"上行 {result.UploadMbps:0.0} Mbps · 抖动 {result.JitterMs:0.0} ms · 丢包 {result.LossPercent:0.0}%"
+                : "上行未测出；不能只凭缺失的数字判定会议可用。";
+            ModeStatusText = "会议模式完成：切换模式不会改动网络配置。";
+        }
+        catch (Exception ex)
+        {
+            ModeStatusText = $"会议模式失败：{ex.Message}";
+        }
+        finally
+        {
+            IsModeTesting = false;
+        }
     }
 
     private static MetricTile Tile(string label, double value, int decimals, string unit, string foot, bool good) => new()

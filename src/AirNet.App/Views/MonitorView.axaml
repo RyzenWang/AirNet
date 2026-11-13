@@ -329,6 +329,76 @@
             </StackPanel>
           </Border>
 
+          <!-- On-demand game / meeting checks -->
+          <Border Classes="card" Padding="14,12">
+            <StackPanel Spacing="7">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="模式深测" Classes="h3" FontSize="13" />
+                <TextBlock Grid.Column="1" Text="按需" Classes="micro" FontSize="10" VerticalAlignment="Center" />
+              </Grid>
+              <TextBlock Text="游戏测 UDP/STUN；会议测上行、抖动与丢包。"
+                         Classes="micro"
+                         FontSize="9.5"
+                         TextWrapping="Wrap" />
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Button Classes="soft"
+                        Height="27"
+                        MinHeight="27"
+                        Padding="9,0"
+                        FontSize="10"
+                        Content="游戏模式"
+                        Command="{Binding RunGameModeCommand}"
+                        IsEnabled="{Binding !IsModeTesting}" />
+                <Button Classes="soft"
+                        Height="27"
+                        MinHeight="27"
+                        Padding="9,0"
+                        FontSize="10"
+                        Content="会议模式"
+                        Command="{Binding RunMeetingModeCommand}"
+                        IsEnabled="{Binding !IsModeTesting}" />
+              </StackPanel>
+              <TextBlock Text="{Binding ModeStatusText}"
+                         Classes="micro"
+                         FontSize="9.5"
+                         TextWrapping="Wrap" />
+              <Border Background="{DynamicResource SurfaceAltBrush}"
+                      BorderBrush="{DynamicResource BorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      Padding="9,7"
+                      IsVisible="{Binding HasGameModeResult}">
+                <StackPanel Spacing="2">
+                  <TextBlock Text="{Binding GameModeHeadline}" FontSize="10.5" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding GameModeDetail}"
+                             Classes="micro"
+                             FontSize="9"
+                             LineHeight="14"
+                             TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+              <Border Background="{DynamicResource SurfaceAltBrush}"
+                      BorderBrush="{DynamicResource BorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      Padding="9,7"
+                      IsVisible="{Binding HasMeetingModeResult}">
+                <StackPanel Spacing="2">
+                  <TextBlock Text="{Binding MeetingModeHeadline}" FontSize="10.5" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding MeetingModeDetail}"
+                             Classes="micro"
+                             FontSize="9"
+                             LineHeight="14"
+                             TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+              <TextBlock Text="NAT 结论是 STUN 映射行为启发式，不等于完整 NAT 类型。"
+                         Classes="micro"
+                         FontSize="8.5"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
           <!-- Path -->
           <Border Classes="card" Padding="14,12">
             <StackPanel Spacing="8">

@@ -1,4 +1,5 @@
 using AirNet.Core.Diagnostics;
+using AirNet.Core.Probes;
 using AirNet.Core.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -59,7 +60,21 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _dnsBackupText = string.Empty;
 
-    public string VersionText => "0.2.5 · M3";
+    [ObservableProperty]
+    private bool _isNeighborScanning;
+
+    [ObservableProperty]
+    private string _neighborStatusText = "扫描一次查看附近热点";
+
+    [ObservableProperty]
+    private string _neighborAdvice = "邻区扫描只读；Windows WLAN API 不提供信道，AirNet 不会编造信道建议。";
+
+    [ObservableProperty]
+    private IReadOnlyList<WifiNeighborRow> _neighborRows = [];
+
+    public bool HasNeighborRows => NeighborRows.Count > 0;
+
+    public string VersionText => "0.2.6 · M3";
     public string RuntimeText => ".NET 10 · Avalonia 11.3 · Windows / macOS / Linux";
     public string FootprintText => "R2R 单文件 · 无驱动 · 无后台常驻";
     public string PrivacyText =>
@@ -146,6 +161,91 @@ public partial class SettingsViewModel : ObservableObject
         return rows;
     }
 
+    partial void OnNeighborRowsChanged(IReadOnlyList<WifiNeighborRow> value) =>
+        OnPropertyChanged(nameof(HasNeighborRows));
+
+    [RelayCommand]
+    private async Task ScanNeighborsAsync()
+    {
+        if (IsNeighborScanning)
+        {
+            return;
+        }
+
+        if (OperatingSystem.IsWindows() && !InterfaceInspector.Inspect().IsWireless)
+        {
+            NeighborRows = [];
+            NeighborStatusText = "当前为有线连接，无需邻区扫描";
+            NeighborAdvice = "当前使用有线网络。接入或启用无线网卡后，才能扫描周围 Wi-Fi 热点。";
+            return;
+        }
+
+        IsNeighborScanning = true;
+        NeighborStatusText = "正在扫描 WLAN 邻区…";
+        try
+        {
+            var scan = await WlanNeighborProbe.ScanAsync().ConfigureAwait(true);
+            NeighborRows = scan.Neighbors
+                .Take(8)
+                .Select(item => new WifiNeighborRow
+                {
+                    Ssid = item.Ssid,
+                    Bssid = item.Bssid,
+                    SignalText = item.SignalText,
+                    Phy = item.Phy,
+                    RateText = item.RateText,
+                    IsStrong = item.SignalQuality >= 70,
+                    IsWeak = item.SignalQuality < 45,
+                })
+                .ToList();
+
+            NeighborStatusText = !scan.IsSupported
+                ? scan.Note ?? "当前平台不支持邻区扫描"
+                : scan.HasNeighbors
+                    ? $"发现 {scan.Neighbors.Count} 个邻区"
+                    : scan.Note ?? "未发现可见邻区";
+            NeighborAdvice = BuildNeighborAdvice(scan);
+        }
+        catch (OperationCanceledException)
+        {
+            NeighborStatusText = "扫描已取消";
+        }
+        catch (Exception ex)
+        {
+            NeighborStatusText = $"扫描失败：{ex.Message}";
+        }
+        finally
+        {
+            IsNeighborScanning = false;
+        }
+    }
+
+    private static string BuildNeighborAdvice(WifiNeighborScan scan)
+    {
+        if (!scan.IsSupported)
+        {
+            return "邻区扫描仅在 Windows 的 WLAN API 下可用；其他平台会明确降级，不伪造热点列表。";
+        }
+
+        if (!scan.HasNeighbors)
+        {
+            return "没有发现可见邻区。若本机是无线连接，检查 WLAN 服务、飞行模式和附近是否有 2.4/5/6GHz 热点。";
+        }
+
+        var best = scan.Neighbors.MaxBy(item => item.SignalQuality)!;
+        var sameSsid = scan.Neighbors.Count(item => string.Equals(item.Ssid, best.Ssid, StringComparison.OrdinalIgnoreCase));
+        var advice = $"最强邻区：{best.Ssid}（{best.SignalQuality}% · {best.Phy}）。";
+        if (sameSsid > 1)
+        {
+            advice += $" 同一 SSID 有 {sameSsid} 个热点，优先靠近信号更强的 AP。";
+        }
+
+        advice += best.SignalQuality < 50
+            ? " 信号偏低，靠近路由器或改用 5GHz/6GHz 会更稳。"
+            : " 信号可用；邻区只读，不会修改路由器配置。";
+        return advice;
+    }
+
     [RelayCommand]
     private async Task ClearHistoryAsync()
     {
@@ -227,4 +327,15 @@ public sealed class DnsServerRow
     public string Label { get; init; } = string.Empty;
     public string TimeText { get; init; } = string.Empty;
     public bool IsBest { get; init; }
+}
+
+public sealed class WifiNeighborRow
+{
+    public string Ssid { get; init; } = string.Empty;
+    public string Bssid { get; init; } = string.Empty;
+    public string SignalText { get; init; } = string.Empty;
+    public string Phy { get; init; } = string.Empty;
+    public string RateText { get; init; } = string.Empty;
+    public bool IsStrong { get; init; }
+    public bool IsWeak { get; init; }
 }

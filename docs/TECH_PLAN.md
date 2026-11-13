@@ -84,6 +84,9 @@ XAML 里不写转换器，视觉评审时只读 XAML 就能看懂。
 | 双栈 | 同一主机 IPv4/IPv6 各 5 次 TCP 握手，与首包分解并行 | 无 | ~0.5s | 无 IPv6 时标「仅 IPv4」 |
 | 逐跳 | 调用系统 `tracert -d -w 500` / `traceroute -n` 解析输出（M2 已实现） | 无（子进程） | 8–20s | 仅网关+目标两跳 |
 | Wi-Fi 信号/速率 | Windows `wlanapi.dll`（M1 已实现）；macOS `CoreWLAN`；Linux `iw`/`/proc/net/wireless` | 无 | <50ms | 仅报"无线/有线" |
+| Wi-Fi 邻区 | Windows `WlanGetNetworkBssList`（M3 已实现，只读） | 无 | 0.2–2s | 不暴露信道，不伪造信道建议 |
+| 游戏模式 | STUN binding ×6，UDP RTT/抖动/丢包 + NAT 映射启发式 | 无 | 1–8s | STUN 端点，不是实际游戏服务器 |
+| 会议模式 | 2MB 上行 + 8 次 TCP 握手，抖动/丢包 → 1080p/720p 判定 | 无 | 2–8s | 不是 WebRTC 编解码实测 |
 | MTU | `PingOptions.DontFragment` + 缓冲区二分（M2 已实现） | 无 | ~1s | 跳过 |
 | 网站延迟 | `ApplicationTimingProbe` ×11 站 ×3 次，并发 4，中位数 + HTTP 状态（M2 已实现） | 无 | 6–12s | 失败站保留原因；403/5xx 单独标记 |
 
@@ -257,7 +260,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | --- | --- | --- | --- |
 | ICMP | `Ping`（同步/异步） | 同 | 同（部分发行版需 `CAP_NET_RAW`→ 自动退 TCP） |
 | 无线信号 | `wlanapi.dll` | CoreWLAN（P/Invoke） | `iw` 或 `/proc/net/wireless` |
-| 邻区扫描 | `WlanGetNetworkBssList` | CoreWLAN scan | `iw scan`（需 root，则跳过） |
+| 邻区扫描 | ✅ `WlanGetNetworkBssList`（只读，无信道） | 待实现（CoreWLAN） | 待实现（`iw scan`，需 root） |
 | 逐跳 | `tracert` 子进程 | `traceroute` | `traceroute`/`tracepath` |
 | 改 DNS | `netsh interface ip set dns` | `networksetup -setdnsservers` | `nmcli con mod` |
 | 自定义标题栏 | `BorderOnly + NoChrome` | 同 | 同 |
@@ -274,7 +277,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 | 层级 | 手段 | 覆盖 |
 | --- | --- | --- |
-| 单元 | xUnit（`tests/AirNet.Core.Tests`，123 项） | `LatencyAnalyzer`、`DiagnosisEngine`、`TraceProbe.Parse`、`ReportBuilder`、`EgressProbe`、`DnsAdvisor`/`DnsProbe`/`DnsComparison`、`DualStack`、`Interference`、`HistoryDelta`、`ProbeJson`、`SiteCatalog`/`CustomSiteStore`/`SiteHistoryStore` |
+| 单元 | xUnit（`tests/AirNet.Core.Tests`，135 项） | `LatencyAnalyzer`、`DiagnosisEngine`、`TraceProbe.Parse`、`ReportBuilder`、`EgressProbe`、`DnsAdvisor`/`DnsProbe`/`DnsComparison`、`DualStack`、`Interference`、`HistoryDelta`、`ProbeJson`、`SiteCatalog`/`CustomSiteStore`/`SiteHistoryStore` |
 | 集成 | 本机 `--selftest` 模式（已实现） | 探针链路真实可用性，CI 上可跳过 |
 | 网络伪造 | `tc netem`（Linux）/ Clumsy（Windows）注入丢包抖动 | 归因是否正确 |
 | 视觉回归 | `--export` 截图 + 像素 diff | 深浅色 × 六页，防样式回退 |
@@ -288,7 +291,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | **M0 视觉原型** | 四页原型 + 设计系统 + 真实探针内核 + 样例数据 | 可运行 exe、8 张截图、本文档 | ✅ 已完成 |
 | **M1 测量内核** | TCP 计时抖动、Wi-Fi 信号、DNS/TCP/TLS/TTFB 分解、评分校准、历史落盘、裁剪+R2R 发布 | 抖动 2.6ms、四段分解条、历史落盘、40MB 发布包 | ✅ 已完成 |
 | **M2 诊断与优化** | 三段归因、逐跳、MTU、网站延迟（含自定义站点）、一键 DNS（含还原）、报告导出、CI | ✅ 已完成 | — |
-| **M3 场景与分发** | 游戏/会议模式、双栈、CLI、邻区扫描、Velopack 打包与签名 | 1.1 | 2 周 |
+| **M3 场景与分发** | 游戏/会议模式、双栈、CLI、邻区扫描已落地；Velopack 打包与签名、macOS/Linux arm64 真机验证仍待做 | 1.1 | 进行中 |
 
 ## 13. 风险
 
@@ -316,7 +319,9 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 设计系统 + 六页视觉 + 深浅色 | ✅ M0/M2 |
 | ICMP 丢包 / TCP 握手计时（亚毫秒抖动） | ✅ M1，本机实测 jitter 2.6ms |
 | 接口识别（虚拟网卡过滤 + 网关优先） | ✅ M1 |
-| Wi-Fi 信号 / 速率 / PHY（wlanapi P/Invoke） | ✅ 2026-11-12 真机验证：SSID / 信号质量 / 速率 / PHY 代际；dBm 仍为估算，邻区扫描未做 |
+| Wi-Fi 信号 / 速率 / PHY（wlanapi P/Invoke） | ✅ 2026-11-12 真机验证：SSID / 信号质量 / 速率 / PHY 代际；dBm 仍为估算 |
+| Wi-Fi 邻区扫描（Windows WLAN BSS） | ✅ 只读 SSID/BSSID/信号/PHY/速率；有线连接跳过；系统不提供信道 |
+| 游戏 / 会议模式 | ✅ UDP/STUN 深测与 2MB 上行、TCP 抖动/丢包；NAT 为映射启发式 |
 | DNS / TCP / TLS / TTFB 四段分解 | ✅ M1；**经系统代理时用 HTTP CONNECT 建隧道**，代理跳计入 TCP 段 |
 | 三段归因（局域网 / 运营商 / 对端） | ✅ M2，粗定位 + 逐跳定位两级 |
 | 逐跳路径（系统 traceroute + 本地化无关解析） | ✅ M2，实测 14 跳 / 17s；目标未响应时不判"对端" |
@@ -330,13 +335,13 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 跨平台便携包 | ✅ Windows / macOS（arm64+x64）/ Linux（x64+arm64）zip；Linux x64 已在真实环境启动验证；Linux arm64 与 macOS 尚未验证（macOS 未签名/未公证） |
 | 报告导出（自包含 HTML，可打印 PDF） | ✅ M2，7.8KB，零脚本 |
 | 一键 DNS + 还原（Windows 提权，UAC 可取消） | ✅ M2，实测命令生成与还原记录；**提权执行未自动化验证** |
-| 单元测试（xUnit，123 项） | ✅ M3，覆盖统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / JSON / 站点目录与 HTTP 状态 |
+| 单元测试（xUnit，135 项） | ✅ M3，覆盖统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / JSON / 邻区 / 模式 / 站点目录与 HTTP 状态 |
 | CI（构建 + 单元测试 + 探针/站点冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | 动效（扫描/测速/追踪扫描带 + 实时读数 + 落地过冲/高亮） | ✅ M2，样本真实回传，截图模式可关闭 |
 | 设置项持久化 + 60s 自动刷新 + 快捷键 | ✅ M2，写入 `settings.json`；Ctrl+R / Ctrl+1–6 / Ctrl+T / Esc |
 | 双栈（IPv4/IPv6 对照） | ✅ 同步测两条路，IPv6 偏慢时给 Warn 结论 |
 | 代理 / VPN 识别 | ✅ `HttpClient.DefaultProxy` + 隧道网卡枚举；区分「只影响 HTTP 探测」与「影响全部」 |
-| 邻区扫描、游戏/会议模式 | ⬜ M3 |
+| 邻区扫描、游戏/会议模式 | ✅ Windows 邻区只读扫描；游戏 UDP/STUN + NAT 启发式；会议上行/抖动/丢包 |
 
 > 原型以**确定性样例数据**启动（右上角标注"示例数据"），点"开始检测"即切换为真实测量并写入历史；
 > 首页的"最近检测"在历史非空时自动切换为"本机实测"。

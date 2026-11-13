@@ -80,6 +80,59 @@
           </Border>
 
           <Border Classes="card" Padding="18,16">
+            <StackPanel Spacing="9">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                  <Path Classes="icon small accent" Data="{StaticResource IconWifi}" Width="15" Height="15" VerticalAlignment="Center" />
+                  <TextBlock Text="Wi-Fi 邻区" Classes="h3" FontSize="13.5" VerticalAlignment="Center" />
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Classes="mini"
+                        Height="26"
+                        MinHeight="26"
+                        Padding="9,0"
+                        Content="扫描邻区"
+                        Command="{Binding ScanNeighborsCommand}"
+                        IsEnabled="{Binding !IsNeighborScanning}" />
+              </Grid>
+              <TextBlock Text="{Binding NeighborAdvice}"
+                         Classes="caption"
+                         FontSize="10"
+                         LineHeight="15"
+                         TextWrapping="Wrap" />
+              <TextBlock Text="{Binding NeighborStatusText}"
+                         Classes="micro"
+                         FontSize="9.5" />
+              <ItemsControl ItemsSource="{Binding NeighborRows}" IsVisible="{Binding HasNeighborRows}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:WifiNeighborRow">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,2">
+                      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="7">
+                        <Ellipse Classes="sevDot"
+                                 Classes.warn="{Binding IsWeak}"
+                                 VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Spacing="0">
+                          <TextBlock Text="{Binding Ssid}" FontSize="10.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                          <TextBlock Text="{Binding Bssid}" Classes="mono" FontSize="8" Foreground="{DynamicResource TextTertiaryBrush}" />
+                        </StackPanel>
+                      </Grid>
+                      <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="0">
+                        <TextBlock Text="{Binding SignalText}" Classes="mono" FontSize="9.5" TextAlignment="Right" />
+                        <TextBlock Text="{Binding RateText}" Classes="micro" FontSize="8" TextAlignment="Right" />
+                      </StackPanel>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Text="只读扫描，不修改路由器；Windows WLAN API 不提供信道，页面不编造信道建议。"
+                         Classes="micro"
+                         FontSize="8.5"
+                         LineHeight="13"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="18,16">
             <StackPanel Spacing="10">
               <TextBlock Text="快捷键" Classes="h3" FontSize="13.5" />
               <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="9">

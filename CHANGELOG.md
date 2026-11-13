@@ -3,6 +3,25 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
+## [0.2.6] - 2026-11-13
+
+### Added
+
+- Wi-Fi neighbor scan on Windows through `WlanGetNetworkBssList`: SSID, BSSID,
+  signal quality, PHY and negotiated rates. Read-only; wired machines skip it
+  explicitly instead of showing an empty failure.
+- Game mode: six STUN samples measure UDP RTT, jitter and loss and summarize NAT
+  mapping behavior. The result is a heuristic, not a full NAT type or a real game
+  server RTT.
+- Meeting mode: 2MB upload plus TCP-handshake jitter/loss, with a conservative
+  1080p / 720p / risk verdict.
+
+### Changed
+
+- Monitor's scenario card is now backed by an on-demand "模式深测" card; both modes
+  are separate from the 3-second scan and never run automatically.
+- Test suite: 135 tests (0.2.5 was 123).
+
 ## [0.2.5] - 2026-11-13
 
 ### Added
