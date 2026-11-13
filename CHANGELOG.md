@@ -3,6 +3,14 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
+## [Unreleased]
+
+### Fixed
+
+- The startup sample no longer fabricates bandwidth (previously 384.2/92.6 Mbps).
+  Until the user runs a speed test, the dashboard, speed page, report and history
+  consistently show "未测速" instead of a fixed number.
+
 ## [0.2.6] - 2026-11-13
 
 ### Added

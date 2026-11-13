@@ -73,7 +73,12 @@ public static class DemoSnapshotFactory
             CapturedAt: DateTimeOffset.Now);
     }
 
-    public static NetworkSnapshot CreateSnapshot(double downloadMbps = 384.2, double uploadMbps = 92.6)
+    /// <summary>
+    /// The sample snapshot deliberately has no bandwidth: startup has not run a speed test,
+    /// and a synthetic 384/92 Mbps number would be indistinguishable from a real measurement.
+    /// Callers that need a richer report can pass measured values explicitly.
+    /// </summary>
+    public static NetworkSnapshot CreateSnapshot(double downloadMbps = 0, double uploadMbps = 0)
     {
         var snapshot = DiagnosisEngine.Evaluate(CreateMeasurement(), downloadMbps, uploadMbps);
         return snapshot with { IsSample = true };

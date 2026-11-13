@@ -12,7 +12,7 @@ public sealed class HistoryStoreTests
         try
         {
             var store = new HistoryStore(directory);
-            await store.AppendAsync(DemoSnapshotFactory.CreateSnapshot());
+            await store.AppendAsync(DemoSnapshotFactory.CreateSnapshot(downloadMbps: 384.2, uploadMbps: 92.6));
 
             var records = await store.LoadAsync(5);
 

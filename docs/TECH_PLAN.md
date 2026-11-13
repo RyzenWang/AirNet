@@ -277,7 +277,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 | 层级 | 手段 | 覆盖 |
 | --- | --- | --- |
-| 单元 | xUnit（`tests/AirNet.Core.Tests`，135 项） | `LatencyAnalyzer`、`DiagnosisEngine`、`TraceProbe.Parse`、`ReportBuilder`、`EgressProbe`、`DnsAdvisor`/`DnsProbe`/`DnsComparison`、`DualStack`、`Interference`、`HistoryDelta`、`ProbeJson`、`SiteCatalog`/`CustomSiteStore`/`SiteHistoryStore` |
+| 单元 | xUnit（`tests/AirNet.Core.Tests`，137 项） | `LatencyAnalyzer`、`DiagnosisEngine`、`TraceProbe.Parse`、`ReportBuilder`、`EgressProbe`、`DnsAdvisor`/`DnsProbe`/`DnsComparison`、`DualStack`、`Interference`、`HistoryDelta`、`ProbeJson`、`SiteCatalog`/`CustomSiteStore`/`SiteHistoryStore` |
 | 集成 | 本机 `--selftest` 模式（已实现） | 探针链路真实可用性，CI 上可跳过 |
 | 网络伪造 | `tc netem`（Linux）/ Clumsy（Windows）注入丢包抖动 | 归因是否正确 |
 | 视觉回归 | `--export` 截图 + 像素 diff | 深浅色 × 六页，防样式回退 |
@@ -335,7 +335,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 跨平台便携包 | ✅ Windows / macOS（arm64+x64）/ Linux（x64+arm64）zip；Linux x64 已在真实环境启动验证；Linux arm64 与 macOS 尚未验证（macOS 未签名/未公证） |
 | 报告导出（自包含 HTML，可打印 PDF） | ✅ M2，7.8KB，零脚本 |
 | 一键 DNS + 还原（Windows 提权，UAC 可取消） | ✅ M2，实测命令生成与还原记录；**提权执行未自动化验证** |
-| 单元测试（xUnit，135 项） | ✅ M3，覆盖统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / JSON / 邻区 / 模式 / 站点目录与 HTTP 状态 |
+| 单元测试（xUnit，137 项） | ✅ M3，覆盖统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / JSON / 邻区 / 模式 / 站点目录与 HTTP 状态 |
 | CI（构建 + 单元测试 + 探针/站点冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | 动效（扫描/测速/追踪扫描带 + 实时读数 + 落地过冲/高亮） | ✅ M2，样本真实回传，截图模式可关闭 |
 | 设置项持久化 + 60s 自动刷新 + 快捷键 | ✅ M2，写入 `settings.json`；Ctrl+R / Ctrl+1–6 / Ctrl+T / Esc |
@@ -345,5 +345,5 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 > 原型以**确定性样例数据**启动（右上角标注"示例数据"），点"开始检测"即切换为真实测量并写入历史；
 > 首页的"最近检测"在历史非空时自动切换为"本机实测"。
-> 带宽只在用户点"开始测速"后才有值：未测速时快照、报告、历史都按"未测速"处理，不再继承样例的
-> 384.2 Mbps；在真实快照上测速会写一条历史记录，供"近 6 次"趋势使用。
+> 带宽只在用户点"开始测速"后才有值：样例快照也不预填带宽；未测速时快照、报告、历史都按"未测速"
+> 处理，不会出现固定 384.2 Mbps。在真实快照上测速会写一条历史记录，供"近 6 次"趋势使用。
