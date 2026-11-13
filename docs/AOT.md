@@ -1,7 +1,10 @@
-# Native AOT（实验）
+# Native AOT
 
-AirNet 的代码路径已能在 Windows x64 上做 Native AOT 发布；当前正式包仍使用
-`PublishSingleFile + PublishTrimmed + ReadyToRun`，AOT 是额外的实验产物，不是默认发行方式。
+Windows x64 正式发布包使用 Native AOT；macOS / Linux 仍使用
+`PublishSingleFile + PublishTrimmed + ReadyToRun`，等原生 runner 上的 AOT 验证完成后再切换。
+
+Windows 正式资产名：`AirNet-<version>-win-x64-aot.zip`。它不再与旧的
+`win-x64-portable.zip` 混用；旧 R2R 包只保留为本地回退和对照。
 
 ## 构建
 
@@ -39,6 +42,7 @@ PDB 在打包时移除。移动时必须移动整个文件夹，不能只拿 `Ai
 ## 限制
 
 - 只验证了 **Windows x64**；Linux 需要 clang/zlib，macOS 需要 Xcode 工具链，尚未实测。
+  这些平台的发布资产暂时继续使用 R2R。
 - AOT 没有 JIT，崩溃栈、动态加载和部分反射行为与普通版不同。
 - Native PDB 很大（约 83 MB），发布包已剥离；需要符号时单独归档。
-- 当前 AOT 包是实验产物，未打 tag、未进入正式 Release。
+- 本次只切换了构建/打包路径，没有创建新 tag 或 Release；发版前仍需确认版本号和发布说明。

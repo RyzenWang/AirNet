@@ -1,8 +1,10 @@
-﻿# Builds every portable release asset: Windows x64 plus macOS/Linux x64 and arm64.
+# Builds every release asset: Windows x64 Native AOT plus macOS/Linux x64 and arm64.
 # No setup/installer package is produced by this repository.
 #
 #   pwsh packaging/pack-all.ps1
 #
+# Windows is the official AOT asset. macOS/Linux remain single-file R2R until
+# Native AOT is validated on native runners and their toolchains.
 # Output: artifacts/packages/AirNet-<version>-*.zip
 
 param(
@@ -13,7 +15,7 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 
 if (-not $SkipWindows) {
-    & (Join-Path $PSScriptRoot "pack-portable.ps1") -Runtime "win-x64"
+    & (Join-Path $PSScriptRoot "pack-aot.ps1") -Runtime "win-x64"
 }
 
 & (Join-Path $PSScriptRoot "pack-cross.ps1")

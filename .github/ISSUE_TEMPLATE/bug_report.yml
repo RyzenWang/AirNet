@@ -14,7 +14,7 @@ body:
     attributes:
       label: AirNet version
       description: The release tag or portable asset name.
-      placeholder: v0.2.1 / AirNet-0.2.1-win-x64-portable.zip
+      placeholder: v0.2.6 / AirNet-0.2.6-win-x64-aot.zip
     validations:
       required: true
   - type: dropdown

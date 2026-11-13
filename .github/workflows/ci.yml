@@ -151,7 +151,7 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      # Windows keeps R2R; the macOS/Linux cross builds use ReadyToRun=false.
+      # Windows is the official Native AOT asset; macOS/Linux cross builds stay R2R.
       - name: Build all portable zips
         shell: pwsh
         run: ./packaging/pack-all.ps1

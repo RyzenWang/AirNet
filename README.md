@@ -2,7 +2,7 @@
 
 **轻量、快速的网络检测与优化工具** —— 点一下，三秒告诉你网络好不好、问题在路由器还是运营商。
 
-基于 .NET 10 + Avalonia 11.3，沿用 AirPDF 的"纸张"设计语言与单文件发布方式。
+基于 .NET 10 + Avalonia 11.3，沿用 AirPDF 的"纸张"设计语言；Windows 使用 Native AOT，macOS/Linux 使用单文件发布。
 
 [![CI](https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml/badge.svg)](https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/RyzenWang/AirNet?display_name=tag)](https://github.com/RyzenWang/AirNet/releases/latest)
@@ -23,11 +23,11 @@
 **M3 主要能力已落地**：六页界面、评分与诊断、真实探测（含亚毫秒抖动）、三段归因、逐跳路径、
 MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈、代理/VPN 识别、DNS 三方对比、
 `--probe --json`、历史差值、Wi-Fi 邻区扫描、游戏/会议模式、报告导出、一键 DNS（含还原）、
-设置持久化、快捷键、裁剪单文件发布、CI 都已跑通。
+设置持久化、快捷键、Windows Native AOT / macOS/Linux 单文件发布、CI 都已跑通。
 
 | 部分 | 状态 |
 | --- | --- |
-| 平台支持 | Windows x64 ✅ 本机验证；Linux x64 ✅ 真实环境启动验证；Linux arm64 / macOS arm64+x64 🟡 已构建，未真机验证 |
+| 平台支持 | Windows x64 ✅ Native AOT 正式包；Linux x64 ✅ 真实环境启动验证（R2R）；Linux arm64 / macOS arm64+x64 🟡 已构建，未真机验证 |
 | 视觉系统（六页 × 深浅色） | ✅ M0/M2 |
 | 真实探测：ICMP 丢包 / TCP 计时 / DNS·TCP·TLS·TTFB | ✅ M1 |
 | 亚毫秒抖动（`Stopwatch` 计时 TCP 握手） | ✅ 本机实测 2.6ms（原先恒为 0） |
@@ -44,7 +44,8 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **一键 DNS + 还原**（Windows 提权） | ✅ M2 命令先展示，还原记录落盘 |
 | **单元测试**（xUnit） | ✅ 137 项：统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / 邻区 / 模式 / 站点目录与 HTTP 状态 |
 | **设置**（持久化 / 自动刷新 / 键盘快捷键） | ✅ M2，写入 `settings.json`；60s 自动刷新仅在窗口可见时执行 |
-| 裁剪 + R2R 单文件发布 | ✅ 26.9MB zip / 41.1MB 解压 / 1.6–1.9s / ~176MB（本机 2026-11 复测） |
+| Windows 正式发布 | ✅ Native AOT：16.24MB zip / 411ms 启动 / 118.9MB 内存；非单文件，需保留同目录原生 DLL |
+| macOS / Linux 发布 | ✅ 裁剪 + R2R 单文件；Linux x64 已验证，arm64/macOS 待真机 |
 | CI（构建 + 单元测试 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | **动效**（扫描/测速/追踪扫描带、实时读数、环/条填充、数字滚动、曲线扫入、页面淡入） | ✅ M2，截图模式可关闭 |
 | **IPv4/IPv6 双栈** | ✅ 同一主机两条路各 5 次握手，给出「均衡 / IPv6 更快 / IPv6 偏慢」，偏慢时进诊断 |
@@ -81,17 +82,21 @@ dotnet run --project src/AirNet.App -- --scan-shot scan.png      # 抓一张"检
 dotnet test tests/AirNet.Core.Tests/AirNet.Core.Tests.csproj     # 纯逻辑单元测试
 
 powershell -File packaging/publish.ps1                           # 裁剪单文件发布 + 实测启动/内存
-powershell -File packaging/pack-portable.ps1                     # Windows 免安装便携包
-powershell -File packaging/pack-all.ps1                          # Windows + macOS + Linux 全部便携包
+powershell -File packaging/pack-aot.ps1                           # Windows Native AOT 正式包
+powershell -File packaging/pack-portable.ps1                     # Windows R2R 回退/对照包
+powershell -File packaging/pack-all.ps1                          # Windows AOT + macOS/Linux R2R 全部资产
 ```
 
 本地验证和 Release 只出**免安装便携包**，不含 setup/安装器：
 
 | 平台 | 文件 |
 | --- | --- |
-| Windows x64 | `AirNet-<version>-win-x64-portable.zip`，解压双击 `AirNet.exe` |
+| Windows x64 | `AirNet-<version>-win-x64-aot.zip`，解压双击 `AirNet.exe`；需保留同目录原生 DLL |
 | macOS Apple Silicon / Intel | `AirNet-<version>-macos-arm64.zip` / `-macos-x64.zip`，解压得到 `AirNet.app` |
 | Linux x64 / arm64 | `AirNet-<version>-linux-x64.zip` / `-linux-arm64.zip`（以及同名 `.tar.gz`）；直接 `bash run.sh`（zip/tar 都适用） |
+
+> 当前最新 Release `v0.2.6` 的 Windows 资产仍是 R2R；下一次 tag 起 Windows 改为 AOT。
+
 
 Linux x64 已在真实 Linux 环境启动验证；需要 X11 或 Wayland（XWayland）及常见桌面库。macOS 包未签名/未公证，暂未在真机验证；Linux arm64 也待验证。CI 在 tag 上会把全部便携 zip/tar.gz 挂到对应 Release，不构建 setup。
 
@@ -129,12 +134,12 @@ src/AirNet.App/          Avalonia 应用
   Services/              SettingsStore（settings.json）
 packaging/publish.ps1    裁剪 + R2R 发布，并打印体积/启动/内存
 packaging/pack-all.ps1   Windows / macOS / Linux 便携 zip（无 setup）
-packaging/pack-aot.ps1   实验 Native AOT 包（Windows x64，非单文件）
+packaging/pack-aot.ps1   Windows x64 正式 Native AOT 包（非单文件）
 tests/AirNet.Core.Tests/  xUnit：统计、分档、traceroute 解析、掩码、历史、站点目录/自定义站点
 docs/
   DESIGN.md              视觉规范：色板、字号、组件、图表、动效、无障碍
   TECH_PLAN.md           技术方案：架构、探针、评分与归因、性能预算、里程碑
-  AOT.md                 实验 Native AOT：构建、体积/启动/内存与限制
+  AOT.md                 Windows Native AOT：构建、体积/启动/内存与限制
   FEATURES.md            功能清单（P0/P1/P2 + 验收口径）
   WEBSITE_LATENCY.md     网站延迟：功能、交互、视觉与实现方案
   design/                评审用视觉/动效稿（不随应用发布）
@@ -172,8 +177,8 @@ docs/
 - **游戏/会议模式是独立深测**：游戏模式向公共 STUN 端点发 UDP，NAT 结论是映射行为启发式，
   不等于完整 NAT 类型，也不是实际游戏服务器 RTT；会议模式用 Cloudflare 上行 + TCP 抖动/丢包，
   不是 WebRTC 编解码实测。两者都不进入 3 秒主扫描。
-- **Release 体积已回落**：清理 publish 目录后 2026-11 复测为 26.9MB zip / 41.1MB 解压 /
-  1.6–1.9s / ~176MB；体积与内存已接近预算，启动仍略高于 1.4s。
+- **Windows 正式包改用 Native AOT**：本机复测 16.24MB zip / 411ms 启动 / 118.9MB 内存；
+  代价是不能再打成单文件，必须保留同目录原生 DLL。macOS/Linux 仍为 R2R 单文件，AOT 待原生 runner 验证。
 - **出口 IP 是 best-effort**：Cloudflare / 3322 任一端点可用即可；被网络拦截时显示"未获取"，
   不阻塞扫描，也不参与评分。
 - **逐跳归因以"最后一跳是否等于目标"判断到达**：目标不回 TTL 探测时标注"目标未响应"，

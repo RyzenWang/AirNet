@@ -5,6 +5,12 @@ project uses semantic versioning for release tags.
 
 ## [Unreleased]
 
+### Changed
+
+- Windows x64 release builds now use Native AOT (`AirNet-<version>-win-x64-aot.zip`).
+  macOS/Linux stay on the existing R2R single-file build until AOT is validated on
+  native runners with their toolchains.
+
 ### Fixed
 
 - The startup sample no longer fabricates bandwidth (previously 384.2/92.6 Mbps).

@@ -1,4 +1,4 @@
-﻿# Builds the experimental Native AOT portable package.
+﻿# Builds the official Windows Native AOT portable package.
 #
 #   powershell -ExecutionPolicy Bypass -File packaging/pack-aot.ps1
 #
@@ -9,7 +9,7 @@
 # native PDB is much larger than the executable and is not needed by end users.
 #
 # Cross-platform AOT is not validated yet: Linux needs clang/zlib and macOS needs the
-# Xcode toolchain. The -Runtime parameter is present so those hosts can be tried later.
+# Xcode toolchain. Those platforms stay on the existing R2R build for now.
 
 param(
     [string]$Runtime = "win-x64",
@@ -63,7 +63,7 @@ $readmeLines = @(
     "  1. 解压到任意目录（不要在压缩包里直接运行）",
     "  2. 双击 AirNet.exe",
     "",
-    "这是 Native AOT 实验包，不是单文件：",
+    "这是 Windows 正式 Native AOT 包，不是单文件：",
     "  AirNet.exe 旁边必须保留 libSkiaSharp.dll、av_libglesv2.dll、",
     "  libHarfBuzzSharp.dll；移动时请移动整个文件夹。",
     "",

@@ -242,15 +242,15 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 ## 8. 性能预算与手段
 
-| 指标 | 预算 | 本机 2026-11 复测（Release，trim + R2R，便携版） | 手段 / 备注 |
+| 指标 | 预算 | 本机 2026-11 复测（Windows Native AOT；macOS/Linux R2R） | 手段 / 备注 |
 | --- | --- | --- | --- |
-| 解压体积 | ≤ 45MB | **41.1MB**（exe 25.3 + Skia 9.0 + ANGLE 5.2 + HarfBuzz 1.7）；压缩后 26.9MB | `PublishSingleFile` + `TrimMode=partial`；**达标**（清理 publish 目录后复测） |
-| 冷启动 | ≤ 1400ms | **1.6–1.9s** 到窗口可见（单次复测） | R2R 已开；**未达预算**，待查启动路径 |
-| 运行内存 | ≤ 180MB | **~176MB** 工作集 | 图表只保留 60 点、不缓存位图；**达标** |
-| 安装包 | ≤ 25MB | Windows zip **26.9MB**（略超）；macOS **17.8/18.2MB**、Linux **14.5/15.1MB**（均含说明） | `packaging/pack-all.ps1`；只出便携 zip，不做 setup |
+| 解压体积 | ≤ 45MB | Windows AOT **41.6MB**（exe 25.7 + Skia 9.0 + ANGLE 5.2 + HarfBuzz 1.7）；压缩后 **16.24MB** | `PublishAot=true` + `PublishSingleFile=false`；**达标** |
+| 冷启动 | ≤ 1400ms | Windows AOT **411ms** 到窗口可见 | AOT 原生镜像；**达标** |
+| 运行内存 | ≤ 180MB | Windows AOT **118.9MB** 工作集 | AOT + 60 点图表，不缓存位图；**达标** |
+| 安装包 | ≤ 25MB | Windows AOT zip **16.24MB**；macOS **17.8/18.2MB**、Linux **14.5/15.1MB**（均含说明） | `packaging/pack-all.ps1`；只出便携 zip，不做 setup |
 | 扫描 CPU | < 3% | 未测 | ICMP 90ms / TCP 70ms 间隔；UI 250ms 合并刷新 |
 
-> 结论：清理 publish 目录后，2026-11 复测为 26.9MB zip / 41.1MB 解压 / 1.6–1.9s / ~176MB；
+> 结论：Windows AOT 为 16.24MB zip / 41.6MB 解压 / 411ms / 118.9MB；
 > 体积和内存已回到预算内，启动仍略高于 1.4s。此前 52.2MB / 217MB 的记录包含增量发布残留，
 > 已通过 `publish.ps1` 的清理步骤修正。复现：`powershell -File packaging/pack-all.ps1`。
 
@@ -264,7 +264,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 逐跳 | `tracert` 子进程 | `traceroute` | `traceroute`/`tracepath` |
 | 改 DNS | `netsh interface ip set dns` | `networksetup -setdnsservers` | `nmcli con mod` |
 | 自定义标题栏 | `BorderOnly + NoChrome` | 同 | 同 |
-| 便携包 | `win-x64-portable.zip` | `macos-arm64/x64.zip`（`.app`） | `linux-x64/arm64.zip` |
+| 便携包 | `win-x64-aot.zip` | `macos-arm64/x64.zip`（`.app`） | `linux-x64/arm64.zip` |
 
 ## 10. 权限、隐私与安全
 
@@ -331,7 +331,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | 出口 IP（Cloudflare / 3322，best-effort） | ✅ M2，被拦截时显示"未获取" |
 | 带宽测速（单流，上下行） | ✅ 下行 4s 时间预算 + 上行 4MB 流式，任一向失败显"未测出" |
 | 网站延迟（11 默认 + 最多 8 自定义） | ✅ M2，四段分解/3 次中位数/HTTP 状态；自定义落 `sites.json`，历史落 `sites.jsonl`，`--sites` 可无 UI 烟测 |
-| 裁剪 + R2R 单文件发布 | ✅ M1；本机 2026-11 复测 26.9MB zip / 41.1MB 解压 / 1.6–1.9s / ~176MB |
+| Windows Native AOT 发布 | ✅ 本机 2026-11 复测 16.24MB zip / 41.6MB 解压 / 411ms / 118.9MB；macOS/Linux 仍为 R2R |
 | 跨平台便携包 | ✅ Windows / macOS（arm64+x64）/ Linux（x64+arm64）zip；Linux x64 已在真实环境启动验证；Linux arm64 与 macOS 尚未验证（macOS 未签名/未公证） |
 | 报告导出（自包含 HTML，可打印 PDF） | ✅ M2，7.8KB，零脚本 |
 | 一键 DNS + 还原（Windows 提权，UAC 可取消） | ✅ M2，实测命令生成与还原记录；**提权执行未自动化验证** |
