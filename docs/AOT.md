@@ -1,22 +1,36 @@
 # Native AOT
 
-Windows x64 正式发布包使用 Native AOT；macOS / Linux 仍使用
-`PublishSingleFile + PublishTrimmed + ReadyToRun`，等原生 runner 上的 AOT 验证完成后再切换。
+正式发布包全部使用 Native AOT，由 GitHub Actions 的原生 runner 分别构建：
 
-Windows 正式资产名：`AirNet-<version>-win-x64-aot.zip`。它不再与旧的
-`win-x64-portable.zip` 混用；旧 R2R 包只保留为本地回退和对照。
+| 资产 | Runner | 工具链 |
+| --- | --- | --- |
+| Windows x64 | `windows-latest` | MSVC / VS Build Tools |
+| Linux x64 | `ubuntu-latest` | clang + zlib |
+| Linux arm64 | `ubuntu-24.04-arm` | clang + zlib |
+| macOS x64 | `macos-15-intel` | Xcode |
+| macOS arm64 | `macos-15` | Xcode |
+
+资产名统一带 `-aot` 后缀，例如 `AirNet-<version>-win-x64-aot.zip`、
+`AirNet-<version>-linux-x64-aot.tar.gz`。旧 R2R 单文件包只保留为本地回退/对照。
+
+Windows 的 AOT 构建和运行已验证；macOS/Linux 的 AOT 构建需要等 CI 原生 runner 结果。
 
 ## 构建
 
-在 Windows 上需要 .NET 10 SDK 和 MSVC linker / Visual Studio Build Tools：
+Windows：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File packaging/pack-aot.ps1
 ```
 
-输出：`artifacts/packages/AirNet-<version>-win-x64-aot.zip`
+Linux / macOS（在目标 OS 上）：
 
-AOT 不能用 `PublishSingleFile`，包内是：
+```bash
+pwsh packaging/pack-cross.ps1 -Runtimes linux-x64 -Aot
+pwsh packaging/pack-cross.ps1 -Runtimes osx-arm64 -Aot
+```
+
+AOT 不能用 `PublishSingleFile`，Windows 包内是：
 
 - `AirNet.exe`
 - `libSkiaSharp.dll`
@@ -25,6 +39,7 @@ AOT 不能用 `PublishSingleFile`，包内是：
 - `使用说明.txt`
 
 PDB 在打包时移除。移动时必须移动整个文件夹，不能只拿 `AirNet.exe`。
+macOS 仍然是 `AirNet.app`，Linux 仍然是 `AirNet/` + `run.sh`。
 
 ## 2026-11-13 本机验证（Windows x64）
 
@@ -41,8 +56,7 @@ PDB 在打包时移除。移动时必须移动整个文件夹，不能只拿 `Ai
 
 ## 限制
 
-- 只验证了 **Windows x64**；Linux 需要 clang/zlib，macOS 需要 Xcode 工具链，尚未实测。
-  这些平台的发布资产暂时继续使用 R2R。
+- Windows x64 已本机验证；Linux/macOS 的 AOT 构建与运行仍待 CI 原生 runner 结果。
 - AOT 没有 JIT，崩溃栈、动态加载和部分反射行为与普通版不同。
 - Native PDB 很大（约 83 MB），发布包已剥离；需要符号时单独归档。
 - 本次只切换了构建/打包路径，没有创建新 tag 或 Release；发版前仍需确认版本号和发布说明。

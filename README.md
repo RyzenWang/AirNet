@@ -45,7 +45,7 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **单元测试**（xUnit） | ✅ 137 项：统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / 邻区 / 模式 / 站点目录与 HTTP 状态 |
 | **设置**（持久化 / 自动刷新 / 键盘快捷键） | ✅ M2，写入 `settings.json`；60s 自动刷新仅在窗口可见时执行 |
 | Windows 正式发布 | ✅ Native AOT：16.24MB zip / 411ms 启动 / 118.9MB 内存；非单文件，需保留同目录原生 DLL |
-| macOS / Linux 发布 | ✅ 裁剪 + R2R 单文件；Linux x64 已验证，arm64/macOS 待真机 |
+| macOS / Linux 发布 | 🟡 已切换到 AOT 构建矩阵；Linux x64/arm64 与 macOS x64/arm64 待 CI 原生 runner 验证 |
 | CI（构建 + 单元测试 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | **动效**（扫描/测速/追踪扫描带、实时读数、环/条填充、数字滚动、曲线扫入、页面淡入） | ✅ M2，截图模式可关闭 |
 | **IPv4/IPv6 双栈** | ✅ 同一主机两条路各 5 次握手，给出「均衡 / IPv6 更快 / IPv6 偏慢」，偏慢时进诊断 |
@@ -92,10 +92,10 @@ powershell -File packaging/pack-all.ps1                          # Windows AOT +
 | 平台 | 文件 |
 | --- | --- |
 | Windows x64 | `AirNet-<version>-win-x64-aot.zip`，解压双击 `AirNet.exe`；需保留同目录原生 DLL |
-| macOS Apple Silicon / Intel | `AirNet-<version>-macos-arm64.zip` / `-macos-x64.zip`，解压得到 `AirNet.app` |
-| Linux x64 / arm64 | `AirNet-<version>-linux-x64.zip` / `-linux-arm64.zip`（以及同名 `.tar.gz`）；直接 `bash run.sh`（zip/tar 都适用） |
+| macOS Apple Silicon / Intel | `AirNet-<version>-macos-arm64-aot.zip` / `-macos-x64-aot.zip`，解压得到 `AirNet.app` |
+| Linux x64 / arm64 | `AirNet-<version>-linux-x64-aot.zip` / `-linux-arm64-aot.zip`（以及同名 `.tar.gz`）；直接 `bash run.sh` |
 
-> 当前最新 Release `v0.2.6` 的 Windows 资产仍是 R2R；下一次 tag 起 Windows 改为 AOT。
+> 当前最新 Release `v0.2.6` 仍是 R2R；下一次 tag 起 Windows/macOS/Linux 全部改走 AOT。
 
 
 Linux x64 已在真实 Linux 环境启动验证；需要 X11 或 Wayland（XWayland）及常见桌面库。macOS 包未签名/未公证，暂未在真机验证；Linux arm64 也待验证。CI 在 tag 上会把全部便携 zip/tar.gz 挂到对应 Release，不构建 setup。

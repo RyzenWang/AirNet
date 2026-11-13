@@ -1,13 +1,18 @@
-﻿# Publishes AirNet as a trimmed, ReadyToRun, single-file Windows build and reports
-# the numbers the README claims. Run from the repo root:
+# Publishes AirNet as a trimmed, ReadyToRun, single-file build by default, or as
+# Native AOT with -Aot. Run from the repo root:
 #
 #   pwsh packaging/publish.ps1                 # win-x64, R2R
 #   pwsh packaging/publish.ps1 -Runtime linux-x64
 #   pwsh packaging/publish.ps1 -NoReadyToRun   # smaller, but cold start roughly doubles
+#   pwsh packaging/publish.ps1 -Aot -Runtime linux-x64
+#
+# Native AOT requires the native toolchain for the target OS and cannot be
+# combined with PublishSingleFile. Cross-OS AOT builds must run on the target OS.
 
 param(
     [string]$Runtime = "win-x64",
     [switch]$NoReadyToRun,
+    [switch]$Aot,
     [string]$Output = ""
 )
 
@@ -22,19 +27,40 @@ $r2r = if ($NoReadyToRun) { "false" } else { "true" }
 # An incremental publish can leave native libraries behind between RID switches.
 # Start clean and keep them external so every archive has the same layout.
 Remove-Item -Recurse -Force $Output -ErrorAction SilentlyContinue
-Write-Host "publishing $Runtime (ReadyToRun=$r2r) -> $Output" -ForegroundColor Cyan
-dotnet publish (Join-Path $root "src/AirNet.App/AirNet.App.csproj") `
-    -c Release `
-    -r $Runtime `
-    --self-contained true `
-    -p:PublishSingleFile=true `
-    -p:PublishTrimmed=true `
-    -p:TrimMode=partial `
-    -p:PublishReadyToRun=$r2r `
-    -p:EnableCompressionInSingleFile=true `
-    -p:IncludeNativeLibrariesForSelfExtract=false `
-    -o $Output `
-    --nologo
+$mode = if ($Aot) { "Native AOT" } else { "R2R=$r2r" }
+Write-Host "publishing $Runtime ($mode) -> $Output" -ForegroundColor Cyan
+
+$publishArgs = @(
+    "publish",
+    (Join-Path $root "src/AirNet.App/AirNet.App.csproj"),
+    "-c", "Release",
+    "-r", $Runtime,
+    "--self-contained", "true",
+    "-p:PublishTrimmed=true",
+    "-o", $Output,
+    "--nologo"
+)
+if ($Aot) {
+    $publishArgs += @(
+        "-p:PublishAot=true",
+        "-p:PublishSingleFile=false",
+        "-p:PublishReadyToRun=false"
+    )
+}
+else {
+    $publishArgs += @(
+        "-p:PublishSingleFile=true",
+        "-p:TrimMode=partial",
+        "-p:PublishReadyToRun=$r2r",
+        "-p:EnableCompressionInSingleFile=true",
+        "-p:IncludeNativeLibrariesForSelfExtract=false"
+    )
+}
+
+& dotnet @publishArgs
+if ($LASTEXITCODE -ne 0) {
+    throw "dotnet publish failed with exit code $LASTEXITCODE"
+}
 
 $files = Get-ChildItem $Output -File
 # Symbols are stripped from the shipping folder; keep them in artifacts if a crash needs a stack.

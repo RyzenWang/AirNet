@@ -7,9 +7,9 @@ project uses semantic versioning for release tags.
 
 ### Changed
 
-- Windows x64 release builds now use Native AOT (`AirNet-<version>-win-x64-aot.zip`).
-  macOS/Linux stay on the existing R2R single-file build until AOT is validated on
-  native runners with their toolchains.
+- Windows, macOS and Linux release builds now use Native AOT through a native-runner
+  matrix (`win-x64`, `linux-x64`, `linux-arm64`, `osx-x64`, `osx-arm64`). Assets carry
+  an `-aot` suffix. The R2R single-file build remains available as a local fallback.
 
 ### Fixed
 

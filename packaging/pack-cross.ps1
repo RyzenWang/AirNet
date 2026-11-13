@@ -1,8 +1,9 @@
-﻿# Builds portable macOS and Linux assets from the same source as the Windows zip.
-# Cross-publishing works from Windows because every runtime pack is self-contained.
+# Builds portable macOS and Linux assets. With -Aot the build must run on the
+# target OS because Native AOT needs that platform's native toolchain.
 #
 #   pwsh packaging/pack-cross.ps1
-#   pwsh packaging/pack-cross.ps1 -Runtimes linux-x64,osx-arm64
+#   pwsh packaging/pack-cross.ps1 -Runtimes linux-x64 -Aot
+#   pwsh packaging/pack-cross.ps1 -Runtimes osx-arm64 -Aot
 #
 # Output (root of each archive):
 #   macOS: AirNet.app
@@ -13,6 +14,7 @@
 
 param(
     [string[]]$Runtimes = @("linux-x64", "linux-arm64", "osx-x64", "osx-arm64"),
+    [switch]$Aot,
     [string]$Output = ""
 )
 
@@ -70,8 +72,10 @@ function New-PortableZip {
     }
 }
 
+$buildMode = if ($Aot) { "Native AOT" } else { "R2R 单文件" }
 $macReadme = @(
     "AirNet $version · macOS 免安装版",
+    "构建：$buildMode",
     "====================================",
     "",
     "用法",
@@ -94,6 +98,7 @@ $macReadme = @(
 
 $linuxReadme = @(
     "AirNet $version · Linux 免安装版",
+    "构建：$buildMode",
     "====================================",
     "",
     "用法",
@@ -126,11 +131,20 @@ foreach ($runtime in $Runtimes) {
 
     $publishDir = Join-Path $root "artifacts/publish/$runtime"
     $stageRoot = Join-Path $root "artifacts/stage-cross/$runtime"
+    $suffix = if ($Aot) { "-aot" } else { "" }
     Remove-Item -Recurse -Force $stageRoot -ErrorAction SilentlyContinue
     New-Item -ItemType Directory -Force $stageRoot | Out-Null
 
-    Write-Host "publishing $runtime" -ForegroundColor Cyan
-    & (Join-Path $PSScriptRoot "publish.ps1") -Runtime $runtime -NoReadyToRun -Output $publishDir
+    Write-Host "publishing $runtime $(if ($Aot) { '(Native AOT)' } else { '(R2R)' })" -ForegroundColor Cyan
+    $publishArgs = @{
+        Runtime = $runtime
+        Output = $publishDir
+        Aot = $Aot
+    }
+    if (-not $Aot) {
+        $publishArgs["NoReadyToRun"] = $true
+    }
+    & (Join-Path $PSScriptRoot "publish.ps1") @publishArgs
 
     if ($isMacRuntime) {
         $app = Join-Path $stageRoot "AirNet.app"
@@ -167,7 +181,7 @@ foreach ($runtime in $Runtimes) {
         Set-Content -Path (Join-Path $app "Contents/Info.plist") -Value $plist -Encoding utf8
         Set-Content -Path (Join-Path $app "Contents/Resources/使用说明.txt") -Value $macReadme -Encoding utf8
 
-        $asset = Join-Path $Output "AirNet-$version-macos-$($runtime.Substring(4)).zip"
+        $asset = Join-Path $Output "AirNet-$version-macos-$($runtime.Substring(4))$suffix.zip"
         New-PortableZip -Stage $stageRoot -ZipPath $asset -ExecutableRelativePath "AirNet.app/Contents/MacOS/AirNet"
     }
     else {
@@ -200,9 +214,9 @@ exec ./AirNet "$@"
             $runScript.Replace("`r`n", "`n"),
             (New-Object System.Text.UTF8Encoding($false)))
 
-        $asset = Join-Path $Output "AirNet-$version-linux-$($runtime.Substring(6)).zip"
+        $asset = Join-Path $Output "AirNet-$version-linux-$($runtime.Substring(6))$suffix.zip"
         New-PortableZip -Stage $stageRoot -ZipPath $asset -ExecutableRelativePath "AirNet/AirNet"
-        $tarAsset = Join-Path $Output "AirNet-$version-linux-$($runtime.Substring(6)).tar.gz"
+        $tarAsset = Join-Path $Output "AirNet-$version-linux-$($runtime.Substring(6))$suffix.tar.gz"
         Remove-Item $tarAsset -Force -ErrorAction SilentlyContinue
         & tar -czf $tarAsset -C $stageRoot "AirNet"
         if ($LASTEXITCODE -ne 0) {
