@@ -3,22 +3,31 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
-## [Unreleased]
+## [0.2.8] - 2026-11-13
+
+### Added
+
+- History trend page: 7/30-day latency and score curves, local time-of-day buckets and
+  recent runs. The evening bucket states its own conclusion ("晚间平均 36.3 ms，高于整体
+  25.6 ms") instead of leaving the reader to eyeball the chart.
+- Share card: a 1080 × 1350 PNG generated from the current snapshot, with a preview
+  window and a file picker; the tray menu exposes the same action.
+- The manual "开始检测" now includes a download/upload bandwidth pass after the latency
+  probes; the 60-second automatic refresh deliberately skips the upload.
 
 ### Fixed
 
 - Normal startup now begins in an explicit pending state instead of showing sample score,
   latency, path or bandwidth values. Starting a scan clears the previous view and fills
   the live/real values; cancel restores the last real view.
-
-### Added
-
-- The manual "开始检测" now includes a download/upload bandwidth pass after the latency
-  probes; the 60-second automatic refresh deliberately skips the upload.
-- History trend page: 7/30-day latency and score curves, local time-of-day buckets and
-  recent runs.
-- Share card: a 1080 × 1350 PNG generated from the current snapshot, with a preview
-  window and file picker.
+- The trend page had no screenshot worth linking: the export pipeline ran against an
+  empty data directory, so every capture documented the empty state. `--export` now
+  seeds a deterministic week into its throwaway directory, which makes the charts, the
+  time-of-day buckets and the recent-runs list visible in the docs without touching the
+  user's own history.
+  +
+  Added six tests around the sample week: record count, ordering, determinism, the
+  deliberately bad evenings, score-follows-latency, and the JSONL shape (148 total).
 
 ## [0.2.7] - 2026-11-13
 

@@ -29,6 +29,23 @@ public partial class App : Application
 
                 // Static captures: no counting numbers, no sweeping charts, no fading pages.
                 Features.Motion.Enabled = false;
+
+                // The trend page needs a populated week, otherwise its screenshots document an
+                // empty state. This writes into the throwaway directory set above, so the user's
+                // own history is never touched.
+                try
+                {
+                    Core.Demo.SampleHistory
+                        .WriteAsync(
+                            Path.Combine(Path.GetTempPath(), "airnet-export-data"),
+                            DateTimeOffset.Now)
+                        .GetAwaiter()
+                        .GetResult();
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Screenshots are best effort; an unwritable temp dir must not block them.
+                }
             }
 
             // Headless measurement run, used to verify the probe stack without a window.
