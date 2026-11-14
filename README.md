@@ -1,21 +1,53 @@
-# AirNet
+<p align="center">
+  <img src="docs/shots/01-overview-light.png" alt="AirNet 总览：一句话结论、最近检测的评分变化" width="860" />
+</p>
 
-**轻量、快速的网络检测与优化工具** —— 点一下，一次告诉你网络好不好、带宽够不够、问题在路由器还是运营商。
+<h1 align="center">AirNet</h1>
 
-基于 .NET 10 + Avalonia 11.3 的轻量网络诊断工具；Windows/macOS/Linux 正式包均使用 Native AOT。
+<p align="center">
+  轻量、快速的网络检测与优化工具 —— 点一下，一次告诉你网络好不好、带宽够不够、问题在路由器还是运营商。
+</p>
 
-[![CI](https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml/badge.svg)](https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/RyzenWang/AirNet?display_name=tag)](https://github.com/RyzenWang/AirNet/releases/latest)
-[![Microsoft Store](https://img.shields.io/badge/Microsoft%20Store-AirNet-E3563B?logo=microsoft)](https://apps.microsoft.com/detail/9NH3RQW622BK)
-[![License: MIT](https://img.shields.io/badge/license-MIT-2E6F63.svg)](LICENSE)
+<p align="center">
+  <a href="https://apps.microsoft.com/detail/9NH3RQW622BK"><strong>Microsoft Store</strong></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/RyzenWang/AirNet/releases/latest">最新版本</a>
+  &nbsp;·&nbsp;
+  <a href="https://ryzenwang.github.io/AirNet/">文档</a>
+</p>
 
-![总览（浅色）](docs/shots/01-overview-light.png)
+<p align="center">
+  <a href="https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml">
+    <img alt="CI" src="https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml/badge.svg" />
+  </a>
+  <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?style=flat-square" />
+  <img alt="Avalonia 11" src="https://img.shields.io/badge/Avalonia-11.3-8B44AC?style=flat-square" />
+  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2E6F63?style=flat-square" />
+  <img alt="Platforms" src="https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-E3563B?style=flat-square" />
+</p>
 
-![实时检测（浅色）](docs/shots/02-monitor-light.png)
+基于 .NET 10 + Avalonia 11.3，Native AOT 单目录发布；无驱动、无常驻进程、无账号、无遥测。
 
-![网站延迟（浅色）](docs/shots/04-sites-light.png)
+> **状态：0.3.0**（商店包 `1.0.0.0`）。Windows 版可从
+> [Microsoft Store](https://apps.microsoft.com/detail/9NH3RQW622BK) 或
+> [GitHub Releases](https://github.com/RyzenWang/AirNet/releases/latest) 安装；
+> macOS 与 Linux 为便携归档。两个渠道同一份源码、版本各自一条线，规则见
+> [双渠道发布](docs/CHANNELS.md)。macOS 与 Linux arm64 仍为实验性——CI 构建通过，
+> 但从未在真机运行。
 
-![链路路径（浅色）](docs/shots/05-path-light.png)
+---
+
+## 截图
+
+| 实时检测 | 网站延迟 |
+| --- | --- |
+| ![实时检测](docs/shots/02-monitor-light.png) | ![网站延迟](docs/shots/04-sites-light.png) |
+
+| 历史趋势 | 链路路径 |
+| --- | --- |
+| ![历史趋势](docs/shots/07-history-light.png) | ![链路路径](docs/shots/05-path-light.png) |
+
+以上均为浅色主题；`docs/shots/` 里还有深色版本与带宽测速、设置页。
 
 ---
 
@@ -67,16 +99,15 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 
 ## 下载
 
-| 渠道 | 版本 | 地址 |
-| --- | --- | --- |
-| **Microsoft Store**（推荐） | `1.0.0.0` | <https://apps.microsoft.com/detail/9NH3RQW622BK> |
-| GitHub Release（便携包） | `0.3.0` | <https://github.com/RyzenWang/AirNet/releases/latest> |
+| 渠道 | 版本 | 形式 | 更新方式 |
+| --- | --- | --- | --- |
+| **Microsoft Store**（推荐） | `1.0.0.0` | 商店安装，微软签名 | 商店推送 |
+| GitHub Release | `0.3.0` | 免安装便携包（Windows / Linux / macOS） | 手动下载新包 |
 
-两个渠道同一份源码，版本各自一条线（商店 `1.0.0.0` ↔ 源码 `v0.3.0`），
-规则与映射表见 [双渠道发布](docs/CHANNELS.md)。
+商店版不能自动提权修改 DNS，只显示命令供复制；便携版保留一键执行。
+其余能力一致，差异与版本规则都见 [双渠道发布](docs/CHANNELS.md)。
 
-商店版由微软签名，安装与更新走商店；便携版免安装，解压即用。
-两者的能力差异（商店版不能自动提权改 DNS）也记在同一个文档里。
+## 参与
 
 参与开发前请读 [CONTRIBUTING.md](CONTRIBUTING.md)；安全问题见 [SECURITY.md](SECURITY.md)；
 第三方许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
