@@ -73,6 +73,11 @@ AirNet.exe --export docs/store/screenshots --scale 1 --size 1600x900
 > 必须用 `--size` 放大窗口，不要用 `--scale 2`：Avalonia 在 2× 缩放下会复用 1× 字形缓存，中文发糊。
 > 导出会用隔离目录里的样例数据填充，不会带上本机真实历史。
 
+## 受限能力说明
+
+包声明了 `rescap:runFullTrust`，提交时 Partner Center 要求填写用途说明。
+三版文案（英 / 中 / 短）在 [runfulltrust.md](runfulltrust.md)，直接复制即可。
+
 ## 政策与支持 URL
 
 | 字段 | 值 |

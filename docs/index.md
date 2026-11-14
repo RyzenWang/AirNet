@@ -18,6 +18,7 @@ title: AirNet
 - [网站延迟](WEBSITE_LATENCY.html) —— 该页的交互与实现说明
 - [Native AOT](AOT.html) —— 五平台发布与体积记录
 - [双渠道发布](CHANNELS.html) —— GitHub 与 Microsoft Store 的版本对应规则
+- [runFullTrust 用途说明](store/runfulltrust.html) —— 商店提交时的受限能力说明
 
 ## 下载
 
