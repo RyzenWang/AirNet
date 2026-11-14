@@ -7,6 +7,9 @@ title: AirNet
 
 **轻量、快速的网络检测与优化工具。** 点一下，三秒告诉你网络好不好、问题在路由器还是运营商。
 
+> 本页是文档站点首页，链接指向渲染后的 HTML（`PRIVACY.html` 等）。
+> 在仓库里浏览时，请直接打开同名的 `.md` 文件。
+
 ![总览](shots/01-overview-light.png)
 
 ## 文档
@@ -22,8 +25,10 @@ title: AirNet
 
 ## 下载
 
+- **Microsoft Store** —— <https://apps.microsoft.com/detail/9NH3RQW622BK>
 - [GitHub Releases](https://github.com/RyzenWang/AirNet/releases/latest) —— 免安装便携包（Windows / Linux / macOS）
-- Microsoft Store —— 准备中
+
+两个渠道同一份源码，版本各自一条线，见 [双渠道发布](CHANNELS.html)。
 
 ## 源码
 

@@ -6,6 +6,7 @@
 
 [![CI](https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml/badge.svg)](https://github.com/RyzenWang/AirNet/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/RyzenWang/AirNet?display_name=tag)](https://github.com/RyzenWang/AirNet/releases/latest)
+[![Microsoft Store](https://img.shields.io/badge/Microsoft%20Store-AirNet-E3563B?logo=microsoft)](https://apps.microsoft.com/detail/9NH3RQW622BK)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2E6F63.svg)](LICENSE)
 
 ![总览（浅色）](docs/shots/01-overview-light.png)
@@ -44,6 +45,7 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **一键 DNS + 还原**（Windows 提权） | ✅ M2 命令先展示，还原记录落盘 |
 | **单元测试**（xUnit） | ✅ 142 项：统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / 邻区 / 模式 / 站点目录与 HTTP 状态 |
 | **设置**（持久化 / 自动刷新 / 键盘快捷键） | ✅ M2，写入 `settings.json`；60s 自动刷新仅在窗口可见时执行 |
+| **Microsoft Store** | ✅ 已上架：<https://apps.microsoft.com/detail/9NH3RQW622BK>（包版本 `1.0.0.0`，微软签名，商店负责更新） |
 | Windows 正式发布 | ✅ Native AOT：16.83MB zip（CI）；本机启动 411ms / 内存 118.9MB；需保留同目录原生 DLL |
 | macOS / Linux 发布 | ✅ CI AOT 构建通过：Linux x64/arm64 约 16MB，macOS 约 27–29MB；Linux x64 实机运行通过，arm64/macOS 待验证 |
 | CI（构建 + 单元测试 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
@@ -63,7 +65,19 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 正常启动不预填样例/固定值：界面显示等待检测，点"开始检测"后才写入本次测量。
 `--export` 截图模式仍使用确定性样例数据，仅用于视觉评审，不会进入真实历史。
 
-Release 下载：<https://github.com/RyzenWang/AirNet/releases/latest>。  
+## 下载
+
+| 渠道 | 版本 | 地址 |
+| --- | --- | --- |
+| **Microsoft Store**（推荐） | `1.0.0.0` | <https://apps.microsoft.com/detail/9NH3RQW622BK> |
+| GitHub Release（便携包） | `0.3.0` | <https://github.com/RyzenWang/AirNet/releases/latest> |
+
+两个渠道同一份源码，版本各自一条线（商店 `1.0.0.0` ↔ 源码 `v0.3.0`），
+规则与映射表见 [双渠道发布](docs/CHANNELS.md)。
+
+商店版由微软签名，安装与更新走商店；便携版免安装，解压即用。
+两者的能力差异（商店版不能自动提权改 DNS）也记在同一个文档里。
+
 参与开发前请读 [CONTRIBUTING.md](CONTRIBUTING.md)；安全问题见 [SECURITY.md](SECURITY.md)；
 第三方许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 

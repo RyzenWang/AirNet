@@ -8,6 +8,7 @@ project uses semantic versioning for release tags.
 First release that ships through two channels: the GitHub portable archives and the
 Microsoft Store. The Store package starts its own version line at `1.0.0.0` while this
 source tree continues at `0.3.0`; the mapping lives in [CHANNELS.md](docs/CHANNELS.md).
+The Store listing is live at <https://apps.microsoft.com/detail/9NH3RQW622BK>.
 
 ### Added
 
