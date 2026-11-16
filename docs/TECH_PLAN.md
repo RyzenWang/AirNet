@@ -250,13 +250,13 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 
 | 指标 | 预算 | 2026-11 复测（五平台 Native AOT） | 手段 / 备注 |
 | --- | --- | --- | --- |
-| 解压体积 | ≤ 45MB | Windows AOT **41.6MB**（exe 25.7 + Skia 9.0 + ANGLE 5.2 + HarfBuzz 1.7）；压缩后 **16.24MB** | `PublishAot=true` + `PublishSingleFile=false`；**达标** |
-| 冷启动 | ≤ 1400ms | Windows AOT **411ms** 到窗口可见 | AOT 原生镜像；**达标** |
-| 运行内存 | ≤ 180MB | Windows AOT **118.9MB** 工作集 | AOT + 60 点图表，不缓存位图；**达标** |
+| 解压体积 | ≤ 45MB | Windows AOT **约 41MB**；压缩后 **约 16.5MB** | `PublishAot=true` + `PublishSingleFile=false`；**达标** |
+| 冷启动 | ≤ 1400ms | Windows AOT **0.3–0.5s** 到窗口可见 | AOT 原生镜像；**达标** |
+| 运行内存 | ≤ 180MB | Windows AOT **约 110–115MB** 工作集 | AOT + 60 点图表，不缓存位图；**达标** |
 | 安装包 | ≤ 25MB | Windows **16.83MB**；Linux x64/arm64 tar.gz **15.96/14.88MB**；macOS x64/arm64 **28.50/26.73MB**（均含说明） | CI 原生矩阵 AOT；只出便携 zip/tar.gz，不做 setup |
 | 扫描 CPU | < 3% | 未测 | ICMP 90ms / TCP 70ms 间隔；UI 250ms 合并刷新 |
 
-> 结论：Windows AOT 为 16.24MB zip / 41.6MB 解压 / 411ms / 118.9MB；五平台 AOT 构建已通过 CI，Linux x64 已实机运行验证，arm64/macOS 待真机。
+> 结论：Windows AOT 约 16.5MB zip / 41MB 解压 / 0.3–0.5s / 110–115MB；五平台 AOT 构建已通过 CI，Linux x64 已实机运行验证，arm64/macOS 待真机。
 > 体积和内存已回到预算内，启动仍略高于 1.4s。此前 52.2MB / 217MB 的记录包含增量发布残留，
 > 已通过 `publish.ps1` 的清理步骤修正。复现：`powershell -File packaging/pack-all.ps1`。
 
@@ -297,7 +297,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | **M0 视觉原型** | 四页原型 + 设计系统 + 真实探针内核 + 样例数据 | 可运行 exe、8 张截图、本文档 | ✅ 已完成 |
 | **M1 测量内核** | TCP 计时抖动、Wi-Fi 信号、DNS/TCP/TLS/TTFB 分解、评分校准、历史落盘、裁剪+R2R 发布 | 抖动 2.6ms、四段分解条、历史落盘、40MB 发布包 | ✅ 已完成 |
 | **M2 诊断与优化** | 三段归因、逐跳、MTU、网站延迟（含自定义站点）、一键 DNS（含还原）、报告导出、CI | ✅ 已完成 | — |
-| **M3 场景与分发** | 游戏/会议模式、双栈、邻区扫描、DNS 审计、历史 A/B、MSIX + Microsoft Store 已落地；英文 UI、macOS 签名/公证、便携包签名、macOS/Linux arm64 真机验证仍待做 | 1.1 | 进行中 |
+| **M3 场景与分发** | 游戏/会议模式、双栈、邻区扫描、DNS 审计、历史 A/B、中英文切换、MSIX + Microsoft Store 已落地；少量低频英文文案、macOS 签名/公证、便携包签名、macOS/Linux arm64 真机验证仍待做 | 1.1 | 进行中 |
 
 ## 13. 风险
 

@@ -26,7 +26,7 @@ end? No driver, no resident agent, no account, no telemetry.
 | Channel | Version | Notes |
 | --- | --- | --- |
 | Microsoft Store | `1.0.0.0` | signed by Microsoft, Store updates |
-| GitHub portable | `0.3.1` | Windows zip, macOS zip, Linux tar.gz |
+| GitHub portable | `0.4.0` | Windows zip, macOS zip, Linux tar.gz |
 
 The Store build cannot self-elevate, so DNS changes are copy-the-command; the portable build
 keeps the one-click path on Windows, macOS (`osascript`) and Linux (`pkexec`).
@@ -43,7 +43,7 @@ powershell -File packaging/pack-aot.ps1
 
 ## Status
 
-`0.3.1` is the current portable/source line. `0.3.0` was the first dual-channel release; the
+`0.4.0` is the current portable/source line. `0.3.0` was the first dual-channel release; the
 Store package uses its own `1.0.x.0` line. macOS and Linux arm64 are experimental: CI builds
 them, but they have not been run on real hardware and are unsigned.
 

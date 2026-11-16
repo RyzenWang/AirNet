@@ -386,12 +386,12 @@ public partial class ShellViewModel : ObservableObject
     {
         var file = await top.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "导出 AirNet 报告",
+            Title = T("L.ExportReportTitle"),
             SuggestedFileName = $"airnet-{DateTime.Now:yyyyMMdd-HHmm}",
             DefaultExtension = "html",
             FileTypeChoices =
             [
-                new FilePickerFileType("HTML 报告") { Patterns = ["*.html"] },
+                new FilePickerFileType(T("L.HtmlReport")) { Patterns = ["*.html"] },
             ],
         });
 
@@ -405,11 +405,13 @@ public partial class ShellViewModel : ObservableObject
     public string BuildDiagnosticText()
     {
         var builder = new System.Text.StringBuilder();
-        builder.AppendLine("AirNet 网络诊断");
-        builder.AppendLine($"时间 {View.CapturedAtText} · 接口 {View.InterfaceChip} · {View.LocalAddress} → {View.GatewayAddress}");
-        builder.AppendLine($"评分 {View.ScoreText} / {View.GradeLabel} · {View.Verdict}");
-        builder.AppendLine($"延迟 {View.LatencyAvgText} ms（P95 {View.LatencyP95Text}）· 抖动 {View.JitterText} ms · 丢包 {View.LossText}%");
-        builder.AppendLine($"下载 {View.DownloadText} · 出口 {View.EgressText}");
+        builder.AppendLine(T("L.DiagnosticCopyTitle"));
+        builder.AppendLine(Fmt("L.DiagnosticCopyMeta", View.CapturedAtText, View.InterfaceChip,
+            View.LocalAddress, View.GatewayAddress));
+        builder.AppendLine(Fmt("L.DiagnosticCopyScore", View.ScoreText, View.GradeLabel, View.Verdict));
+        builder.AppendLine(Fmt("L.DiagnosticCopyLatency", View.LatencyAvgText, View.LatencyP95Text,
+            View.JitterText, View.LossText));
+        builder.AppendLine(Fmt("L.DiagnosticCopyBandwidth", View.DownloadText, View.EgressText));
 
         foreach (var finding in View.Findings)
         {
@@ -435,7 +437,7 @@ public partial class ShellViewModel : ObservableObject
             trends: trends);
 
         await File.WriteAllTextAsync(path, html, System.Text.Encoding.UTF8).ConfigureAwait(true);
-        StatusMessage = $"报告已导出：{System.IO.Path.GetFileName(path)}";
+        StatusMessage = Fmt("L.ReportExported", System.IO.Path.GetFileName(path));
         return path;
     }
 

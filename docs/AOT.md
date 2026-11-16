@@ -46,19 +46,19 @@ AOT 不能用 `PublishSingleFile`，Windows 包内是：
 PDB 在打包时移除。移动时必须移动整个文件夹，不能只拿 `AirNet.exe`。
 macOS 仍然是 `AirNet.app`，Linux 仍然是 `AirNet/` + `run.sh`。
 
-## 2026-11-13 AOT 构建结果
+## 2026-11-16 AOT 构建结果
 
 Windows 本机运行验证：
 
 | 指标 | R2R 单文件 | Native AOT |
 | --- | --- | --- |
-| 压缩包 | 26.74 MB | **16.24 MB** |
-| exe | 25.5 MB | 25.7 MB |
-| 启动到窗口 | 约 1.3–1.9 s | **411 ms** |
-| 工作集 | 约 170–176 MB | **118.9 MB** |
+| 压缩包 | 26.74 MB | **约 16.5 MB** |
+| exe | 25.5 MB | 26.5 MB |
+| 启动到窗口 | 约 1.3–1.9 s | **0.3–0.5 s** |
+| 工作集 | 约 170–176 MB | **约 110–115 MB** |
 | `--probe --json` | ✅ | ✅ 退出码 0 |
 | `--selftest` | ✅ | ✅ 历史/双栈/逐跳正常 |
-| `--export` | ✅ 14 页 + 分享卡 | ✅ 14 页 + 分享卡 |
+| `--export` | ✅ | 15 张截图 |
 | GUI | ✅ | ✅ |
 
 CI 原生 runner 全平台 AOT 构建（workflow dispatch，未发 Release）：

@@ -30,7 +30,7 @@
 
 基于 .NET 10 + Avalonia 11.3，Native AOT 单目录发布；无驱动、无常驻进程、无账号、无遥测。
 
-> **状态：0.3.1**（商店包仍为 `1.0.0.0`）。Windows 版可从
+> **状态：0.4.0**（商店包仍为 `1.0.0.0`；`1.1.0.0` 已构建待提交）。Windows 版可从
 > [Microsoft Store](https://apps.microsoft.com/detail/9NH3RQW622BK) 或
 > [GitHub Releases](https://github.com/RyzenWang/AirNet/releases/latest) 安装；
 > macOS 与 Linux 为便携归档。两个渠道同一份源码、版本各自一条线，规则见
@@ -80,7 +80,8 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **单元测试**（xUnit） | ✅ 186 项：统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / 邻区 / 模式 / 站点目录与 HTTP 状态 / 诊断包 / Store 包身份 |
 | **设置**（持久化 / 自动刷新 / 键盘快捷键） | ✅ M2，写入 `settings.json`；60s 自动刷新仅在窗口可见时执行 |
 | **Microsoft Store** | ✅ 已上架：<https://apps.microsoft.com/detail/9NH3RQW622BK>（包版本 `1.0.0.0`，微软签名，商店负责更新） |
-| Windows 正式发布 | ✅ Native AOT：16.83MB zip（CI）；本机启动 411ms / 内存 118.9MB；需保留同目录原生 DLL |
+| Windows 正式发布 | ✅ Native AOT：约 **16.5MB** zip；本机启动 **0.3–0.5s / 约 110–115MB**；需保留同目录原生 DLL |
+| **中文 / English UI** | ✅ 设置 → 外观切换并持久化；主要页面、动态状态和分享卡片已英文化 |
 | macOS / Linux 发布 | ✅ CI AOT 构建通过：Linux x64/arm64 约 16MB，macOS 约 27–29MB；Linux x64 实机运行通过，arm64/macOS 待验证 |
 | CI（构建 + 单元测试 + 探针冒烟 + 报告断言 + 截图工件） | ✅ M2 |
 | **动效**（扫描/测速/追踪扫描带、实时读数、环/条填充、数字滚动、曲线扫入、页面淡入） | ✅ M2，截图模式可关闭 |
@@ -104,7 +105,7 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | 渠道 | 版本 | 形式 | 更新方式 |
 | --- | --- | --- | --- |
 | **Microsoft Store**（推荐） | `1.0.0.0` | 商店安装，微软签名 | 商店推送 |
-| GitHub Release | `0.3.1` | 免安装便携包（Windows / Linux / macOS） | 手动下载新包 |
+| GitHub Release | `0.4.0` | 免安装便携包（Windows / Linux / macOS） | 手动下载新包 |
 
 商店版不能自动提权修改 DNS，只显示命令供复制；便携版保留一键执行。
 其余能力一致，差异与版本规则都见 [双渠道发布](docs/CHANNELS.md)。
@@ -219,7 +220,7 @@ docs/
   所以只给信号/PHY/速率，不编造信道建议；纯有线电脑会明确跳过邻区扫描。
   macOS（`system_profiler`）与 Linux（`iw` + `/proc/net/wireless`）的无线分支已由 `UnixRadio`
   接入，但尚未在真机验证；Windows 只缺信道，因为 WLAN API 不暴露。
-- 内存/启动以本机 2026-11 复测为准：约 176MB / 1.6–1.9s。这是 Avalonia + Skia + Inter 的固定成本；"轻"体现在无驱动、无后台常驻，而不是内存数字。
+- 内存/启动以本机 2026-11 AOT 复测为准：约 **110–115MB / 0.3–0.5s**。这是 Avalonia + Skia + Inter 的固定成本；"轻"体现在无驱动、无后台常驻，而不是内存数字。
 - 截图导出必须用 `--scale 1`：Avalonia 的 `RenderTargetBitmap` 在 2× DPI 下会复用 1× 字形缓存，文字发糊（已记录，未绕开）。
 - TCP 握手 RTT 比 ICMP 高 3–5ms（多一层本地协议栈），评分阈值已按此校准；TCP 也观测不到丢包，所以丢包仍由 ICMP 给出。
 - **设置页三个开关已接通并持久化**（自动刷新 / 双探测 / 保留历史），Ctrl+R / Ctrl+1–7 / Ctrl+T / Esc、
@@ -233,7 +234,7 @@ docs/
 - **游戏/会议模式是独立深测**：游戏模式向公共 STUN 端点发 UDP，NAT 结论是映射行为启发式，
   不等于完整 NAT 类型，也不是实际游戏服务器 RTT；会议模式用 Cloudflare 上行 + TCP 抖动/丢包，
   不是 WebRTC 编解码实测。两者都不进入主扫描。
-- **Windows 正式包改用 Native AOT**：本机复测 16.24MB zip / 411ms 启动 / 118.9MB 内存；
+- **Windows 正式包改用 Native AOT**：本机复测约 16.5MB zip / 0.3–0.5s 启动 / 110–115MB 内存；
   代价是不能再打成单文件，必须保留同目录原生 DLL。macOS/Linux 仍为 R2R 单文件，AOT 待原生 runner 验证。
 - **出口 IP 是 best-effort**：Cloudflare / 3322 任一端点可用即可；被网络拦截时显示"未获取"，
   不阻塞扫描，也不参与评分。

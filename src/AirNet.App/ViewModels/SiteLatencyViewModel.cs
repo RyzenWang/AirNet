@@ -154,21 +154,37 @@ public sealed class CustomSiteRow
 
 internal static class SiteBadge
 {
-    public static string For(SiteTarget target) => target.Id switch
-    {
-        "baidu" => "百",
-        "tencent" => "腾",
-        "douyin" => "抖",
-        "xiaohongshu" => "小",
-        "bilibili" => "哔",
-        "zhihu" => "知",
-        "weibo" => "微",
-        "github" => "GH",
-        "google" => "G",
-        "youtube" => "Y",
-        "x" => "X",
-        _ => string.IsNullOrEmpty(target.Name) ? "?" : target.Name[..1].ToUpperInvariant(),
-    };
+    public static string For(SiteTarget target) => LocalizationService.Current.IsChinese
+        ? target.Id switch
+        {
+            "baidu" => "百",
+            "tencent" => "腾",
+            "douyin" => "抖",
+            "xiaohongshu" => "小",
+            "bilibili" => "哔",
+            "zhihu" => "知",
+            "weibo" => "微",
+            "github" => "GH",
+            "google" => "G",
+            "youtube" => "Y",
+            "x" => "X",
+            _ => string.IsNullOrEmpty(target.Name) ? "?" : target.Name[..1].ToUpperInvariant(),
+        }
+        : target.Id switch
+        {
+            "baidu" => "B",
+            "tencent" => "T",
+            "douyin" => "D",
+            "xiaohongshu" => "X",
+            "bilibili" => "B",
+            "zhihu" => "Z",
+            "weibo" => "W",
+            "github" => "GH",
+            "google" => "G",
+            "youtube" => "Y",
+            "x" => "X",
+            _ => string.IsNullOrEmpty(target.Name) ? "?" : target.Name[..1].ToUpperInvariant(),
+        };
 }
 
 /// <summary>Page state for the on-demand site latency test and its custom-site manager.</summary>
@@ -450,7 +466,7 @@ public partial class SiteLatencyViewModel : ObservableObject
         _results.Clear();
         _lastReport = null;
         _sortByTotal = false;
-        TestStatusText = $"正在测试 {_catalog.Count} 个站点…";
+        TestStatusText = LocFmt("L.TestingSiteCount", _catalog.Count);
         RefreshRows();
         NotifySummary();
         IsTesting = true;
@@ -507,11 +523,11 @@ public partial class SiteLatencyViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            TestStatusText = "测试已取消";
+            TestStatusText = T("L.TestCancelled");
         }
         catch (Exception ex)
         {
-            TestStatusText = $"测试失败：{ex.Message}";
+            TestStatusText = LocFmt("L.TestFailedFormat", ex.Message);
         }
         finally
         {
@@ -525,7 +541,7 @@ public partial class SiteLatencyViewModel : ObservableObject
     private void StopTest()
     {
         _cts?.Cancel();
-        TestStatusText = "正在停止…";
+        TestStatusText = T("L.Stopping");
     }
 
     [RelayCommand]
@@ -563,17 +579,17 @@ public partial class SiteLatencyViewModel : ObservableObject
 
         IsTestingDraft = true;
         DraftError = string.Empty;
-        DraftTestText = "测试中…";
+        DraftTestText = T("L.DraftTesting");
         try
         {
             var timing = await ApplicationTimingProbe.MeasureAsync(host, timeoutMs: 6000).ConfigureAwait(true);
             DraftTestText = timing.Succeeded
-                ? $"DNS {timing.DnsMs:0} · TCP {timing.TcpMs:0} · TLS {timing.TlsMs:0} · 首包 {timing.TtfbMs:0} = {timing.TotalMs:0} ms"
-                : timing.FailureNote ?? "测试失败";
+                ? LocFmt("L.DraftTiming", timing.DnsMs, timing.TcpMs, timing.TlsMs, timing.TtfbMs, timing.TotalMs)
+                : timing.FailureNote ?? T("L.TestFailed");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            DraftTestText = $"测试失败：{ex.Message}";
+            DraftTestText = LocFmt("L.TestFailedFormat", ex.Message);
         }
         finally
         {
@@ -594,7 +610,7 @@ public partial class SiteLatencyViewModel : ObservableObject
 
         if (_editingId is null && next.Count >= CustomSiteRules.MaxCustomSites)
         {
-            DraftError = $"最多只能添加 {CustomSiteRules.MaxCustomSites} 个自定义站点";
+            DraftError = LocFmt("L.DraftMaxSites", CustomSiteRules.MaxCustomSites);
             return;
         }
 
@@ -639,11 +655,11 @@ public partial class SiteLatencyViewModel : ObservableObject
         _editingId = null;
         DraftName = string.Empty;
         DraftHost = string.Empty;
-        DraftError = persisted ? string.Empty : "站点已加入本次列表，但写入 sites.json 失败；重启后会丢失。";
+        DraftError = persisted ? string.Empty : T("L.DraftSaveFailed");
         DraftTestText = string.Empty;
         _shell.StatusMessage = persisted
-            ? $"已保存自定义站点：{target.Name}"
-            : $"自定义站点已加入列表，但写入 sites.json 失败：{target.Name}";
+            ? LocFmt("L.SiteSaved", target.Name)
+            : LocFmt("L.SiteSavedNoWrite", target.Name);
     }
 
     public void EditCustom(SiteTarget target)
@@ -666,11 +682,11 @@ public partial class SiteLatencyViewModel : ObservableObject
             _pendingDeleteId = null;
             var persisted = PersistCustom(remaining);
             _shell.StatusMessage = persisted
-                ? $"已删除自定义站点：{target.Name}"
-                : $"自定义站点已从列表移除，但写入 sites.json 失败：{target.Name}";
+                ? LocFmt("L.SiteDeleted", target.Name)
+                : LocFmt("L.SiteDeletedNoWrite", target.Name);
             if (!persisted)
             {
-                DraftError = "站点已从本次列表移除，但写入 sites.json 失败；重启后会恢复。";
+                DraftError = T("L.SiteDeleteFailed");
             }
 
             return;

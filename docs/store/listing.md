@@ -1,6 +1,7 @@
 # Microsoft Store listing 材料
 
 > **状态：已上架** —— <https://apps.microsoft.com/detail/9NH3RQW622BK>（包版本 `1.0.0.0`，2026-11-14）
+> 下一版 `1.1.0.0` 已构建，待 Partner Center 提交（源 `v0.4.0`）。
 
 Partner Center 里要填的东西都在这里，逐项可复制。
 

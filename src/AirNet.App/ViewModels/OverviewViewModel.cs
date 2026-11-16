@@ -151,6 +151,19 @@ public partial class OverviewViewModel : ObservableObject
     private static string T(string key) => LocalizationService.Current.T(key);
     private static string Lfmt(string key, params object[] args) => LocalizationService.Current.Format(key, args);
 
+    private static string LocalizeNat(string summary)
+    {
+        if (LocalizationService.Current.IsChinese)
+        {
+            return summary;
+        }
+
+        return summary
+            .Replace("端口保持（锥形 NAT 可能）", "Port preserved (cone NAT likely)", StringComparison.Ordinal)
+            .Replace("端口变化（对称 NAT 可能）", "Port changes (symmetric NAT likely)", StringComparison.Ordinal)
+            .Replace(" · 映射地址变化", " · mapped address changes", StringComparison.Ordinal);
+    }
+
     private static string LocalizeInterfaceKind(string kind) => kind switch
     {
         "有线以太网" => T("L.Ethernet"),
@@ -182,6 +195,19 @@ public partial class MonitorViewModel : ObservableObject
 {
     private static string T(string key) => LocalizationService.Current.T(key);
     private static string Lfmt(string key, params object[] args) => LocalizationService.Current.Format(key, args);
+
+    private static string LocalizeNat(string summary)
+    {
+        if (LocalizationService.Current.IsChinese)
+        {
+            return summary;
+        }
+
+        return summary
+            .Replace("端口保持（锥形 NAT 可能）", "Port preserved (cone NAT likely)", StringComparison.Ordinal)
+            .Replace("端口变化（对称 NAT 可能）", "Port changes (symmetric NAT likely)", StringComparison.Ordinal)
+            .Replace(" · 映射地址变化", " · mapped address changes", StringComparison.Ordinal);
+    }
 
     private readonly List<double> _liveSeries = new();
     private string _liveSource = string.Empty;
@@ -353,8 +379,8 @@ public partial class MonitorViewModel : ObservableObject
             HasGameModeResult = true;
             GameModeHeadline = result.UdpReachable ? T("L.UdpReachable") : T("L.UdpUnreachable");
             GameModeDetail = result.UdpReachable
-                ? $"STUN RTT {result.RttMs:0.0} ms · {T("L.Jitter")} {result.JitterMs:0.0} ms · {T("L.Loss")} {result.LossPercent:0.0}% · {result.NatSummary}"
-                : $"{result.NatSummary} · {T("L.Target")} {result.Target}";
+                ? $"STUN RTT {result.RttMs:0.0} ms · {T("L.Jitter")} {result.JitterMs:0.0} ms · {T("L.Loss")} {result.LossPercent:0.0}% · {LocalizeNat(result.NatSummary)}"
+                : $"{LocalizeNat(result.NatSummary)} · {T("L.Target")} {result.Target}";
             ModeStatusText = result.UdpReachable ? T("L.GameDoneOk") : T("L.GameDoneFail");
         }
         catch (Exception ex)

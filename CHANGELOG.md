@@ -3,24 +3,35 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
-## [Unreleased]
+## [0.4.0] - 2026-11-16
+
+First release with a full runtime Chinese/English UI switch, DNS operation audit and
+two-run comparison. The Microsoft Store package for this source is `1.1.0.0`; it must be
+uploaded separately through Partner Center.
 
 ### Added
 
+- Runtime Chinese/English UI switch in Settings → Appearance; the choice is persisted.
+  Shell, overview, live monitor, speed, sites, path, history, settings, share card,
+  scan phases and the main dynamic statuses are translated.
 - `ProbeJson` now exposes `downloadMbps`/`uploadMbps` (additive, schema stays 1).
 - Settings now has a DNS dry-run action and a local `dns-operations.jsonl` audit trail.
 - History has an A/B comparison of any two stored runs (score, latency, jitter, loss,
   download, upload), not just the adjacent-run deltas.
-- English README and a runtime Chinese/English UI language switch.
+- English README.
 
 ### Changed
 
 - Removed the separate `AirNet.Cli` project and its agent documentation. The existing
   in-app `--probe --json` / `--sites` / `--report` flags remain.
-- Localized the shell status chips, settings statuses, site manager and share-card chrome;
-  English UI is still being completed for live page states.
 - `docs/FEATURES.md`, `docs/TECH_PLAN.md` and the README no longer claim macOS/Linux radio,
   cross-platform DNS, the history page or MSIX are unfinished.
+
+### Verified
+
+- 186 unit tests.
+- Windows AOT local validation: about 110–115 MB working set, 0.3–0.5 s startup.
+- Five-platform AOT assets are built by CI from the `v0.4.0` tag.
 
 ## [0.3.1] - 2026-11-16
 
