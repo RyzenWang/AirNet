@@ -3,6 +3,25 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
+## [Unreleased]
+
+### Added
+
+- `AirNet.Cli`: a headless `scan` / `watch` / `history` CLI that never initializes Avalonia.
+  `watch --json` emits one compact `ProbeJson` line per measurement (NDJSON); `scan` carries
+  the health verdict in its exit code and never writes history.
+- `ProbeJson` now exposes `downloadMbps`/`uploadMbps` (additive, schema stays 1).
+- `llms.txt`, `docs/AGENT.md` and `skills/airnet/SKILL.md` for safe agent use.
+- Settings now has a DNS dry-run action and a local `dns-operations.jsonl` audit trail.
+- History has an A/B comparison of any two stored runs (score, latency, jitter, loss,
+  download, upload), not just the adjacent-run deltas.
+- English README and English agent notes.
+
+### Changed
+
+- `docs/FEATURES.md`, `docs/TECH_PLAN.md` and the README no longer claim macOS/Linux radio,
+  cross-platform DNS, the history page or MSIX are unfinished.
+
 ## [0.3.1] - 2026-11-16
 
 Portable-only maintenance release. The Microsoft Store build stays at `1.0.0.0` because this

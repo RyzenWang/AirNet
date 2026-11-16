@@ -291,6 +291,10 @@
                         Click="OnCopyDnsCommandClick"
                         IsVisible="{Binding CanApplyDns}" />
                 <Button Classes="mini"
+                        Content="预演（不执行）"
+                        Command="{Binding PreviewDnsCommand}"
+                        IsVisible="{Binding CanApplyDns}" />
+                <Button Classes="mini"
                         Content="应用（需管理员）"
                         Command="{Binding ApplyDnsCommand}"
                         IsVisible="{Binding CanApplyDns}" />
@@ -305,6 +309,11 @@
                          FontSize="9.5"
                          TextWrapping="Wrap"
                          IsVisible="{Binding HasDnsBackup}" />
+              <TextBlock Text="{Binding DnsOperationText}"
+                         Classes="micro"
+                         FontSize="9.5"
+                         TextWrapping="Wrap"
+                         IsVisible="{Binding HasDnsOperation}" />
             </StackPanel>
           </Border>
 

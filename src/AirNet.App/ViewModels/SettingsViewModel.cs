@@ -15,6 +15,7 @@ namespace AirNet.App.ViewModels;
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly DnsBackupStore _dnsBackups = new();
+    private readonly DnsOperationLog _dnsOperations = new();
 
     public SettingsViewModel(ShellViewModel shell)
     {
@@ -66,6 +67,12 @@ public partial class SettingsViewModel : ObservableObject
     private IReadOnlyList<DnsServerRow> _dnsServerRows = [];
     [ObservableProperty]
     private string _dnsBackupText = string.Empty;
+
+    [ObservableProperty]
+    private string _dnsOperationText = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasDnsOperation;
 
     [ObservableProperty]
     private bool _isNeighborScanning;
@@ -140,6 +147,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         await RefreshHistoryCountAsync().ConfigureAwait(true);
         await RefreshDnsBackupAsync().ConfigureAwait(true);
+        await RefreshDnsOperationAsync().ConfigureAwait(true);
     }
 
     public async Task RefreshHistoryCountAsync()
@@ -337,6 +345,13 @@ public partial class SettingsViewModel : ObservableObject
 
         DnsStatusText = "正在等待管理员确认…";
         var result = await ElevatedCommandRunner.RunAsync(DnsPlan.ApplyCommand).ConfigureAwait(true);
+        await LogDnsOperationAsync(
+            "apply",
+            DnsPlan.AdapterName,
+            DnsPlan.CurrentDns,
+            DnsPlan.ProposedDns,
+            DnsPlan.ApplyCommand,
+            result).ConfigureAwait(true);
 
         if (result.Succeeded)
         {
@@ -355,6 +370,16 @@ public partial class SettingsViewModel : ObservableObject
         {
             DnsStatusText = result.Message;
         }
+
+        await RefreshDnsOperationAsync().ConfigureAwait(true);
+    }
+
+    [RelayCommand]
+    private void PreviewDns()
+    {
+        DnsStatusText = DnsPlan.IsWorthChanging
+            ? $"预演（未执行）：{DnsPlan.ApplyCommand}"
+            : "当前解析已经够快，无需修改";
     }
 
     [RelayCommand]
@@ -369,6 +394,13 @@ public partial class SettingsViewModel : ObservableObject
 
         DnsStatusText = "正在等待管理员确认…";
         var result = await ElevatedCommandRunner.RunAsync(backup.RestoreCommand).ConfigureAwait(true);
+        await LogDnsOperationAsync(
+            "restore",
+            backup.AdapterName,
+            "changed",
+            backup.OriginalDns,
+            backup.RestoreCommand,
+            result).ConfigureAwait(true);
 
         if (result.Succeeded)
         {
@@ -380,6 +412,46 @@ public partial class SettingsViewModel : ObservableObject
         {
             DnsStatusText = result.Message;
         }
+
+        await RefreshDnsOperationAsync().ConfigureAwait(true);
+    }
+
+    private async Task LogDnsOperationAsync(
+        string action,
+        string adapter,
+        string from,
+        string to,
+        string command,
+        CommandResult result)
+    {
+        try
+        {
+            await _dnsOperations.AppendAsync(new DnsOperationEntry
+            {
+                At = DateTimeOffset.Now,
+                Action = action,
+                Adapter = adapter,
+                From = from,
+                To = to,
+                Command = command,
+                Success = result.Succeeded,
+                Message = result.Message,
+            }).ConfigureAwait(true);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // The audit trail is best effort; never fail the actual DNS change because of it.
+        }
+    }
+
+    private async Task RefreshDnsOperationAsync()
+    {
+        var entry = (await _dnsOperations.LoadAsync(1).ConfigureAwait(true)).FirstOrDefault();
+        HasDnsOperation = entry is not null;
+        DnsOperationText = entry is null
+            ? string.Empty
+            : $"{entry.At.ToLocalTime():MM-dd HH:mm} {entry.Action} · " +
+              $"{(entry.Success ? "成功" : "失败")} · {entry.Adapter}";
     }
 
     private async Task RefreshDnsBackupAsync()

@@ -18,6 +18,8 @@ public sealed record ProbeJson(
     string GradeLabel,
     string Verdict,
     ProbeJsonLatency Latency,
+    double DownloadMbps,
+    double UploadMbps,
     ProbeJsonTiming Timing,
     ProbeJsonDualStack DualStack,
     ProbeJsonInterface Interface,
@@ -43,6 +45,8 @@ public sealed record ProbeJson(
             snapshot.Latency.LossPercent,
             snapshot.Latency.Sent,
             snapshot.Latency.Received),
+        snapshot.DownloadMbps,
+        snapshot.UploadMbps,
         new ProbeJsonTiming(
             snapshot.Timing.Host,
             snapshot.Timing.DnsMs,
@@ -152,4 +156,15 @@ public sealed partial class ProbeJsonContext : JsonSerializerContext
 {
     public static string Serialize(ProbeJson probe) =>
         JsonSerializer.Serialize(probe, Default.ProbeJson);
+
+    /// <summary>One line per measurement, for `watch --json` NDJSON.</summary>
+    public static string SerializeCompact(ProbeJson probe) =>
+        JsonSerializer.Serialize(probe, ProbeJsonCompactContext.Default.ProbeJson);
 }
+
+[JsonSourceGenerationOptions(
+    WriteIndented = false,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(ProbeJson))]
+internal sealed partial class ProbeJsonCompactContext : JsonSerializerContext;

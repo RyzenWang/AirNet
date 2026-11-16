@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/AirNet.App/AirNet.App.csproj" />
+    <Project Path="src/AirNet.Cli/AirNet.Cli.csproj" />
     <Project Path="src/AirNet.Core/AirNet.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">

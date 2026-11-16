@@ -18,6 +18,24 @@ public sealed class TrendBucketRow
     public bool IsWorst { get; init; }
 }
 
+/// <summary>One selectable history record for the A/B comparison.</summary>
+public sealed class HistoryChoice
+{
+    public required HistoryRecord Record { get; init; }
+    public required string Label { get; init; }
+}
+
+/// <summary>One metric row in the A/B comparison.</summary>
+public sealed class CompareMetricRow
+{
+    public required string Name { get; init; }
+    public required string AText { get; init; }
+    public required string BText { get; init; }
+    public required string DeltaText { get; init; }
+    public bool IsBetter { get; init; }
+    public bool IsWorse { get; init; }
+}
+
 /// <summary>A compact row from the history, newest first.</summary>
 public sealed class TrendRunRow
 {
@@ -38,6 +56,7 @@ public sealed class TrendRunRow
 public partial class TrendsViewModel : ObservableObject
 {
     private bool _loading;
+    private bool _suppressCompare;
 
     public TrendsViewModel(ShellViewModel shell)
     {
@@ -101,6 +120,27 @@ public partial class TrendsViewModel : ObservableObject
     [ObservableProperty]
     private IReadOnlyList<TrendRunRow> _recentRuns = [];
 
+    [ObservableProperty]
+    private IReadOnlyList<HistoryChoice> _compareOptions = [];
+
+    [ObservableProperty]
+    private HistoryChoice? _compareA;
+
+    [ObservableProperty]
+    private HistoryChoice? _compareB;
+
+    [ObservableProperty]
+    private IReadOnlyList<CompareMetricRow> _compareRows = [];
+
+    [ObservableProperty]
+    private string _compareSummary = "至少完成两次检测后，可选两条记录做 A/B 对比。";
+
+    [ObservableProperty]
+    private bool _hasComparison;
+
+    [ObservableProperty]
+    private bool _showCompareEmpty;
+
     public bool IsSevenDayRange => RangeDays == 7;
     public bool IsThirtyDayRange => RangeDays == 30;
 
@@ -137,6 +177,7 @@ public partial class TrendsViewModel : ObservableObject
         try
         {
             var records = await Shell.History.LoadAsync(500).ConfigureAwait(true);
+            SetCompareOptions(records);
             var summary = HistoryTrendAnalyzer.Analyze(records, RangeDays);
             RangeCaption = $"近 {RangeDays} 天";
             HasData = summary.HasData;
@@ -216,5 +257,87 @@ public partial class TrendsViewModel : ObservableObject
         {
             _loading = false;
         }
+    }
+
+    partial void OnCompareAChanged(HistoryChoice? value) => RebuildComparison();
+    partial void OnCompareBChanged(HistoryChoice? value) => RebuildComparison();
+
+    private void SetCompareOptions(IReadOnlyList<HistoryRecord> records)
+    {
+        CompareOptions = records
+            .Take(20)
+            .Select(record => new HistoryChoice
+            {
+                Record = record,
+                Label = $"{record.At.ToLocalTime():M/d HH:mm} · {record.Score} 分",
+            })
+            .ToList();
+
+        _suppressCompare = true;
+        CompareA = CompareOptions.Count > 0 ? CompareOptions[0] : null;
+        CompareB = CompareOptions.Count > 1 ? CompareOptions[1] : null;
+        _suppressCompare = false;
+        RebuildComparison();
+    }
+
+    private void RebuildComparison()
+    {
+        if (_suppressCompare)
+        {
+            return;
+        }
+
+        HasComparison = CompareA is not null && CompareB is not null;
+        ShowCompareEmpty = !HasComparison;
+        if (!HasComparison)
+        {
+            CompareRows = [];
+            CompareSummary = "至少完成两次检测后，可选两条记录做 A/B 对比。";
+            return;
+        }
+
+        var a = CompareA!.Record;
+        var b = CompareB!.Record;
+        CompareSummary = $"{CompareA!.Label}  →  {CompareB!.Label}；↑ 变好 · ↓ 变差";
+        CompareRows =
+        [
+            Compare("评分", a.Score, b.Score, "分", higherIsBetter: true),
+            Compare("延迟", a.LatencyAvg, b.LatencyAvg, "ms", higherIsBetter: false),
+            Compare("抖动", a.Jitter, b.Jitter, "ms", higherIsBetter: false),
+            Compare("丢包", a.Loss, b.Loss, "%", higherIsBetter: false),
+            Compare("下行", a.DownMbps, b.DownMbps, "Mbps", higherIsBetter: true, zeroIsMissing: true),
+            Compare("上行", a.UpMbps, b.UpMbps, "Mbps", higherIsBetter: true, zeroIsMissing: true),
+        ];
+    }
+
+    private static CompareMetricRow Compare(
+        string name,
+        double a,
+        double b,
+        string unit,
+        bool higherIsBetter,
+        bool zeroIsMissing = false)
+    {
+        var missing = zeroIsMissing && (a <= 0 || b <= 0);
+        var diff = b - a;
+        var better = !missing && Math.Abs(diff) >= 0.05 && (higherIsBetter ? diff > 0 : diff < 0);
+        var worse = !missing && Math.Abs(diff) >= 0.05 && (higherIsBetter ? diff < 0 : diff > 0);
+        var digits = unit == "分" ? "0" : "0.0";
+        var valueFormat = "{0:" + digits + "}";
+        var delta = missing
+            ? "—"
+            : Math.Abs(diff) < 0.05
+                ? "持平"
+                : $"{(diff > 0 ? "+" : "−")}{Math.Abs(diff).ToString(digits, CultureInfo.InvariantCulture)} {unit}";
+
+        return new CompareMetricRow
+        {
+            Name = name,
+            AText = missing ? "未测" : string.Format(CultureInfo.InvariantCulture, valueFormat, a) + " " + unit,
+            BText = missing ? "未测" : string.Format(CultureInfo.InvariantCulture, valueFormat, b) + " " + unit,
+            DeltaText = delta,
+            IsBetter = better,
+            IsWorse = worse,
+        };
     }
 }

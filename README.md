@@ -26,6 +26,8 @@
   <img alt="Platforms" src="https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-E3563B?style=flat-square" />
 </p>
 
+<a href="README_EN.md">English</a> · 中文
+
 基于 .NET 10 + Avalonia 11.3，Native AOT 单目录发布；无驱动、无常驻进程、无账号、无遥测。
 
 > **状态：0.3.1**（商店包仍为 `1.0.0.0`）。Windows 版可从
@@ -74,7 +76,7 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **逐跳路径**（系统 traceroute，本地化无关解析） | ✅ M2 实测 14 跳 / 17s；目标未响应时不误判对端 |
 | **MTU**（DF 二分） | ✅ M2 实测 1480（PPPoE） |
 | **报告导出**（自包含 HTML，可打印 PDF） | ✅ M2 7.8KB / 零脚本 / 地址掩码 |
-| **一键 DNS + 还原**（Windows 提权） | ✅ M2 命令先展示，还原记录落盘 |
+| **一键 DNS + 还原**（Windows/macOS/Linux） | ✅ 命令先展示，还原记录落盘；0.3.0 起 macOS 用 `osascript`、Linux 用 `pkexec`，Store 版只复制命令 |
 | **单元测试**（xUnit） | ✅ 186 项：统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / 邻区 / 模式 / 站点目录与 HTTP 状态 / 诊断包 / Store 包身份 |
 | **设置**（持久化 / 自动刷新 / 键盘快捷键） | ✅ M2，写入 `settings.json`；60s 自动刷新仅在窗口可见时执行 |
 | **Microsoft Store** | ✅ 已上架：<https://apps.microsoft.com/detail/9NH3RQW622BK>（包版本 `1.0.0.0`，微软签名，商店负责更新） |
@@ -85,7 +87,7 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **IPv4/IPv6 双栈** | ✅ 同一主机两条路各 5 次握手，给出「均衡 / IPv6 更快 / IPv6 偏慢」，偏慢时进诊断 |
 | **代理 / VPN 识别** | ✅ 检测系统代理与隧道网卡，明确标注「经代理 / 经 VPN」并说明哪些数字因此失真 |
 | **DNS 三方对比** | ✅ 同一域名实测「当前 / 223.5.5.5 / 1.1.1.1」，差 20% 且 ≥5ms 才建议更换 |
-| **CLI JSON** | ✅ `--probe --json out.json`，稳定 schema + 退出码（0 健康 / 1 一般 / 2 较差 / 3 失败） |
+| **CLI JSON** | ✅ 无头 `scan --json` / `watch --json`（NDJSON）/ `history --json`；稳定 schema + 退出码（0 健康 / 1 一般 / 2 较差 / 3 失败） |
 | **历史差值** | ✅ 每条历史显示与上次的分数 / 延迟 / 抖动 / 下行变化，一眼看出改动是否有效 |
 | **历史趋势页** | ✅ 7 / 30 天延迟与评分曲线、凌晨/上午/下午/晚间时段观察、最近记录 |
 | **分享卡片** | ✅ 一键生成 1080 × 1350 PNG，复用当前体检结论和纸面视觉 |
@@ -107,6 +109,28 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 商店版不能自动提权修改 DNS，只显示命令供复制；便携版保留一键执行。
 其余能力一致，差异与版本规则都见 [双渠道发布](docs/CHANNELS.md)。
 
+## 无头 CLI / Agent
+
+`src/AirNet.Cli` 不初始化 Avalonia，适合脚本、服务器和 AI Agent：
+
+```bash
+dotnet run --project src/AirNet.Cli -c Release -- scan --json
+dotnet run --project src/AirNet.Cli -c Release -- scan --json result.json --bandwidth
+dotnet run --project src/AirNet.Cli -c Release -- watch --json --interval 10
+dotnet run --project src/AirNet.Cli -c Release -- history --json --limit 10
+```
+
+- `scan` / `watch` 默认**只读、不写历史**；`--bandwidth` 需显式开启。
+- `scan --json` 输出一个 `ProbeJson` 对象并带健康分退出码；`watch --json` 每行一个
+  紧凑 JSON（NDJSON）。
+- `history --json` 读取本机历史，不修改它。
+- DNS 设置页新增「预演（不执行）」，实际应用/还原会写本地
+  `dns-operations.jsonl` 审计记录；Store 版仍不能自动提权。
+- Agent 说明：[llms.txt](llms.txt) · [docs/AGENT.md](docs/AGENT.md) ·
+  [skills/airnet/SKILL.md](skills/airnet/SKILL.md)。
+
+历史页新增 A/B 对比：选两条记录，看评分、延迟、抖动、丢包、上下行的完整差异。
+
 ## 参与
 
 参与开发前请读 [CONTRIBUTING.md](CONTRIBUTING.md)；安全问题见 [SECURITY.md](SECURITY.md)；
@@ -126,6 +150,8 @@ dotnet run --project src/AirNet.App -- --probe --json probe.json  # 脚本用：
 dotnet run --project src/AirNet.App -- --report report.html      # 真测一轮并导出 HTML 报告（含最近站点表）
 dotnet run --project src/AirNet.App -- --export docs/shots --scale 1   # 重新生成全部截图（动效自动关闭）
 dotnet run --project src/AirNet.App -- --scan-shot scan.png      # 抓一张"检测中"的界面（动效开启）
+dotnet run --project src/AirNet.Cli -- scan --json                # 无头测量（不启动 UI）
+dotnet run --project src/AirNet.Cli -- watch --json --count 3     # NDJSON 实时输出
 dotnet test tests/AirNet.Core.Tests/AirNet.Core.Tests.csproj     # 纯逻辑单元测试
 
 powershell -File packaging/publish.ps1                           # 裁剪单文件发布 + 实测启动/内存
@@ -167,6 +193,7 @@ culprit=无 precise=True headline=整条路径没有明显瓶颈
 
 ```
 src/AirNet.Core/         探测与诊断内核（无 UI 依赖）
+src/AirNet.Cli/          无头 CLI：scan / watch / history / version
   Probes/                InterfaceInspector · LatencyProbe · ThroughputProbe · EgressProbe
                          ApplicationTimingProbe · TraceProbe · MtuProbe · WlanRadio · MeasurementRunner
   Diagnostics/           NetworkSnapshot · LatencyAnalyzer · DiagnosisEngine
@@ -210,7 +237,8 @@ docs/
 - **Wi-Fi 采样已真机验证（2026-11-12）**：SSID、信号质量、协商速率、PHY 代际均取自 `wlanapi`；
   **dBm 是估算值**（`quality ÷ 2 − 100`）。邻区扫描已在 Windows WLAN API 下实现，但系统结构不暴露信道，
   所以只给信号/PHY/速率，不编造信道建议；纯有线电脑会明确跳过邻区扫描。
-  macOS（CoreWLAN）与 Linux（`/proc/net/wireless`）的无线分支**仍未实现**。
+  macOS（`system_profiler`）与 Linux（`iw` + `/proc/net/wireless`）的无线分支已由 `UnixRadio`
+  接入，但尚未在真机验证；Windows 只缺信道，因为 WLAN API 不暴露。
 - 内存/启动以本机 2026-11 复测为准：约 176MB / 1.6–1.9s。这是 Avalonia + Skia + Inter 的固定成本；"轻"体现在无驱动、无后台常驻，而不是内存数字。
 - 截图导出必须用 `--scale 1`：Avalonia 的 `RenderTargetBitmap` 在 2× DPI 下会复用 1× 字形缓存，文字发糊（已记录，未绕开）。
 - TCP 握手 RTT 比 ICMP 高 3–5ms（多一层本地协议栈），评分阈值已按此校准；TCP 也观测不到丢包，所以丢包仍由 ICMP 给出。

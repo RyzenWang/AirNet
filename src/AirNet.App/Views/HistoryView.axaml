@@ -18,6 +18,12 @@
       <Setter Property="LetterSpacing" Value="-0.6" />
       <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     </Style>
+    <Style Selector="TextBlock.compareDelta.better">
+      <Setter Property="Foreground" Value="{DynamicResource GoodBrush}" />
+    </Style>
+    <Style Selector="TextBlock.compareDelta.worse">
+      <Setter Property="Foreground" Value="{DynamicResource BadBrush}" />
+    </Style>
   </UserControl.Styles>
 
   <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -298,6 +304,78 @@
             </StackPanel>
           </Border>
         </Grid>
+
+        <!-- A/B comparison -->
+        <Border Classes="card" Padding="16,13">
+          <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="两次检测对比" Classes="h3" FontSize="13" />
+              <TextBlock Grid.Column="1" Text="选 A / B 看完整差异" Classes="micro" FontSize="9.5" />
+            </Grid>
+
+            <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="8">
+              <ComboBox ItemsSource="{Binding CompareOptions}"
+                        SelectedItem="{Binding CompareA}"
+                        MinWidth="190"
+                        FontSize="10.5">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:HistoryChoice">
+                    <TextBlock Text="{Binding Label}" FontSize="10.5" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <TextBlock Grid.Column="1" Text="对比" Classes="caption" FontSize="10" VerticalAlignment="Center" />
+              <ComboBox Grid.Column="2"
+                        ItemsSource="{Binding CompareOptions}"
+                        SelectedItem="{Binding CompareB}"
+                        MinWidth="190"
+                        FontSize="10.5">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:HistoryChoice">
+                    <TextBlock Text="{Binding Label}" FontSize="10.5" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </Grid>
+
+            <TextBlock Text="{Binding CompareSummary}"
+                       Classes="caption"
+                       FontSize="9.5"
+                       LineHeight="14"
+                       TextWrapping="Wrap" />
+            <TextBlock Text="至少完成两次检测后，可选两条记录做 A/B 对比。"
+                       Classes="caption"
+                       FontSize="10"
+                       IsVisible="{Binding ShowCompareEmpty}" />
+
+            <Grid IsVisible="{Binding HasComparison}" RowDefinitions="Auto,Auto" RowSpacing="3">
+              <Grid ColumnDefinitions="90,120,120,130" ColumnSpacing="8" HorizontalAlignment="Left">
+                <TextBlock Text="指标" Classes="eyebrow" FontSize="8.5" />
+                <TextBlock Grid.Column="1" Text="A" Classes="eyebrow" FontSize="8.5" />
+                <TextBlock Grid.Column="2" Text="B" Classes="eyebrow" FontSize="8.5" />
+                <TextBlock Grid.Column="3" Text="变化" Classes="eyebrow" FontSize="8.5" />
+              </Grid>
+              <ItemsControl Grid.Row="1" ItemsSource="{Binding CompareRows}" HorizontalAlignment="Left">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:CompareMetricRow">
+                    <Grid ColumnDefinitions="90,120,120,130" ColumnSpacing="8" Margin="0,2">
+                      <TextBlock Text="{Binding Name}" FontSize="10" />
+                      <TextBlock Grid.Column="1" Text="{Binding AText}" Classes="mono" FontSize="9.5" />
+                      <TextBlock Grid.Column="2" Text="{Binding BText}" Classes="mono" FontSize="9.5" />
+                      <TextBlock Grid.Column="3"
+                                 Text="{Binding DeltaText}"
+                                 Classes="compareDelta"
+                                 Classes.better="{Binding IsBetter}"
+                                 Classes.worse="{Binding IsWorse}"
+                                 FontSize="9.5"
+                                 FontWeight="SemiBold" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Grid>
+          </StackPanel>
+        </Border>
       </StackPanel>
     </Grid>
   </ScrollViewer>

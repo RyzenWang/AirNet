@@ -133,6 +133,7 @@ public static class DiagnosticBundle
         "sites.json",
         "sites.jsonl",
         "dns-backup.json",
+        "dns-operations.jsonl",
         "crash.log",
     ];
 
@@ -168,6 +169,7 @@ public static class DiagnosticBundle
             .AppendLine("  history.jsonl        本机测量历史（含延迟/丢包，不含网页内容）")
             .AppendLine("  sites.json / jsonl   自定义站点与站点历史")
             .AppendLine("  dns-backup.json      DNS 变更的还原记录")
+            .AppendLine("  dns-operations.jsonl DNS 操作审计（成功/失败，仅本地）")
             .AppendLine("  crash.log            崩溃记录（若有）")
             .AppendLine();
 
