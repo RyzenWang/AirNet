@@ -447,6 +447,8 @@ public sealed class LocalizationService
             ["L.NotAvailable"] = ("not available", "不可用"),
             ["L.HopHome"] = ("Home gateway", "家庭网关"),
             ["L.HopReference"] = ("Reference host", "参考主机"),
+            ["L.Unknown"] = ("Unknown", "未知"),
+            ["L.WaitSegment"] = ("Wait", "等待"),
             ["L.StartSpeedTest"] = ("Start speed test", "开始测速"),
             ["L.TestingSpeed"] = ("Testing…", "测速中…"),
             ["L.FullScale"] = ("Full scale 1 Gbps / 200 Mbps", "满量程 1 Gbps / 200 Mbps"),

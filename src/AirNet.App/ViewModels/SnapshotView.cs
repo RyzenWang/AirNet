@@ -249,6 +249,7 @@ public sealed class SnapshotView
     {
         "有线以太网" => T("L.Ethernet"),
         "无线" => T("L.WirelessGeneric"),
+        "未知" => T("L.Unknown"),
         _ => kind,
     };
 
@@ -408,7 +409,7 @@ public sealed class SnapshotView
             ("DNS", timing.DnsMs, 1.0),
             ("TCP", timing.TcpMs, 0.8),
             ("TLS", timing.TlsMs, 0.6),
-            ("等待", timing.TtfbMs, 0.42),
+            (T("L.WaitSegment"), timing.TtfbMs, 0.42),
         ];
 
         return parts

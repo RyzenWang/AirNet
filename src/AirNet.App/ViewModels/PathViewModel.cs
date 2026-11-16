@@ -287,6 +287,20 @@ public partial class PathViewModel : ObservableObject
             return "Gateway → " + delta["网关 → ".Length..];
         }
 
+        if (delta.StartsWith("接入 → 第 ", StringComparison.Ordinal))
+        {
+            var tail = delta["接入 → 第 ".Length..];
+            if (tail.EndsWith(" 跳前", StringComparison.Ordinal))
+            {
+                return "Access → before hop " + tail[..^" 跳前".Length];
+            }
+
+            if (tail.EndsWith(" 跳", StringComparison.Ordinal))
+            {
+                return "Access → hop " + tail[..^" 跳".Length];
+            }
+        }
+
         if (delta.StartsWith("接入 → ", StringComparison.Ordinal))
         {
             return "Access → " + delta["接入 → ".Length..];
