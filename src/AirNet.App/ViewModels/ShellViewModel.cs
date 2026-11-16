@@ -75,6 +75,15 @@ public partial class ShellViewModel : ObservableObject
         Monitor.Apply(_view);
         ApplyTheme(ParseTheme(Preferences.Theme), persist: false);
         ApplyAutoRefreshPreference();
+        Localization.LocalizationService.Current.LanguageChanged += (_, _) =>
+        {
+            View = new SnapshotView(View.Source);
+            Overview.Refresh(View);
+            Monitor.Apply(View);
+            Path.RefreshFromSnapshot();
+            Speed.RefreshFromSnapshot();
+            Settings.RefreshDnsPlan();
+        };
 
         _ = Overview.LoadHistoryAsync();
     }

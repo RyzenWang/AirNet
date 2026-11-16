@@ -1,4 +1,5 @@
 using System.Globalization;
+using AirNet.App.Localization;
 using AirNet.Core.Diagnostics;
 
 namespace AirNet.App.ViewModels;
@@ -123,20 +124,34 @@ public sealed class SnapshotView
     }
 
     /// <summary>Placeholder tiles before the first measurement lands.</summary>
+    private static string T(string key) => LocalizationService.Current.T(key);
+
     public static IReadOnlyList<MetricTile> DemoTiles() =>
     [
-        new MetricTile { Label = "延迟 / LATENCY", Value = "—", Unit = "ms", Foot = "等待测量", IsPlaceholder = true, IsGood = true },
-        new MetricTile { Label = "抖动 / JITTER", Value = "—", Unit = "ms", Foot = "等待测量", IsPlaceholder = true, IsGood = true },
-        new MetricTile { Label = "丢包 / LOSS", Value = "—", Unit = "%", Foot = "等待测量", IsPlaceholder = true, IsGood = true },
-        new MetricTile { Label = "下载 / DOWNLOAD", Value = "—", Unit = "Mbps", Foot = "未测速", IsPlaceholder = true, IsGood = true },
+        new MetricTile { Label = T("L.MetricLatency"), Value = "—", Unit = "ms", Foot = T("L.WaitingMeasurement"), IsPlaceholder = true, IsGood = true },
+        new MetricTile { Label = T("L.MetricJitter"), Value = "—", Unit = "ms", Foot = T("L.WaitingMeasurement"), IsPlaceholder = true, IsGood = true },
+        new MetricTile { Label = T("L.MetricLoss"), Value = "—", Unit = "%", Foot = T("L.WaitingMeasurement"), IsPlaceholder = true, IsGood = true },
+        new MetricTile { Label = T("L.MetricDownload"), Value = "—", Unit = "Mbps", Foot = T("L.NotTested"), IsPlaceholder = true, IsGood = true },
     ];
 
     public NetworkSnapshot Source { get; }
 
     public int Score => Source.Score;
     public string ScoreText => IsPending ? "—" : Source.Score.ToString(CultureInfo.InvariantCulture);
-    public string GradeLabel => Source.GradeLabel;
-    public string Verdict => Source.Verdict;
+    public string GradeLabel => IsPending ? T("L.WaitingForScan") : Source.Grade switch
+    {
+        HealthGrade.Excellent => T("L.Excellent"),
+        HealthGrade.Good => T("L.Good"),
+        HealthGrade.Fair => T("L.Fair"),
+        _ => T("L.Poor"),
+    };
+    public string Verdict => IsPending ? T("L.WaitingForScan") : Source.Grade switch
+    {
+        HealthGrade.Excellent => T("L.VerdictExcellent"),
+        HealthGrade.Good => T("L.VerdictGood"),
+        HealthGrade.Fair => T("L.VerdictFair"),
+        _ => T("L.VerdictPoor"),
+    };
     public string Summary => Source.Summary;
     public bool IsPending => Source.IsPending;
 
@@ -220,7 +235,7 @@ public sealed class SnapshotView
         [
             new MetricTile
             {
-                Label = "延迟 / LATENCY",
+                Label = T("L.MetricLatency"),
                 Value = Fmt.Fixed(latency),
                 Number = latency,
                 Decimals = 1,
@@ -232,36 +247,36 @@ public sealed class SnapshotView
             },
             new MetricTile
             {
-                Label = "抖动 / JITTER",
+                Label = T("L.MetricJitter"),
                 Value = Fmt.Fixed(jitter),
                 Number = jitter,
                 Decimals = 1,
                 Unit = "ms",
-                Foot = "相邻包差均值",
+                Foot = T("L.AdjacentMean"),
                 IsGood = jitter <= 5,
                 IsWarn = jitter is > 5 and <= 15,
                 IsBad = jitter > 15,
             },
             new MetricTile
             {
-                Label = "丢包 / LOSS",
+                Label = T("L.MetricLoss"),
                 Value = Fmt.Fixed(loss),
                 Number = loss,
                 Decimals = 1,
                 Unit = "%",
-                Foot = $"{s.Latency.Received}/{s.Latency.Sent} 已返回",
+                Foot = $"{s.Latency.Received}/{s.Latency.Sent} {T("L.Returned")}",
                 IsGood = loss <= 0.5,
                 IsWarn = loss is > 0.5 and <= 3,
                 IsBad = loss > 3,
             },
             new MetricTile
             {
-                Label = "下载 / DOWNLOAD",
+                Label = T("L.MetricDownload"),
                 Value = hasBandwidth ? Fmt.Compact(down) : "—",
                 Number = down,
                 Decimals = down >= 100 ? 0 : 1,
                 Unit = "Mbps",
-                Foot = s.HasUpload ? $"上行 {Fmt.Compact(s.UploadMbps)} Mbps" : "未测速",
+                Foot = s.HasUpload ? $"{T("L.Uplink")} {Fmt.Compact(s.UploadMbps)} Mbps" : T("L.NotTested"),
                 IsPlaceholder = !hasBandwidth,
                 IsGood = hasBandwidth && down >= 100,
                 IsWarn = hasBandwidth && down is >= 30 and < 100,
