@@ -217,6 +217,12 @@ public sealed class LocalizationService
             ["L.Score"] = ("Score", "评分"),
             ["L.NotMeasured"] = ("Not measured", "未测"),
             ["L.Flat"] = ("No change", "持平"),
+            ["L.Today"] = ("Today", "今天"),
+            ["L.YesterdayEvening"] = ("Yesterday evening", "昨天晚上"),
+            ["L.Nov9"] = ("Nov 9", "11 月 9 日"),
+            ["L.ThisScan"] = ("This scan", "本次检测"),
+            ["L.VsLast"] = ("vs last", "较上次"),
+            ["L.Example"] = ("Example", "示例"),
         };
 
     private ResourceDictionary? _dictionary;

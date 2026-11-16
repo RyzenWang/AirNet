@@ -1,4 +1,5 @@
 using System.Globalization;
+using AirNet.App.Localization;
 using AirNet.Core.History;
 using AirNet.Core.Probes;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -25,13 +26,13 @@ public partial class OverviewViewModel : ObservableObject
     private string _latestScoreText = "—";
 
     [ObservableProperty]
-    private string _latestVerdict = "等待检测";
+    private string _latestVerdict = T("L.WaitingForScan");
 
     [ObservableProperty]
-    private string _latestTimeText = "未检测";
+    private string _latestTimeText = T("L.NotScanned");
 
     [ObservableProperty]
-    private string _recentCaption = "本机实测";
+    private string _recentCaption = T("L.LocalMeasurement");
 
     public void Refresh(SnapshotView view)
     {
@@ -45,7 +46,7 @@ public partial class OverviewViewModel : ObservableObject
         {
             if (RecentRuns.Count == 0)
             {
-                RecentCaption = "本机实测";
+                RecentCaption = T("L.LocalMeasurement");
             }
 
             return;
@@ -55,8 +56,8 @@ public partial class OverviewViewModel : ObservableObject
         [
             new RecentRun
             {
-                Title = $"{view.SsidText} · 本次检测",
-                Subtitle = $"延迟 {view.LatencyAvgText} ms · 丢包 {view.LossText}% · 下行 {view.DownloadText}",
+                Title = $"{view.SsidText} · {T("L.ThisScan")}",
+                Subtitle = $"{T("L.Latency")} {view.LatencyAvgText} ms · {T("L.Loss")} {view.LossText}% · {T("L.Download")} {view.DownloadText}",
                 ScoreText = view.ScoreText,
                 TimeText = view.CapturedAtText,
                 IsGood = view.IsGood,
@@ -67,7 +68,7 @@ public partial class OverviewViewModel : ObservableObject
             },
             new RecentRun
             {
-                Title = "Wi-Fi 5 GHz · 昨天晚上",
+                Title = $"Wi-Fi 5 GHz · {T("L.YesterdayEvening")}",
                 Subtitle = "延迟 31.4 ms · 丢包 0.0% · 下行 342 Mbps",
                 ScoreText = "88",
                 TimeText = "20:42",
@@ -77,7 +78,7 @@ public partial class OverviewViewModel : ObservableObject
             },
             new RecentRun
             {
-                Title = "有线以太网 · 11 月 9 日",
+                Title = $"{T("L.Lan")} · {T("L.Nov9")}",
                 Subtitle = "延迟 9.8 ms · 丢包 0.0% · 下行 941 Mbps",
                 ScoreText = "97",
                 TimeText = "10:06",
@@ -88,7 +89,7 @@ public partial class OverviewViewModel : ObservableObject
         if (RecentRuns.Count == 0)
         {
             RecentRuns = _seedRuns;
-            RecentCaption = "示例";
+            RecentCaption = T("L.Example");
         }
     }
 
@@ -99,7 +100,7 @@ public partial class OverviewViewModel : ObservableObject
         if (records.Count == 0)
         {
             RecentRuns = Shell.IsDemo ? _seedRuns : [];
-            RecentCaption = Shell.IsDemo ? "示例" : "本机实测";
+            RecentCaption = Shell.IsDemo ? T("L.Example") : T("L.LocalMeasurement");
             return;
         }
 
@@ -111,13 +112,13 @@ public partial class OverviewViewModel : ObservableObject
         }
 
         RecentRuns = rows;
-        RecentCaption = "本机实测";
+        RecentCaption = T("L.LocalMeasurement");
     }
 
     public void ResetRecentRuns()
     {
         RecentRuns = Shell.IsDemo ? _seedRuns : [];
-        RecentCaption = Shell.IsDemo ? "示例" : "本机实测";
+        RecentCaption = Shell.IsDemo ? T("L.Example") : T("L.LocalMeasurement");
     }
 
     private static RecentRun ToRow(HistoryRecord record, HistoryRecord? previous)
@@ -126,21 +127,42 @@ public partial class OverviewViewModel : ObservableObject
         var isToday = local.Date == DateTimeOffset.Now.Date;
         var title = string.IsNullOrEmpty(record.Ssid) ? record.Kind : $"{record.Kind} · {record.Ssid}";
         var delta = HistoryDelta.Compare(record, previous);
+        var culture = LocalizationService.Current.Culture;
+        var day = isToday
+            ? T("L.Today")
+            : local.ToString(LocalizationService.Current.IsChinese ? "M月d日" : "MMM d", culture);
 
         return new RecentRun
         {
-            Title = $"{title} · {(isToday ? "今天" : local.ToString("M月d日", CultureInfo.InvariantCulture))}",
-            Subtitle = $"延迟 {Fmt.Fixed(record.LatencyAvg)} ms · 丢包 {Fmt.Fixed(record.Loss)}% · 下行 {Fmt.Mbps(record.DownMbps)}",
+            Title = $"{title} · {day}",
+            Subtitle = $"{T("L.Latency")} {Fmt.Fixed(record.LatencyAvg)} ms · {T("L.Loss")} {Fmt.Fixed(record.Loss)}% · {T("L.Download")} {Fmt.Mbps(record.DownMbps)}",
             ScoreText = record.Score.ToString(CultureInfo.InvariantCulture),
             TimeText = local.ToString("HH:mm", CultureInfo.InvariantCulture),
             IsGood = record.Score >= 90,
             IsWarn = record.Score is >= 60 and < 90,
             IsBad = record.Score < 60,
-            DeltaText = delta.Text,
+            DeltaText = FormatDelta(delta),
             DeltaImproved = delta.IsImprovement,
             DeltaRegressed = delta.IsRegression,
         };
     }
+
+    private static string T(string key) => LocalizationService.Current.T(key);
+
+    private static string FormatDelta(HistoryDelta delta)
+    {
+        var parts = new List<string>(4);
+        if (delta.ScoreDelta != 0) parts.Add($"{T("L.Score")} {Signed(delta.ScoreDelta, "0")}");
+        if (delta.LatencyDelta != 0) parts.Add($"{T("L.Latency")} {Signed(delta.LatencyDelta, "0.0")}");
+        if (delta.JitterDelta != 0) parts.Add($"{T("L.Jitter")} {Signed(delta.JitterDelta, "0.0")}");
+        if (delta.DownDelta != 0) parts.Add($"{T("L.Download")} {Signed(delta.DownDelta, "0.#")}");
+        return parts.Count == 0 ? string.Empty : $"{T("L.VsLast")} {string.Join(" · ", parts)}";
+    }
+
+    private static string Signed(double value, string format) =>
+        value > 0
+            ? $"+{value.ToString(format, CultureInfo.InvariantCulture)}"
+            : $"−{Math.Abs(value).ToString(format, CultureInfo.InvariantCulture)}";
 }
 
 /// <summary>
