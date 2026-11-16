@@ -30,8 +30,8 @@
     <Grid MaxWidth="1160" Margin="24,18,24,26" RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
         <StackPanel Spacing="1">
-          <TextBlock Text="历史趋势" Classes="h3" />
-          <TextBlock Text="把每次检测连起来，看延迟、评分和时段规律。"
+          <TextBlock Text="{DynamicResource L.History}" Classes="h3" />
+          <TextBlock Text="{DynamicResource L.HistorySubtitle}"
                      Classes="caption"
                      FontSize="10.5" />
         </StackPanel>
@@ -46,12 +46,12 @@
                       Classes.active="{Binding IsSevenDayRange}"
                       Command="{Binding SetRangeCommand}"
                       CommandParameter="7"
-                      Content="7 天" />
+                      Content="{DynamicResource L.Days7}" />
               <Button Classes="seg"
                       Classes.active="{Binding IsThirtyDayRange}"
                       Command="{Binding SetRangeCommand}"
                       CommandParameter="30"
-                      Content="30 天" />
+                      Content="{DynamicResource L.Days30}" />
             </StackPanel>
           </Border>
           <Button Classes="ghost"
@@ -61,7 +61,7 @@
                   Command="{Binding RefreshCommand}">
             <StackPanel Orientation="Horizontal" Spacing="5">
               <Path Classes="icon small muted" Data="{StaticResource IconRefresh}" />
-              <TextBlock Text="刷新" FontSize="10.5" VerticalAlignment="Center" />
+              <TextBlock Text="{DynamicResource L.Refresh}" FontSize="10.5" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
         </StackPanel>
@@ -90,8 +90,8 @@
                   HorizontalAlignment="Center"
                   VerticalAlignment="Center" />
           </Border>
-          <TextBlock Text="还没有历史记录" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" />
-          <TextBlock Text="完成一次真实检测后，趋势会从这次开始累积。"
+          <TextBlock Text="{DynamicResource L.NoHistoryTitle}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" />
+          <TextBlock Text="{DynamicResource L.NoHistoryNote}"
                      Classes="caption"
                      FontSize="10.5"
                      HorizontalAlignment="Center" />
@@ -100,7 +100,7 @@
                   MinHeight="30"
                   Padding="12,0"
                   Margin="0,8,0,0"
-                  Content="开始检测"
+                  Content="{DynamicResource L.StartScan}"
                   Command="{Binding Shell.RunScanCommand}" />
         </StackPanel>
       </Border>
@@ -110,7 +110,7 @@
         <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
           <Border Classes="summary">
             <StackPanel Spacing="2">
-              <TextBlock Text="平均评分" Classes="eyebrow" />
+              <TextBlock Text="{DynamicResource L.AverageScore}" Classes="eyebrow" />
               <StackPanel Orientation="Horizontal" Spacing="4">
                 <TextBlock Text="{Binding AverageScoreText}" Classes="trendValue" />
                 <TextBlock Text="/ 100" Classes="unit" VerticalAlignment="Bottom" />
@@ -120,32 +120,32 @@
           </Border>
           <Border Grid.Column="1" Classes="summary">
             <StackPanel Spacing="2">
-              <TextBlock Text="平均延迟" Classes="eyebrow" />
+              <TextBlock Text="{DynamicResource L.AverageLatency}" Classes="eyebrow" />
               <StackPanel Orientation="Horizontal" Spacing="4">
                 <TextBlock Text="{Binding AverageLatencyText}" Classes="trendValue" />
                 <TextBlock Text="ms" Classes="unit" VerticalAlignment="Bottom" />
               </StackPanel>
-              <TextBlock Text="每次检测的平均值" Classes="micro" />
+              <TextBlock Text="{DynamicResource L.PerScanAverage}" Classes="micro" />
             </StackPanel>
           </Border>
           <Border Grid.Column="2" Classes="summary">
             <StackPanel Spacing="2">
-              <TextBlock Text="平均抖动" Classes="eyebrow" />
+              <TextBlock Text="{DynamicResource L.AverageJitter}" Classes="eyebrow" />
               <StackPanel Orientation="Horizontal" Spacing="4">
                 <TextBlock Text="{Binding AverageJitterText}" Classes="trendValue" />
                 <TextBlock Text="ms" Classes="unit" VerticalAlignment="Bottom" />
               </StackPanel>
-              <TextBlock Text="相邻样本差均值" Classes="micro" />
+              <TextBlock Text="{DynamicResource L.JitterDefinition}" Classes="micro" />
             </StackPanel>
           </Border>
           <Border Grid.Column="3" Classes="summary">
             <StackPanel Spacing="2">
-              <TextBlock Text="平均丢包" Classes="eyebrow" />
+              <TextBlock Text="{DynamicResource L.AverageLoss}" Classes="eyebrow" />
               <StackPanel Orientation="Horizontal" Spacing="4">
                 <TextBlock Text="{Binding AverageLossText}" Classes="trendValue" />
                 <TextBlock Text="%" Classes="unit" VerticalAlignment="Bottom" />
               </StackPanel>
-              <TextBlock Text="来自 ICMP 探测" Classes="micro" />
+              <TextBlock Text="{DynamicResource L.FromIcmp}" Classes="micro" />
             </StackPanel>
           </Border>
         </Grid>
@@ -155,7 +155,7 @@
           <Border Classes="card" Padding="16,13">
             <StackPanel Spacing="8">
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="延迟趋势" Classes="h3" FontSize="13" />
+                <TextBlock Text="{DynamicResource L.LatencyTrend}" Classes="h3" FontSize="13" />
                 <TextBlock Grid.Column="1"
                            Text="{Binding RangeCaption}"
                            Classes="micro"
@@ -185,8 +185,8 @@
                            VerticalAlignment="Bottom" />
               </Grid>
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="按检测时间从左到右" Classes="micro" FontSize="9.5" />
-                <TextBlock Grid.Column="1" Text="每次检测的平均延迟" Classes="micro" FontSize="9.5" />
+                <TextBlock Text="{DynamicResource L.TimeLeftToRight}" Classes="micro" FontSize="9.5" />
+                <TextBlock Grid.Column="1" Text="{DynamicResource L.EachScanLatency}" Classes="micro" FontSize="9.5" />
               </Grid>
             </StackPanel>
           </Border>
@@ -195,8 +195,8 @@
           <Border Grid.Column="1" Classes="card" Padding="16,13">
             <StackPanel Spacing="8">
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="时段观察" Classes="h3" FontSize="13" />
-                <TextBlock Grid.Column="1" Text="本地时间" Classes="micro" FontSize="9.5" />
+                <TextBlock Text="{DynamicResource L.TimeOfDay}" Classes="h3" FontSize="13" />
+                <TextBlock Grid.Column="1" Text="{DynamicResource L.LocalTime}" Classes="micro" FontSize="9.5" />
               </Grid>
               <ItemsControl ItemsSource="{Binding Buckets}">
                 <ItemsControl.ItemTemplate>
@@ -233,7 +233,7 @@
           <Border Classes="card" Padding="16,13">
             <StackPanel Spacing="8">
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="评分趋势" Classes="h3" FontSize="13" />
+                <TextBlock Text="{DynamicResource L.ScoreTrend}" Classes="h3" FontSize="13" />
                 <TextBlock Grid.Column="1" Text="{Binding RangeCaption}" Classes="micro" FontSize="10" />
               </Grid>
               <Grid Height="122">
@@ -264,8 +264,8 @@
           <Border Grid.Column="1" Classes="card" Padding="16,13">
             <StackPanel Spacing="6">
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="最近记录" Classes="h3" FontSize="13" />
-                <TextBlock Grid.Column="1" Text="最近 8 次" Classes="micro" FontSize="9.5" />
+                <TextBlock Text="{DynamicResource L.RecentRecords}" Classes="h3" FontSize="13" />
+                <TextBlock Grid.Column="1" Text="{DynamicResource L.Last8}" Classes="micro" FontSize="9.5" />
               </Grid>
               <ItemsControl ItemsSource="{Binding RecentRuns}">
                 <ItemsControl.ItemTemplate>
@@ -309,8 +309,8 @@
         <Border Classes="card" Padding="16,13">
           <StackPanel Spacing="8">
             <Grid ColumnDefinitions="*,Auto">
-              <TextBlock Text="两次检测对比" Classes="h3" FontSize="13" />
-              <TextBlock Grid.Column="1" Text="选 A / B 看完整差异" Classes="micro" FontSize="9.5" />
+              <TextBlock Text="{DynamicResource L.ABCompare}" Classes="h3" FontSize="13" />
+              <TextBlock Grid.Column="1" Text="{DynamicResource L.PickAB}" Classes="micro" FontSize="9.5" />
             </Grid>
 
             <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="8">
@@ -324,7 +324,7 @@
                   </DataTemplate>
                 </ComboBox.ItemTemplate>
               </ComboBox>
-              <TextBlock Grid.Column="1" Text="对比" Classes="caption" FontSize="10" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="{DynamicResource L.Compare}" Classes="caption" FontSize="10" VerticalAlignment="Center" />
               <ComboBox Grid.Column="2"
                         ItemsSource="{Binding CompareOptions}"
                         SelectedItem="{Binding CompareB}"
@@ -343,17 +343,17 @@
                        FontSize="9.5"
                        LineHeight="14"
                        TextWrapping="Wrap" />
-            <TextBlock Text="至少完成两次检测后，可选两条记录做 A/B 对比。"
+            <TextBlock Text="{DynamicResource L.CompareEmpty}"
                        Classes="caption"
                        FontSize="10"
                        IsVisible="{Binding ShowCompareEmpty}" />
 
             <Grid IsVisible="{Binding HasComparison}" RowDefinitions="Auto,Auto" RowSpacing="3">
               <Grid ColumnDefinitions="90,120,120,130" ColumnSpacing="8" HorizontalAlignment="Left">
-                <TextBlock Text="指标" Classes="eyebrow" FontSize="8.5" />
+                <TextBlock Text="{DynamicResource L.Metric}" Classes="eyebrow" FontSize="8.5" />
                 <TextBlock Grid.Column="1" Text="A" Classes="eyebrow" FontSize="8.5" />
                 <TextBlock Grid.Column="2" Text="B" Classes="eyebrow" FontSize="8.5" />
-                <TextBlock Grid.Column="3" Text="变化" Classes="eyebrow" FontSize="8.5" />
+                <TextBlock Grid.Column="3" Text="{DynamicResource L.Change}" Classes="eyebrow" FontSize="8.5" />
               </Grid>
               <ItemsControl Grid.Row="1" ItemsSource="{Binding CompareRows}" HorizontalAlignment="Left">
                 <ItemsControl.ItemTemplate>
