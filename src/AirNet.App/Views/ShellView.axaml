@@ -73,7 +73,7 @@
                     StrokeJoin="Round"
                     Stretch="Uniform"
                     VerticalAlignment="Center" />
-              <TextBlock Text="开始检测" FontSize="12" FontWeight="SemiBold" />
+              <TextBlock Text="{DynamicResource L.StartScan}" FontSize="12" FontWeight="SemiBold" />
             </StackPanel>
           </Button>
           <Button Classes="soft"
@@ -89,7 +89,7 @@
                     Fill="{DynamicResource AccentTextBrush}"
                     Stretch="Uniform"
                     VerticalAlignment="Center" />
-              <TextBlock Text="停止" FontSize="12" FontWeight="SemiBold" />
+              <TextBlock Text="{DynamicResource L.Stop}" FontSize="12" FontWeight="SemiBold" />
             </StackPanel>
           </Button>
 
@@ -160,7 +160,7 @@
           </StackPanel>
 
           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7" HorizontalAlignment="Right" VerticalAlignment="Center">
-            <TextBlock Text="自动刷新" Classes="caption" VerticalAlignment="Center" />
+            <TextBlock Text="{DynamicResource L.AutoRefresh}" Classes="caption" VerticalAlignment="Center" />
             <ToggleButton Classes="switch"
                           IsChecked="{Binding Settings.AutoRefresh, Mode=TwoWay}"
                           ToolTip.Tip="每 60 秒自动检测一次；窗口最小化时暂停"
@@ -174,7 +174,7 @@
                     Click="OnExportReportClick">
               <StackPanel Orientation="Horizontal" Spacing="6">
                 <Path Classes="icon small muted" Data="{StaticResource IconReport}" />
-                <TextBlock Text="导出报告" FontSize="11.5" VerticalAlignment="Center" />
+                <TextBlock Text="{DynamicResource L.ExportReport}" FontSize="11.5" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
           </StackPanel>
@@ -207,43 +207,43 @@
               <Button Classes="nav" Classes.active="{Binding IsOverviewSelected}" Command="{Binding NavigateCommand}" CommandParameter="Overview">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Path Classes="navIcon" Data="{StaticResource IconLayers}" />
-                  <TextBlock Classes="navLabel" Text="总览" FontSize="12.5" VerticalAlignment="Center" />
+                  <TextBlock Classes="navLabel" Text="{DynamicResource L.Overview}" FontSize="12.5" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
               <Button Classes="nav" Classes.active="{Binding IsMonitorSelected}" Command="{Binding NavigateCommand}" CommandParameter="Monitor">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Path Classes="navIcon" Data="{StaticResource IconActivity}" />
-                  <TextBlock Classes="navLabel" Text="实时检测" FontSize="12.5" VerticalAlignment="Center" />
+                  <TextBlock Classes="navLabel" Text="{DynamicResource L.Monitor}" FontSize="12.5" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
               <Button Classes="nav" Classes.active="{Binding IsSpeedSelected}" Command="{Binding NavigateCommand}" CommandParameter="Speed">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Path Classes="navIcon" Data="{StaticResource IconGauge}" />
-                  <TextBlock Classes="navLabel" Text="带宽测速" FontSize="12.5" VerticalAlignment="Center" />
+                  <TextBlock Classes="navLabel" Text="{DynamicResource L.Speed}" FontSize="12.5" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
               <Button Classes="nav" Classes.active="{Binding IsSitesSelected}" Command="{Binding NavigateCommand}" CommandParameter="Sites">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Path Classes="navIcon" Data="{StaticResource IconGlobe}" />
-                  <TextBlock Classes="navLabel" Text="网站延迟" FontSize="12.5" VerticalAlignment="Center" />
+                  <TextBlock Classes="navLabel" Text="{DynamicResource L.Sites}" FontSize="12.5" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
               <Button Classes="nav" Classes.active="{Binding IsPathSelected}" Command="{Binding NavigateCommand}" CommandParameter="Path">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Path Classes="navIcon" Data="{StaticResource IconTarget}" />
-                  <TextBlock Classes="navLabel" Text="链路路径" FontSize="12.5" VerticalAlignment="Center" />
+                  <TextBlock Classes="navLabel" Text="{DynamicResource L.Path}" FontSize="12.5" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
               <Button Classes="nav" Classes.active="{Binding IsHistorySelected}" Command="{Binding NavigateCommand}" CommandParameter="History">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Path Classes="navIcon" Data="{StaticResource IconHistory}" />
-                  <TextBlock Classes="navLabel" Text="历史趋势" FontSize="12.5" VerticalAlignment="Center" />
+                  <TextBlock Classes="navLabel" Text="{DynamicResource L.History}" FontSize="12.5" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
               <Button Classes="nav" Classes.active="{Binding IsSettingsSelected}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Path Classes="navIcon" Data="{StaticResource IconSliders}" />
-                  <TextBlock Classes="navLabel" Text="设置" FontSize="12.5" VerticalAlignment="Center" />
+                  <TextBlock Classes="navLabel" Text="{DynamicResource L.Settings}" FontSize="12.5" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
             </StackPanel>
@@ -251,14 +251,14 @@
 
           <StackPanel Grid.Row="1" Margin="18,14,18,0" Spacing="10" VerticalAlignment="Top">
             <Border Classes="hairline" Margin="0,0,0,4" />
-            <TextBlock Text="本机链路" Classes="eyebrow" />
+            <TextBlock Text="{DynamicResource L.LocalLink}" Classes="eyebrow" />
             <StackPanel Spacing="7">
               <Grid ColumnDefinitions="52,*">
-                <TextBlock Text="局域网" Classes="micro" />
+                <TextBlock Text="{DynamicResource L.Lan}" Classes="micro" />
                 <TextBlock Grid.Column="1" Text="{Binding View.LocalAddress}" Classes="mono" FontSize="10.5" TextTrimming="CharacterEllipsis" />
               </Grid>
               <Grid ColumnDefinitions="52,*">
-                <TextBlock Text="网关" Classes="micro" />
+                <TextBlock Text="{DynamicResource L.Gateway}" Classes="micro" />
                 <TextBlock Grid.Column="1" Text="{Binding View.GatewayAddress}" Classes="mono" FontSize="10.5" TextTrimming="CharacterEllipsis" />
               </Grid>
               <Grid ColumnDefinitions="52,*">
@@ -266,7 +266,7 @@
                 <TextBlock Grid.Column="1" Text="{Binding View.DnsServer}" Classes="mono" FontSize="10.5" TextTrimming="CharacterEllipsis" />
               </Grid>
               <Grid ColumnDefinitions="52,*">
-                <TextBlock Text="出口" Classes="micro" />
+                <TextBlock Text="{DynamicResource L.Egress}" Classes="micro" />
                 <TextBlock Grid.Column="1" Text="{Binding View.EgressText}" Classes="mono" FontSize="10.5" TextTrimming="CharacterEllipsis" />
               </Grid>
             </StackPanel>
@@ -276,9 +276,9 @@
             <StackPanel Spacing="3">
               <StackPanel Orientation="Horizontal" Spacing="6">
                 <Path Classes="icon small accent" Data="{StaticResource IconShield}" Width="13" Height="13" />
-                <TextBlock Text="轻量模式" FontSize="11" FontWeight="SemiBold" />
+                <TextBlock Text="{DynamicResource L.LightweightMode}" FontSize="11" FontWeight="SemiBold" />
               </StackPanel>
-              <TextBlock Text="无常驻 · 无驱动 · 仅在检测时联网"
+              <TextBlock Text="{DynamicResource L.LightweightNote}"
                          Classes="micro"
                          FontSize="10"
                          Foreground="{DynamicResource TextSecondaryBrush}"

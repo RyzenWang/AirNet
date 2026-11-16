@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using AirNet.Core.Probes;
 using AirNet.Core.Services;
+using AirNet.App.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -118,6 +119,19 @@ public partial class SettingsViewModel : ObservableObject
     public bool HasPlatformNote => PlatformNote.Length > 0;
     public string PrivacyText =>
         "测量在本机完成；出口 IP 查询会访问 3322 / Cloudflare，不上传本地字段。历史记录仅保存在本地。";
+
+    public bool IsChineseLanguage => LocalizationService.Current.IsChinese;
+    public bool IsEnglishLanguage => LocalizationService.Current.IsEnglish;
+
+    [RelayCommand]
+    private void SetLanguage(string? language)
+    {
+        LocalizationService.Current.Apply(language);
+        Shell.Preferences.Language = LocalizationService.Current.Language;
+        Shell.SavePreferences();
+        OnPropertyChanged(nameof(IsChineseLanguage));
+        OnPropertyChanged(nameof(IsEnglishLanguage));
+    }
 
     public bool CanApplyDns => DnsPlan.IsWorthChanging;
     public bool HasDnsEvidence => DnsServerRows.Count > 0;

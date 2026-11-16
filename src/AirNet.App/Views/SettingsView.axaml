@@ -6,16 +6,16 @@
   <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
     <Grid MaxWidth="1000" Margin="24,18,24,26" RowDefinitions="Auto,*" RowSpacing="12">
       <StackPanel Grid.Row="0" Spacing="1">
-        <TextBlock Text="设置" Classes="h3" />
-        <TextBlock Text="所有选项即时生效，配置保存在本机" Classes="caption" FontSize="10.5" />
+        <TextBlock Text="{DynamicResource L.Settings}" Classes="h3" />
+        <TextBlock Text="{DynamicResource L.SettingsNote}" Classes="caption" FontSize="10.5" />
       </StackPanel>
 
       <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="12">
         <StackPanel Spacing="12">
           <Border Classes="card" Padding="18,16">
             <StackPanel Spacing="11">
-              <TextBlock Text="外观" Classes="h3" FontSize="13.5" />
-              <TextBlock Text="与 AirPDF 共用同一套纸张色板，介于暖白与墨黑之间。"
+              <TextBlock Text="{DynamicResource L.Theme}" Classes="h3" FontSize="13.5" />
+              <TextBlock Text="{DynamicResource L.AppearanceNote}"
                          Classes="caption"
                          FontSize="10.5"
                          LineHeight="16"
@@ -31,19 +31,42 @@
                           Classes.active="{Binding Shell.IsSystemTheme}"
                           Command="{Binding Shell.SetThemeModeCommand}"
                           CommandParameter="System"
-                          Content="跟随系统" />
+                          Content="{DynamicResource L.FollowSystem}" />
                   <Button Classes="seg"
                           Classes.active="{Binding Shell.IsLightTheme}"
                           Command="{Binding Shell.SetThemeModeCommand}"
                           CommandParameter="Light"
-                          Content="浅色" />
+                          Content="{DynamicResource L.Light}" />
                   <Button Classes="seg"
                           Classes.active="{Binding Shell.IsDarkTheme}"
                           Command="{Binding Shell.SetThemeModeCommand}"
                           CommandParameter="Dark"
-                          Content="深色" />
+                          Content="{DynamicResource L.Dark}" />
                 </StackPanel>
               </Border>
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <TextBlock Text="{DynamicResource L.Language}" Classes="caption" VerticalAlignment="Center" />
+                <Border Grid.Column="1"
+                        Background="{DynamicResource SurfaceAltBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="9"
+                        Padding="3"
+                        HorizontalAlignment="Left">
+                  <StackPanel Orientation="Horizontal" Spacing="2">
+                    <Button Classes="seg"
+                            Classes.active="{Binding IsChineseLanguage}"
+                            Command="{Binding SetLanguageCommand}"
+                            CommandParameter="zh-CN"
+                            Content="{DynamicResource L.Chinese}" />
+                    <Button Classes="seg"
+                            Classes.active="{Binding IsEnglishLanguage}"
+                            Command="{Binding SetLanguageCommand}"
+                            CommandParameter="en"
+                            Content="{DynamicResource L.English}" />
+                  </StackPanel>
+                </Border>
+              </Grid>
             </StackPanel>
           </Border>
 

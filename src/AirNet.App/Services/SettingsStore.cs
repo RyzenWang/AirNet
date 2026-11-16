@@ -10,6 +10,7 @@ public sealed class AppSettings
     public bool DualProbe { get; set; } = true;
     public bool KeepHistory { get; set; } = true;
     public string Theme { get; set; } = "Light";
+    public string Language { get; set; } = "zh-CN";
 }
 
 /// <summary>Source-generated JSON keeps the settings file trim-safe like the history store.</summary>

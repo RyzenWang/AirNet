@@ -49,6 +49,7 @@ public partial class ShellViewModel : ObservableObject
 
         // Preferences are loaded before the page view models so their initial values match disk.
         Preferences = _settingsStore.Load();
+        Localization.LocalizationService.Current.Apply(Preferences.Language);
 
         // Eases the progress bar toward the phase target so it glides instead of stepping.
         _scanTicker = new Avalonia.Threading.DispatcherTimer(
