@@ -394,13 +394,67 @@ public sealed class SnapshotView
             .ToList();
     }
 
+    private static string LocalizeFindingTitle(string title)
+    {
+        if (LocalizationService.Current.IsChinese)
+        {
+            return title;
+        }
+
+        if (title.StartsWith("丢包 ", StringComparison.Ordinal)) return title.Replace("丢包 ", "Packet loss ", StringComparison.Ordinal);
+        if (title.StartsWith("抖动 ", StringComparison.Ordinal)) return title.Replace("抖动 ", "Jitter ", StringComparison.Ordinal).Replace(" 偏高", " high", StringComparison.Ordinal);
+        if (title.StartsWith("DNS 解析 ", StringComparison.Ordinal)) return title.Replace("DNS 解析 ", "DNS lookup ", StringComparison.Ordinal);
+        if (title.StartsWith("首包 ", StringComparison.Ordinal)) return title.Replace("首包 ", "First byte ", StringComparison.Ordinal);
+        if (title.StartsWith("上行只有 ", StringComparison.Ordinal)) return title.Replace("上行只有 ", "Upload only ", StringComparison.Ordinal);
+        return title switch
+        {
+            "无线信号偏弱" => "Weak Wi-Fi signal",
+            "ICMP 被拦截" => "ICMP filtered",
+            "首包分解不可用" => "First-byte split unavailable",
+            "测量经过 VPN" => "Measurement goes through a VPN",
+            "测量经过系统代理" => "Measurement goes through a system proxy",
+            "IPv6 明显更慢" => "IPv6 is much slower",
+            "IPv6 更快" => "IPv6 is faster",
+            _ => title,
+        };
+    }
+
+    private static string LocalizeFindingDetail(string title) => title switch
+    {
+        "Weak Wi-Fi signal" => "Signal is weak; move closer to the router or use 6 GHz.",
+        "ICMP filtered" => "ICMP is filtered; TCP handshake timing is used instead and remains reliable.",
+        "First-byte split unavailable" => "The first-byte timing could not be measured this time.",
+        "Measurement goes through a VPN" => "The numbers describe the VPN exit, not the local carrier path.",
+        "Measurement goes through a system proxy" => "HTTP measurements use the proxy; ICMP loss and TCP timing still use the real path.",
+        "IPv6 is much slower" => "Applications may try IPv6 first; a fallback timeout becomes first-byte latency.",
+        "IPv6 is faster" => "IPv6 is faster on this path; prefer it when the application supports it.",
+        _ when title.StartsWith("First byte", StringComparison.Ordinal) => "The server or path is queueing after the TLS handshake.",
+        _ when title.StartsWith("DNS lookup", StringComparison.Ordinal) => "Slow DNS delays every new connection; a lower-latency resolver helps.",
+        _ when title.StartsWith("Packet loss", StringComparison.Ordinal) => "Loss above 2% breaks real-time video and calls. Check wireless interference or the cable.",
+        _ when title.StartsWith("Jitter", StringComparison.Ordinal) => "Adjacent-packet delay varies; real-time voice and games will stutter.",
+        _ when title.StartsWith("Upload only", StringComparison.Ordinal) => "The uplink is the bottleneck for meetings, backups and cloud sync.",
+        _ => "See the measured values above.",
+    };
+
+    private static string? LocalizeAction(string? action) => action switch
+    {
+        "排查链路" => "Investigate path",
+        "优化 DNS" => "Optimize DNS",
+        "优化信号" => "Improve signal",
+        "查看建议" => "View advice",
+        _ => action,
+    };
+
     private static IReadOnlyList<FindingRow> BuildFindings(NetworkSnapshot s)
     {
-        return s.Findings.Select(finding => new FindingRow
+        return s.Findings.Select(finding =>
         {
-            Title = finding.Title,
-            Detail = finding.Detail,
-            ActionLabel = finding.ActionLabel,
+            var title = LocalizeFindingTitle(finding.Title);
+            return new FindingRow
+        {
+            Title = title,
+            Detail = LocalizationService.Current.IsChinese ? finding.Detail : LocalizeFindingDetail(title),
+            ActionLabel = LocalizationService.Current.IsChinese ? finding.ActionLabel : LocalizeAction(finding.ActionLabel),
             ActionTarget = finding.ActionLabel switch
             {
                 "排查链路" => "Path",
@@ -418,6 +472,7 @@ public sealed class SnapshotView
             IsInfo = finding.Severity == Severity.Info,
             IsWarn = finding.Severity == Severity.Warn,
             IsBad = finding.Severity == Severity.Bad,
+            };
         }).ToList();
     }
 }
