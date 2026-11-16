@@ -236,6 +236,16 @@ public sealed class LocalizationService
             ["L.OnlineGaming"] = ("Online gaming", "在线游戏"),
             ["L.VideoMeeting"] = ("Video meetings", "视频会议"),
             ["L.LargeDownload"] = ("Large downloads", "大文件下载"),
+            ["L.SamplesFormat"] = ("{0} samples", "{0} 次采样"),
+            ["L.PeakFormat"] = ("Peak {0} ms", "峰值 {0} ms"),
+            ["L.Wireless"] = ("wireless", "无线"),
+            ["L.Wired"] = ("wired", "有线"),
+            ["L.Signal"] = ("signal", "信号"),
+            ["L.NotDetected"] = ("Not detected", "未检测"),
+            ["L.NotAcquired"] = ("Not acquired", "未获取"),
+            ["L.EgressFormat"] = ("Egress {0}", "出口 {0}"),
+            ["L.SummaryFormat"] = ("Latency {0} ms, jitter {1} ms, loss {2}% on {3}.", "延迟 {0} ms，抖动 {1} ms，丢包 {2}%，{3}。"),
+            ["L.WifiSignalFormat"] = ("Wi-Fi signal {0}%", "Wi-Fi 信号 {0}%"),
         };
 
     private ResourceDictionary? _dictionary;

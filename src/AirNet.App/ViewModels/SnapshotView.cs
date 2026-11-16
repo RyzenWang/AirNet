@@ -126,6 +126,43 @@ public sealed class SnapshotView
     /// <summary>Placeholder tiles before the first measurement lands.</summary>
     private static string T(string key) => LocalizationService.Current.T(key);
 
+    private string BuildEnglishSummary()
+    {
+        var link = Source.Interface.IsWireless
+            ? Source.Interface.SignalPercent is { } signal
+                ? LocalizationService.Current.Format("L.WifiSignalFormat", signal)
+                : T("L.Wireless")
+            : T("L.Wired");
+        return LocalizationService.Current.Format(
+            "L.SummaryFormat",
+            $"{Source.Latency.AverageMs:0.0}",
+            $"{Source.Latency.JitterMs:0.0}",
+            $"{Source.Latency.LossPercent:0.0}",
+            link);
+    }
+
+    private static string LocalizeScenarioName(string name) => name switch
+    {
+        "网页浏览" => T("L.WebBrowsing"),
+        "4K 视频" => T("L.Video4K"),
+        "在线游戏" => T("L.OnlineGaming"),
+        "视频会议" => T("L.VideoMeeting"),
+        "大文件下载" => T("L.LargeDownload"),
+        _ => name,
+    };
+
+    private static string LocalizeScenarioHint(string hint) => hint switch
+    {
+        "首屏加载与翻页" => "First paint and page turns",
+        "拖拽与缓冲速度" => "Scrubbing and buffering",
+        "操作延迟与命中" => "Input latency and hit registration",
+        "语音连续性与画质" => "Voice continuity and quality",
+        "上行未测，仅按延迟估算" => "Upload not measured; estimated from latency",
+        "峰值吞吐能力" => "Peak throughput",
+        "未测速" => "Not tested",
+        _ => hint,
+    };
+
     public static IReadOnlyList<MetricTile> DemoTiles() =>
     [
         new MetricTile { Label = T("L.MetricLatency"), Value = "—", Unit = "ms", Foot = T("L.WaitingMeasurement"), IsPlaceholder = true, IsGood = true },
@@ -152,7 +189,9 @@ public sealed class SnapshotView
         HealthGrade.Fair => T("L.VerdictFair"),
         _ => T("L.VerdictPoor"),
     };
-    public string Summary => Source.Summary;
+    public string Summary => IsPending
+        ? Source.Summary
+        : LocalizationService.Current.IsEnglish ? BuildEnglishSummary() : Source.Summary;
     public bool IsPending => Source.IsPending;
 
     public IReadOnlyList<double> Series { get; }
@@ -171,19 +210,27 @@ public sealed class SnapshotView
     public bool HasBandwidth => Source.HasBandwidth;
     public string DnsText => Source.DnsMs <= 0 ? "未测" : Fmt.Fixed(Source.DnsMs);
 
-    public string SampleCountText => IsPending ? "—" : $"{Source.Latency.Sent} 次采样";
-    public string PeakText => Series.Count == 0 ? "-" : $"峰值 {Series.Max():0} ms";
+    public string SampleCountText => IsPending
+        ? "—"
+        : LocalizationService.Current.Format("L.SamplesFormat", Source.Latency.Sent);
+    public string PeakText => Series.Count == 0
+        ? "-"
+        : LocalizationService.Current.Format("L.PeakFormat", $"{Series.Max():0}");
     public string CapturedAtText => IsPending ? "—" : Source.CapturedAt.ToLocalTime().ToString("HH:mm:ss", CultureInfo.InvariantCulture);
-    public string CapturedDateText => IsPending ? "尚未检测" : Source.CapturedAt.ToLocalTime().ToString("M月d日 HH:mm", CultureInfo.InvariantCulture);
+    public string CapturedDateText => IsPending
+        ? T("L.NotScanned")
+        : Source.CapturedAt.ToLocalTime().ToString(
+            LocalizationService.Current.IsChinese ? "M月d日 HH:mm" : "MMM d HH:mm",
+            LocalizationService.Current.Culture);
 
-    public string InterfaceChip => IsPending ? "未检测" : Source.Interface.Kind;
+    public string InterfaceChip => IsPending ? T("L.NotDetected") : Source.Interface.Kind;
     public string SignalChip => IsPending
-        ? "未检测"
+        ? T("L.NotDetected")
         : Source.Interface.SignalPercent is { } signal
-            ? Source.Interface.RssiDbm is { } dbm ? $"{signal}% · {dbm} dBm" : $"{signal}% 信号"
-            : Source.Interface.IsWireless ? "无线" : "有线";
-    public string EgressChip => $"出口 {Source.EgressText}";
-    public string EgressText => Source.EgressText;
+            ? Source.Interface.RssiDbm is { } dbm ? $"{signal}% · {dbm} dBm" : $"{signal}% {T("L.Signal")}"
+            : Source.Interface.IsWireless ? T("L.Wireless") : T("L.Wired");
+    public string EgressChip => LocalizationService.Current.Format("L.EgressFormat", EgressText);
+    public string EgressText => Source.EgressText == "未获取" ? T("L.NotAcquired") : Source.EgressText;
     public string LocalAddress => Source.Interface.LocalAddress;
     public string GatewayAddress => Source.Interface.Gateway;
     public string DnsServer => Source.Interface.DnsServer;
@@ -289,8 +336,8 @@ public sealed class SnapshotView
     {
         return s.Scenarios.Select(item => new ScenarioRow
         {
-            Name = item.Name,
-            Hint = item.Hint,
+            Name = LocalizeScenarioName(item.Name),
+            Hint = LocalizationService.Current.IsChinese ? item.Hint : LocalizeScenarioHint(item.Hint),
             ScoreText = item.ScoreText,
             Bar = item.IsMeasured ? Math.Clamp(item.Score / 100d, 0, 1) : 0,
             IsPlaceholder = !item.IsMeasured,
