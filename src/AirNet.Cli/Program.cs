@@ -163,7 +163,7 @@ internal static class Program
 
         if (json)
         {
-            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(records));
+            Console.WriteLine(HistoryStore.SerializeRecords(records));
             return 0;
         }
 

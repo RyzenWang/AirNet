@@ -28,6 +28,7 @@ public sealed class HistoryRecord
 /// </summary>
 [JsonSourceGenerationOptions(WriteIndented = false)]
 [JsonSerializable(typeof(HistoryRecord))]
+[JsonSerializable(typeof(List<HistoryRecord>))]
 internal sealed partial class HistoryJsonContext : JsonSerializerContext;
 
 /// <summary>
@@ -54,6 +55,10 @@ public sealed class HistoryStore
     }
 
     public string FilePath { get; }
+
+    /// <summary>Trim/AOT-safe serialization for the CLI's `history --json`.</summary>
+    public static string SerializeRecords(IReadOnlyList<HistoryRecord> records) =>
+        JsonSerializer.Serialize(records.ToList(), HistoryJsonContext.Default.ListHistoryRecord);
 
     public async Task AppendAsync(NetworkSnapshot snapshot, CancellationToken cancellationToken = default)
     {
