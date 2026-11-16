@@ -287,6 +287,26 @@ public partial class PathViewModel : ObservableObject
             return "Gateway → " + delta["网关 → ".Length..];
         }
 
+        if (delta.StartsWith("接入 → ", StringComparison.Ordinal))
+        {
+            return "Access → " + delta["接入 → ".Length..];
+        }
+
+        if (delta.StartsWith("最后一跳 ", StringComparison.Ordinal))
+        {
+            return "Last hop " + delta["最后一跳 ".Length..];
+        }
+
+        if (delta.StartsWith("追踪止于第 ", StringComparison.Ordinal))
+        {
+            return "Trace stopped at hop " + delta["追踪止于第 ".Length..];
+        }
+
+        if (delta.StartsWith("目标 ", StringComparison.Ordinal) && delta.EndsWith(" 未响应", StringComparison.Ordinal))
+        {
+            return "Target " + delta["目标 ".Length..^" 未响应".Length] + " did not respond";
+        }
+
         return delta switch
         {
             "需逐跳追踪" => T("L.TraceNeeded"),
@@ -303,6 +323,8 @@ public partial class PathViewModel : ObservableObject
         "这一段偏长" => T("L.LongSegment"),
         "运行追踪以定位最后一跳" => T("L.TraceLastHop"),
         "等待检测" => T("L.PathWaiting"),
+        _ when note.StartsWith("追踪止于第 ", StringComparison.Ordinal) =>
+            "Trace stopped at hop " + note["追踪止于第 ".Length..],
         "接入段很快" => T("L.AccessFast"),
         "骨干段正常" => T("L.BackboneNormal"),
         "接入段偏慢" => T("L.AccessSlow"),

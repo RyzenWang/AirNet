@@ -271,7 +271,7 @@ public partial class TrendsViewModel : ObservableObject
             .Select(record => new HistoryChoice
             {
                 Record = record,
-                Label = $"{record.At.ToLocalTime():M/d HH:mm} · {record.Score} 分",
+                Label = $"{record.At.ToLocalTime():M/d HH:mm} · {record.Score} {T("L.Points")}",
             })
             .ToList();
 
@@ -303,7 +303,7 @@ public partial class TrendsViewModel : ObservableObject
         CompareSummary = T("L.CompareSummary", CompareA!.Label, CompareB!.Label);
         CompareRows =
         [
-            Compare(T("L.Score"), a.Score, b.Score, "分", higherIsBetter: true),
+            Compare(T("L.Score"), a.Score, b.Score, T("L.Points"), higherIsBetter: true),
             Compare(T("L.Latency"), a.LatencyAvg, b.LatencyAvg, "ms", higherIsBetter: false),
             Compare(T("L.Jitter"), a.Jitter, b.Jitter, "ms", higherIsBetter: false),
             Compare(T("L.Loss"), a.Loss, b.Loss, "%", higherIsBetter: false),
@@ -338,7 +338,7 @@ public partial class TrendsViewModel : ObservableObject
         var diff = b - a;
         var better = !missing && Math.Abs(diff) >= 0.05 && (higherIsBetter ? diff > 0 : diff < 0);
         var worse = !missing && Math.Abs(diff) >= 0.05 && (higherIsBetter ? diff < 0 : diff > 0);
-        var digits = unit == "分" ? "0" : "0.0";
+        var digits = unit == T("L.Points") ? "0" : "0.0";
         var valueFormat = "{0:" + digits + "}";
         var delta = missing
             ? "—"

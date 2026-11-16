@@ -15,7 +15,7 @@ internal static class Fmt
             : value.ToString("0.0", CultureInfo.InvariantCulture);
 
     /// <summary>Bandwidth with its unit, or "未测" when no speed test has run.</summary>
-    public static string Mbps(double value) => value > 0 ? $"{Compact(value)} Mbps" : "未测";
+    public static string Mbps(double value) => value > 0 ? $"{Compact(value)} Mbps" : LocalizationService.Current.T("L.NotMeasured");
 }
 
 /// <summary>One number on the dashboard, with the caption that explains it.</summary>
@@ -210,7 +210,7 @@ public sealed class SnapshotView
     public string DownloadText => Source.DownloadMbps > 0 ? Fmt.Mbps(Source.DownloadMbps) : T("L.NotTested");
     public string UploadText => Fmt.Mbps(Source.UploadMbps);
     public bool HasBandwidth => Source.HasBandwidth;
-    public string DnsText => Source.DnsMs <= 0 ? "未测" : Fmt.Fixed(Source.DnsMs);
+    public string DnsText => Source.DnsMs <= 0 ? T("L.NotMeasured") : Fmt.Fixed(Source.DnsMs);
 
     public string SampleCountText => IsPending
         ? "—"
@@ -285,7 +285,7 @@ public sealed class SnapshotView
     // App-layer breakdown -------------------------------------------------
     public bool HasTiming => Source.Timing.Succeeded;
     public string TimingHostText => Source.Timing.Host;
-    public string TimingTotalText => Source.Timing.Succeeded ? $"{Source.Timing.TotalMs:0} ms" : "未测";
+    public string TimingTotalText => Source.Timing.Succeeded ? $"{Source.Timing.TotalMs:0} ms" : T("L.NotMeasured");
     public string TimingLegendText => Source.Timing.Succeeded
         ? $"DNS {Source.Timing.DnsMs:0} · TCP {Source.Timing.TcpMs:0} · TLS {Source.Timing.TlsMs:0} · 等待 {Source.Timing.TtfbMs:0}"
         : Source.Timing.FailureNote ?? string.Empty;

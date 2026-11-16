@@ -49,7 +49,7 @@ public partial class SpeedViewModel : ObservableObject
     private string _testedAtText = "未测速";
 
     [ObservableProperty]
-    private string _testStatusText = "正在测速…";
+    private string _testStatusText = LocalizationService.Current.T("L.TestingSpeed");
 
     [ObservableProperty]
     private IReadOnlyList<SpeedHistoryBar> _history = [];
@@ -66,8 +66,10 @@ public partial class SpeedViewModel : ObservableObject
     public double UploadGauge => Math.Clamp(UploadMbps / UploadScaleMbps * 100, 0, 100);
     public string LatencyText => $"{Shell.View.LatencyAvgText} ms";
     public string JitterText => $"{Shell.View.JitterText} ms";
-    public string ScaleText => "满量程 1 Gbps / 200 Mbps";
-    public string TestButtonText => IsTesting ? "测速中…" : "开始测速";
+    public string ScaleText => LocalizationService.Current.T("L.FullScale");
+    public string TestButtonText => IsTesting
+        ? LocalizationService.Current.T("L.TestingSpeed")
+        : LocalizationService.Current.T("L.StartSpeedTest");
 
     partial void OnDownloadMbpsChanged(double value)
     {
@@ -90,7 +92,7 @@ public partial class SpeedViewModel : ObservableObject
         if (value)
         {
             _testStartedAt = DateTimeOffset.Now;
-            TestStatusText = "正在测速…";
+            TestStatusText = LocalizationService.Current.T("L.TestingSpeed");
             _testTicker.Start();
         }
         else
@@ -193,8 +195,8 @@ public partial class SpeedViewModel : ObservableObject
             Apply(download, upload, testedAt);
 
             var message = upload > 0
-                ? $"测速完成 · 下行 {DownloadText} · 上行 {UploadText} Mbps"
-                : $"测速完成 · 下行 {DownloadText}（上行未测出，可能被拦截或超时）";
+                ? LocalizationService.Current.Format("L.SpeedDone", DownloadText, UploadText)
+                : LocalizationService.Current.Format("L.SpeedDoneNoUpload", DownloadText);
 
             await Shell.PublishSpeedAsync(download, upload, message).ConfigureAwait(true);
             await RefreshHistoryAsync().ConfigureAwait(true);

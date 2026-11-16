@@ -296,7 +296,7 @@ public partial class MonitorViewModel : ObservableObject
         ChartSeries = [];
         ChartCapacity = MeasurementRunner.IcmpSampleCount;
         IsLive = true;
-        LiveSourceText = "等待首个样本…";
+        LiveSourceText = T("L.WaitingFirstSample");
     }
 
     /// <summary>Called for every real probe sample; the numbers below come straight from them.</summary>
@@ -322,18 +322,19 @@ public partial class MonitorViewModel : ObservableObject
         }
 
         ChartSeries = _liveSeries.ToArray();
-        LiveSourceText = $"{sample.Source} · 第 {sample.Count} 个样本";
+        LiveSourceText = Lfmt("L.SampleLiveFormat", sample.Source, sample.Count);
 
-        LatencyTile = Tile("延迟 / LATENCY", sample.AverageMs, 1, "ms", LiveSourceText,
+        LatencyTile = Tile(T("L.MetricLatency"), sample.AverageMs, 1, "ms", LiveSourceText,
             sample.AverageMs <= 40);
 
         // ICMP reports whole milliseconds, so jitter computed from it is always 0 — showing that
         // would look like a broken gauge. It appears once the TCP phase starts.
         JitterTile = sample.Source == "TCP"
-            ? Tile("抖动 / JITTER", sample.JitterMs, 1, "ms", "相邻包差均值", sample.JitterMs <= 5)
-            : Pending("抖动 / JITTER", "ms", "ICMP 分辨率 1ms");
+            ? Tile(T("L.MetricJitter"), sample.JitterMs, 1, "ms", T("L.AdjacentMean"), sample.JitterMs <= 5)
+            : Pending(T("L.MetricJitter"), "ms", T("L.IcmpResolution"));
 
-        LossTile = Tile("丢包 / LOSS", sample.LossPercent, 1, "%", $"{sample.Count} 个样本", sample.LossPercent <= 0.5);
+        LossTile = Tile(T("L.MetricLoss"), sample.LossPercent, 1, "%",
+            Lfmt("L.SampleCountFormat", sample.Count), sample.LossPercent <= 0.5);
     }
 
     [RelayCommand]

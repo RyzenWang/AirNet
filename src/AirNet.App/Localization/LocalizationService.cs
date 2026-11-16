@@ -447,6 +447,16 @@ public sealed class LocalizationService
             ["L.NotAvailable"] = ("not available", "不可用"),
             ["L.HopHome"] = ("Home gateway", "家庭网关"),
             ["L.HopReference"] = ("Reference host", "参考主机"),
+            ["L.StartSpeedTest"] = ("Start speed test", "开始测速"),
+            ["L.TestingSpeed"] = ("Testing…", "测速中…"),
+            ["L.FullScale"] = ("Full scale 1 Gbps / 200 Mbps", "满量程 1 Gbps / 200 Mbps"),
+            ["L.SpeedDone"] = ("Speed test complete · down {0} · up {1}", "测速完成 · 下行 {0} · 上行 {1} Mbps"),
+            ["L.SpeedDoneNoUpload"] = ("Speed test complete · down {0} · upload not measured", "测速完成 · 下行 {0}（上行未测出，可能被拦截或超时）"),
+            ["L.SampleLiveFormat"] = ("{0} · sample {1}", "{0} · 第 {1} 个样本"),
+            ["L.WaitingFirstSample"] = ("Waiting for the first sample…", "等待首个样本…"),
+            ["L.IcmpResolution"] = ("ICMP resolution 1 ms", "ICMP 分辨率 1ms"),
+            ["L.SampleCountFormat"] = ("{0} samples", "{0} 个样本"),
+            ["L.Points"] = ("pts", "分"),
         };
 
     private ResourceDictionary? _dictionary;
