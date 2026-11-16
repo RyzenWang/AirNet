@@ -1,3 +1,4 @@
+using AirNet.App.Localization;
 using AirNet.Core.Probes;
 using AirNet.Core.Sites;
 using Avalonia.Threading;
@@ -9,13 +10,31 @@ namespace AirNet.App.ViewModels;
 /// <summary>One row of the site table; a display projection so XAML stays format-free.</summary>
 public sealed class SiteRow
 {
+    private static string T(string key) => LocalizationService.Current.T(key);
+
     private const double BarWidth = 148;
 
     public required SiteTarget Target { get; init; }
     public required string Badge { get; init; }
     public bool IsInternational => Target.Group == SiteGroup.International;
     public bool IsCustom => Target.IsCustom;
-    public string Name => Target.Name;
+    public string Name => LocalizationService.Current.IsChinese
+        ? Target.Name
+        : Target.Id switch
+        {
+            "baidu" => "Baidu",
+            "tencent" or "qq" => "Tencent",
+            "douyin" => "Douyin",
+            "xiaohongshu" => "Xiaohongshu",
+            "bilibili" => "Bilibili",
+            "zhihu" => "Zhihu",
+            "weibo" => "Weibo",
+            "google" => "Google",
+            "youtube" => "YouTube",
+            "x" => "X",
+            "github" => "GitHub",
+            _ => Target.Name,
+        };
     public string Host => Target.Host;
 
     public bool HasResult { get; init; }
@@ -24,7 +43,7 @@ public sealed class SiteRow
     public bool IsGood { get; init; }
     public bool IsWarn { get; init; }
     public bool IsBad { get; init; }
-    public string StatusText { get; init; } = "未测";
+    public string StatusText { get; init; } = T("L.Untested");
     public string TotalText { get; init; } = "—";
     public string UnitText { get; init; } = string.Empty;
     public string FailureText { get; init; } = string.Empty;
@@ -43,7 +62,7 @@ public sealed class SiteRow
     {
         Target = target,
         Badge = SiteBadge.For(target),
-        StatusText = "未测",
+        StatusText = T("L.Untested"),
         IsPending = true,
     };
 
@@ -76,16 +95,16 @@ public sealed class SiteRow
             IsWarn = status == Severity.Warn,
             IsBad = status == Severity.Bad,
             StatusText = !result.Success
-                ? "异常"
+                ? T("L.Abnormal")
                 : httpBlocked
-                    ? "HTTP 拦截"
+                    ? T("L.HttpBlocked")
                     : httpServerError
                         ? "HTTP 5xx"
-                        : status == Severity.Ok ? "良好" : status == Severity.Warn ? "偏慢" : "异常",
+                        : status == Severity.Ok ? T("L.GoodSite") : status == Severity.Warn ? T("L.SlowSite") : T("L.Abnormal"),
             TotalText = result.Success ? Fmt.Compact(total) : "—",
             UnitText = result.Success ? "ms" : string.Empty,
             FailureText = !result.Success || httpBlocked || httpServerError
-                ? result.FailureNote ?? "测试失败"
+                ? result.FailureNote ?? T("L.TestFailed")
                 : string.Empty,
             DeltaText = deltaText,
             HasDelta = hasDelta,
@@ -121,12 +140,14 @@ public sealed class SitePickRow
 
 public sealed class CustomSiteRow
 {
+    private static string T(string key) => LocalizationService.Current.T(key);
+
     public required SiteTarget Target { get; init; }
     public string Badge => SiteBadge.For(Target);
     public string Name => Target.Name;
     public string Host => Target.Host;
     public bool IsDeletePending { get; init; }
-    public string DeleteLabel => IsDeletePending ? "确认删除" : "删除";
+    public string DeleteLabel => IsDeletePending ? T("L.ConfirmDelete") : T("L.Delete");
 }
 
 internal static class SiteBadge
@@ -151,6 +172,9 @@ internal static class SiteBadge
 /// <summary>Page state for the on-demand site latency test and its custom-site manager.</summary>
 public partial class SiteLatencyViewModel : ObservableObject
 {
+    private static string T(string key) => LocalizationService.Current.T(key);
+    private static string LocFmt(string key, params object[] args) => LocalizationService.Current.Format(key, args);
+
     private const int SamplesPerSite = 3;
     private const int Concurrency = 4;
     private const int TimeoutMs = 4000;
@@ -205,7 +229,7 @@ public partial class SiteLatencyViewModel : ObservableObject
     private bool _isViaProxy;
 
     [ObservableProperty]
-    private string _testStatusText = "还没有测试 · 点「开始测试」跑一轮";
+    private string _testStatusText = T("L.NoSiteTestYet");
 
     [ObservableProperty]
     private IReadOnlyList<SiteRow> _rows = [];
@@ -241,14 +265,15 @@ public partial class SiteLatencyViewModel : ObservableObject
     public int DomesticCount => _catalog.Count(site => site.Group == SiteGroup.Domestic);
     public int InternationalCount => _catalog.Count(site => site.Group == SiteGroup.International);
     public int CustomCount => _catalog.Count(site => site.IsCustom);
-    public string AllCountText => $"全部 {AllCount}";
-    public string DomesticCountText => $"国内 {DomesticCount}";
-    public string InternationalCountText => $"国际 {InternationalCount}";
-    public string CustomCountText => $"自定义 {CustomCount}";
+    public string AllCountText => LocFmt("L.AllCount", AllCount);
+    public string DomesticCountText => LocFmt("L.DomesticCount", DomesticCount);
+    public string InternationalCountText => LocFmt("L.InternationalCount", InternationalCount);
+    public string CustomCountText => LocFmt("L.CustomCount", CustomCount);
     public string CustomLimitText => $"{CustomCount} / {CustomSiteRules.MaxCustomSites}";
-    public string PageSubtitle =>
-        $"默认 11 + 自定义 {CustomCount} · 3 次采样取中位数 · 只测首字节，不下载页面内容";
-    public string TestButtonText => IsTesting ? "测试中…" : "重新测试";
+    public string PageSubtitle => LocalizationService.Current.IsChinese
+        ? $"默认 11 + 自定义 {CustomCount} · 3 次采样取中位数 · 只测首字节，不下载页面内容"
+        : LocFmt("L.SiteSubtitle", CustomCount);
+    public string TestButtonText => IsTesting ? T("L.TestInProgress") : T("L.Retest");
     public bool IsFilterAll => Filter == "All";
     public bool IsFilterDomestic => Filter == "Domestic";
     public bool IsFilterInternational => Filter == "International";
@@ -342,11 +367,19 @@ public partial class SiteLatencyViewModel : ObservableObject
             var international = Successful().Where(result => result.Target.Group == SiteGroup.International).ToList();
             if (domestic.Count == 0 && international.Count == 0)
             {
-                return "跑一轮后，这里会把国内与国际分开判断；跨境慢通常不是本机网络的问题。";
+                return T("L.SiteVerdictEmpty");
             }
 
             var domesticTotal = _catalog.Count(site => site.Group == SiteGroup.Domestic);
             var internationalTotal = _catalog.Count(site => site.Group == SiteGroup.International);
+            if (!LocalizationService.Current.IsChinese)
+            {
+                var domesticAverage = domestic.Count == 0 ? 0 : domestic.Average(result => result.TotalMs);
+                var internationalAverage = international.Count == 0 ? 0 : international.Average(result => result.TotalMs);
+                return LocFmt("L.SiteVerdict", domestic.Count, domesticTotal, domesticAverage,
+                    international.Count, internationalTotal, internationalAverage);
+            }
+
             var domesticText = domestic.Count == 0
                 ? $"国内 0/{domesticTotal} 站成功"
                 : $"国内 {domestic.Count}/{domesticTotal} 站平均 {domestic.Average(result => result.TotalMs):0} ms";

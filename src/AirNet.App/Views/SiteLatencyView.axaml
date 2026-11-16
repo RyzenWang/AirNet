@@ -312,7 +312,7 @@
                 </Grid>
                 <Button Classes="ghost" Height="29" MinHeight="29" Margin="0,4,0,0"
                         HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                        Command="{Binding OpenManagerCommand}" Content="管理站点" FontSize="10.5" />
+                        Command="{Binding OpenManagerCommand}" Content="{DynamicResource L.ManageSites}" FontSize="10.5" />
                 <TextBlock Text="{DynamicResource L.DefaultFixedNote}" Classes="micro" FontSize="9" />
               </StackPanel>
             </Border>

@@ -148,6 +148,7 @@ public partial class OverviewViewModel : ObservableObject
     }
 
     private static string T(string key) => LocalizationService.Current.T(key);
+    private static string Lfmt(string key, params object[] args) => LocalizationService.Current.Format(key, args);
 
     private static string FormatDelta(HistoryDelta delta)
     {
@@ -171,6 +172,9 @@ public partial class OverviewViewModel : ObservableObject
 /// </summary>
 public partial class MonitorViewModel : ObservableObject
 {
+    private static string T(string key) => LocalizationService.Current.T(key);
+    private static string Lfmt(string key, params object[] args) => LocalizationService.Current.Format(key, args);
+
     private readonly List<double> _liveSeries = new();
     private string _liveSource = string.Empty;
     private readonly Avalonia.Threading.DispatcherTimer _flashTimer;
@@ -230,7 +234,7 @@ public partial class MonitorViewModel : ObservableObject
     private bool _isModeTesting;
 
     [ObservableProperty]
-    private string _modeStatusText = "按需深测游戏或会议路径；不会自动运行。";
+    private string _modeStatusText = T("L.ModeIdle");
 
     [ObservableProperty]
     private string _gameModeHeadline = string.Empty;
@@ -333,22 +337,20 @@ public partial class MonitorViewModel : ObservableObject
         }
 
         IsModeTesting = true;
-        ModeStatusText = "正在探测 UDP / STUN 路径…";
+        ModeStatusText = T("L.ProbingUdp");
         try
         {
             var result = await GameModeProbe.RunAsync().ConfigureAwait(true);
             HasGameModeResult = true;
-            GameModeHeadline = result.UdpReachable ? "UDP 可达" : "UDP 不可达";
+            GameModeHeadline = result.UdpReachable ? T("L.UdpReachable") : T("L.UdpUnreachable");
             GameModeDetail = result.UdpReachable
-                ? $"STUN 参考 RTT {result.RttMs:0.0} ms · 抖动 {result.JitterMs:0.0} ms · 丢包 {result.LossPercent:0.0}% · {result.NatSummary}"
-                : $"{result.NatSummary} · 目标 {result.Target}";
-            ModeStatusText = result.UdpReachable
-                ? "游戏模式完成：UDP 路径可用；NAT 结论是映射行为启发式。"
-                : "游戏模式完成：UDP 路径不可用，可能是网络/防火墙拦截。";
+                ? $"STUN RTT {result.RttMs:0.0} ms · {T("L.Jitter")} {result.JitterMs:0.0} ms · {T("L.Loss")} {result.LossPercent:0.0}% · {result.NatSummary}"
+                : $"{result.NatSummary} · {T("L.Target")} {result.Target}";
+            ModeStatusText = result.UdpReachable ? T("L.GameDoneOk") : T("L.GameDoneFail");
         }
         catch (Exception ex)
         {
-            ModeStatusText = $"游戏模式失败：{ex.Message}";
+            ModeStatusText = Lfmt("L.GameFailed", ex.Message);
         }
         finally
         {
@@ -365,20 +367,20 @@ public partial class MonitorViewModel : ObservableObject
         }
 
         IsModeTesting = true;
-        ModeStatusText = "正在测上行、抖动和丢包…";
+        ModeStatusText = T("L.TestingUplink");
         try
         {
             var result = await MeetingModeProbe.RunAsync().ConfigureAwait(true);
             HasMeetingModeResult = true;
             MeetingModeHeadline = result.Verdict;
             MeetingModeDetail = result.HasUpload
-                ? $"上行 {result.UploadMbps:0.0} Mbps · 抖动 {result.JitterMs:0.0} ms · 丢包 {result.LossPercent:0.0}%"
-                : "上行未测出；不能只凭缺失的数字判定会议可用。";
-            ModeStatusText = "会议模式完成：切换模式不会改动网络配置。";
+                ? $"{T("L.Uplink")} {result.UploadMbps:0.0} Mbps · {T("L.Jitter")} {result.JitterMs:0.0} ms · {T("L.Loss")} {result.LossPercent:0.0}%"
+                : T("L.UplinkNotMeasured");
+            ModeStatusText = T("L.MeetingDone");
         }
         catch (Exception ex)
         {
-            ModeStatusText = $"会议模式失败：{ex.Message}";
+            ModeStatusText = Lfmt("L.MeetingFailed", ex.Message);
         }
         finally
         {
@@ -408,11 +410,13 @@ public partial class MonitorViewModel : ObservableObject
         IsGood = true,
     };
 
-    public string LiveWindowText => "60 秒窗口";
-    public string ScanHintText => Shell.IsScanning ? "采集中…" : $"上次检测 {Shell.View.CapturedAtText}";
+    public string LiveWindowText => T("L.LiveWindow");
+    public string ScanHintText => Shell.IsScanning
+        ? T("L.Collecting")
+        : Lfmt("L.LastScanFormat", Shell.View.CapturedAtText);
 
     /// <summary>Shown under the headline while samples are streaming in.</summary>
-    public string MonitorLiveHint => $"正在采样：{LiveSourceText}";
+    public string MonitorLiveHint => Lfmt("L.Sampling", LiveSourceText);
 
     public string PathSummary => $"{Shell.View.LocalAddress} → {Shell.View.GatewayAddress} → {Shell.View.DnsServer}";
 }

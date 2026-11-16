@@ -270,8 +270,8 @@
                   <TextBlock Text="{Binding DnsCurrentText}" Classes="micro" FontSize="9.5" />
                 </Border>
               </Grid>
-              <TextBlock Text="{Binding DnsPlan.Headline}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
-              <TextBlock Text="{Binding DnsPlan.Rationale}"
+              <TextBlock Text="{Binding DnsHeadlineText}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding DnsRationaleText}"
                          Classes="caption"
                          FontSize="10"
                          LineHeight="15"

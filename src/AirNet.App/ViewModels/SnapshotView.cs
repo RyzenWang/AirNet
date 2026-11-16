@@ -242,11 +242,21 @@ public sealed class SnapshotView
         : $"{Source.Interface.Kind} · {Source.Interface.Ssid}";
 
     // Dual stack ----------------------------------------------------------
-    public string DualStackVerdictText => Source.DualStack.VerdictText;
+    public string DualStackVerdictText => LocalizationService.Current.IsChinese
+        ? Source.DualStack.VerdictText
+        : Source.DualStack.Verdict switch
+        {
+            DualStackVerdict.V4Only => T("L.DualV4Only"),
+            DualStackVerdict.V6Only => T("L.DualV6Only"),
+            DualStackVerdict.Balanced => T("L.DualBalanced"),
+            DualStackVerdict.V6Preferred => T("L.DualV6Faster"),
+            DualStackVerdict.V6Slower => T("L.DualV6Slower"),
+            _ => T("L.DualUnavailable"),
+        };
     public string DualStackDetailText => Source.DualStack.Verdict == DualStackVerdict.Unavailable
-        ? "未测量"
+        ? T("L.DualUnavailable")
         : $"IPv4 {Source.DualStack.V4Text} · IPv6 {Source.DualStack.V6Text}";
-    public string DualStackNote => Source.DualStack.Note;
+    public string DualStackNote => LocalizationService.Current.IsChinese ? Source.DualStack.Note : T("L.DualNote");
     public bool IsV6Slower => Source.DualStack.IsV6Slower;
 
     // Proxy / VPN ---------------------------------------------------------

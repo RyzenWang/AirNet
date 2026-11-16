@@ -41,15 +41,16 @@ public partial class ShellViewModel : ObservableObject
     public ShellViewModel(bool demo = false)
     {
         IsDemo = demo;
+
+        // Preferences (including the UI language) are loaded before any text is projected.
+        Preferences = _settingsStore.Load();
+        Localization.LocalizationService.Current.Apply(Preferences.Language);
+
         var snapshot = demo ? DemoSnapshotFactory.CreateSnapshot() : PendingSnapshot.Create();
         _view = new SnapshotView(snapshot);
         StatusMessage = demo
             ? Localization.LocalizationService.Current.T("L.DemoHint")
             : Localization.LocalizationService.Current.T("L.LocalHint");
-
-        // Preferences are loaded before the page view models so their initial values match disk.
-        Preferences = _settingsStore.Load();
-        Localization.LocalizationService.Current.Apply(Preferences.Language);
 
         // Eases the progress bar toward the phase target so it glides instead of stepping.
         _scanTicker = new Avalonia.Threading.DispatcherTimer(

@@ -139,6 +139,12 @@ public partial class SettingsViewModel : ObservableObject
     public bool HasDnsEvidence => DnsServerRows.Count > 0;
 
     public string DnsCurrentText => Fmt("L.CurrentDns", DnsPlan.CurrentDns);
+    public string DnsHeadlineText => LocalizationService.Current.IsChinese
+        ? DnsPlan.Headline
+        : DnsPlan.IsWorthChanging ? T("L.DnsSlowHeadline") : T("L.DnsFastHeadline");
+    public string DnsRationaleText => LocalizationService.Current.IsChinese
+        ? DnsPlan.Rationale
+        : DnsPlan.IsWorthChanging ? T("L.DnsSlowRationale") : T("L.DnsFastRationale");
 
     partial void OnAutoRefreshChanged(bool value)
     {
@@ -182,6 +188,8 @@ public partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(CanApplyDns));
         OnPropertyChanged(nameof(HasDnsEvidence));
         OnPropertyChanged(nameof(DnsCurrentText));
+        OnPropertyChanged(nameof(DnsHeadlineText));
+        OnPropertyChanged(nameof(DnsRationaleText));
     }
 
     /// <summary>The three resolvers measured on the same host, current first.</summary>
@@ -208,7 +216,7 @@ public partial class SettingsViewModel : ObservableObject
             var isBest = ReferenceEquals(alternative, comparison.Best);
             rows.Add(new DnsServerRow
             {
-                Label = $"{alternative.Label} · {alternative.Address}{(isBest ? T("L.FastestSuffix") : string.Empty)}",
+                Label = $"{(alternative.Label == "阿里 DNS" ? T("L.AliDns") : alternative.Label)} · {alternative.Address}{(isBest ? T("L.FastestSuffix") : string.Empty)}",
                 TimeText = alternative.TimeText,
                 IsBest = isBest,
             });
