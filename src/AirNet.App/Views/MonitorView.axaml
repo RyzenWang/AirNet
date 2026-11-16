@@ -59,7 +59,7 @@
           <Border Classes="pill" Padding="9,3">
             <StackPanel Orientation="Horizontal" Spacing="5">
               <Ellipse Width="5" Height="5" Fill="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
-              <TextBlock Text="{Binding View.ProbeModeText}" FontSize="10" />
+              <TextBlock Text="{Binding View.ProbeModeText}" FontSize="10" VerticalAlignment="Center" TextAlignment="Center" />
             </StackPanel>
           </Border>
           <Button Classes="ghost" Height="30" MinHeight="30" Padding="11,0" Command="{Binding Shell.RunScanCommand}">
@@ -164,10 +164,10 @@
               <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Text="LATENCY / 60S" Classes="eyebrow" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
-                  <TextBlock Text="{Binding View.LatencyAvgText, StringFormat='平均 {0} ms'}"
+                  <TextBlock Text="{Binding View.LatencyAvgCaption}"
                              Classes="micro"
                              FontSize="10" />
-                  <TextBlock Text="{Binding View.LatencyP95Text, StringFormat='P95 {0} ms'}"
+                  <TextBlock Text="{Binding View.LatencyP95Caption}"
                              Classes="micro"
                              FontSize="10" />
                   <TextBlock Text="{Binding View.SampleCountText}" Classes="micro" FontSize="10" />

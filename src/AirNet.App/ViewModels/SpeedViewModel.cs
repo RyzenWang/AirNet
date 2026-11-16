@@ -1,4 +1,5 @@
 using System.Globalization;
+using AirNet.App.Localization;
 using AirNet.Core.Probes;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -42,7 +43,7 @@ public partial class SpeedViewModel : ObservableObject
     private bool _isTesting;
 
     [ObservableProperty]
-    private string _serverText = "Cloudflare · 自动就近";
+    private string _serverText = LocalizationService.Current.T("L.CloudflareNearest");
 
     [ObservableProperty]
     private string _testedAtText = "未测速";

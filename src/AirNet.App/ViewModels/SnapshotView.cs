@@ -202,6 +202,8 @@ public sealed class SnapshotView
 
     public double LatencyAvg => Source.Latency.AverageMs;
     public string LatencyAvgText => IsPending ? "—" : Fmt.Fixed(Source.Latency.AverageMs);
+    public string LatencyAvgCaption => LocalizationService.Current.Format("L.AverageWithFormat", LatencyAvgText);
+    public string LatencyP95Caption => LocalizationService.Current.Format("L.P95Format", LatencyP95Text);
     public string LatencyP95Text => IsPending ? "—" : Fmt.Fixed(Source.Latency.P95Ms);
     public string JitterText => IsPending ? "—" : Fmt.Fixed(Source.Latency.JitterMs);
     public string LossText => IsPending ? "—" : Fmt.Fixed(Source.Latency.LossPercent);
@@ -236,7 +238,9 @@ public sealed class SnapshotView
     public string DnsServer => Source.Interface.DnsServer;
     public double SignalPercent => Source.Interface.SignalPercent ?? (Source.Interface.IsWireless ? 0 : 100);
 
-    public string ProbeModeText => IsPending ? "等待检测" : Source.ProbeModeText;
+    public string ProbeModeText => IsPending
+        ? T("L.ProbeWaiting")
+        : Source.ProbeMode == ProbeMode.Tcp ? T("L.ProbeTcp") : T("L.ProbeIcmp");
     public string SsidText => string.IsNullOrEmpty(Source.Interface.Ssid)
         ? LocalizeInterfaceKind(Source.Interface.Kind)
         : $"{LocalizeInterfaceKind(Source.Interface.Kind)} · {Source.Interface.Ssid}";
@@ -246,6 +250,13 @@ public sealed class SnapshotView
         "有线以太网" => T("L.Ethernet"),
         "无线" => T("L.WirelessGeneric"),
         _ => kind,
+    };
+
+    private static string LocalizeHopLabel(string label) => label switch
+    {
+        "家庭网关" => T("L.HopHome"),
+        "参考主机" => T("L.HopReference"),
+        _ => label,
     };
 
     // Dual stack ----------------------------------------------------------
@@ -262,7 +273,7 @@ public sealed class SnapshotView
         };
     public string DualStackDetailText => Source.DualStack.Verdict == DualStackVerdict.Unavailable
         ? T("L.DualUnavailable")
-        : $"IPv4 {Source.DualStack.V4Text} · IPv6 {Source.DualStack.V6Text}";
+        : $"IPv4 {Source.DualStack.V4Text} · IPv6 {(Source.DualStack.V6Ms is null ? T("L.NotAvailable") : Source.DualStack.V6Text)}";
     public string DualStackNote => LocalizationService.Current.IsChinese ? Source.DualStack.Note : T("L.DualNote");
     public bool IsV6Slower => Source.DualStack.IsV6Slower;
 
@@ -369,7 +380,7 @@ public sealed class SnapshotView
         var longest = s.Hops.Count == 0 ? 1 : Math.Max(1, s.Hops.Max(h => h.LatencyMs));
         return s.Hops.Select(hop => new HopRow
         {
-            Label = hop.Label,
+            Label = LocalizeHopLabel(hop.Label),
             Address = hop.Address,
             LatencyText = hop.Responded
                 ? hop.LatencyMs < 1 ? "<1 ms" : $"{Fmt.Fixed(hop.LatencyMs)} ms"

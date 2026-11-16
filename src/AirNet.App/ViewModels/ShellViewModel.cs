@@ -199,6 +199,18 @@ public partial class ShellViewModel : ObservableObject
     private static string T(string key) => Localization.LocalizationService.Current.T(key);
     private static string Fmt(string key, params object[] args) =>
         Localization.LocalizationService.Current.Format(key, args);
+    private static string PhaseText(string phase) => phase switch
+    {
+        "识别网卡" => T("L.PhaseNic"),
+        "ICMP 丢包探测" => T("L.PhaseIcmp"),
+        "TCP 握手计时" => T("L.PhaseTcp"),
+        "首包四段分解" => T("L.PhaseFirstByte"),
+        "网关与链路" => T("L.PhaseGateway"),
+        "评分与归因" => T("L.PhaseScore"),
+        "带宽测速" => T("L.PhaseBandwidth"),
+        "完成" => T("L.PhaseDone"),
+        _ => phase,
+    };
 
     public string ConnectionChip => View.IsPending ? T("L.WaitingForScan") : View.InterfaceChip;
     public string LastScanText => View.IsPending ? T("L.NotScanned") : Fmt("L.LastScanFormat", View.CapturedAtText);
@@ -268,12 +280,12 @@ public partial class ShellViewModel : ObservableObject
         _scanCts = new CancellationTokenSource();
 
         IsScanning = true;
-        StatusMessage = "正在采集探针包…";
+        StatusMessage = T("L.CollectingProbes");
         _scanStartedAt = DateTimeOffset.Now;
         _scanTarget = 0;
         ScanFraction = 0;
-        ScanPhaseText = "识别网卡";
-        ScanStatusText = "正在检测 · 识别网卡";
+        ScanPhaseText = PhaseText("识别网卡");
+        ScanStatusText = Fmt("L.ScanningPhase", PhaseText("识别网卡"));
         ScanElapsedText = "0.0 s";
         _scanTicker.Start();
         Navigate("Monitor");
@@ -290,8 +302,10 @@ public partial class ShellViewModel : ObservableObject
         var progress = new Progress<ScanProgress>(report =>
         {
             _scanTarget = report.Fraction;
-            ScanPhaseText = report.Phase;
-            ScanStatusText = report.Phase == "完成" ? "检测完成" : $"正在检测 · {report.Phase}";
+            ScanPhaseText = PhaseText(report.Phase);
+            ScanStatusText = report.Phase == "完成"
+                ? T("L.ScanComplete")
+                : Fmt("L.ScanningPhase", PhaseText(report.Phase));
         });
 
         // Every probe sample drives the live tiles and the live curve.
@@ -315,7 +329,7 @@ public partial class ShellViewModel : ObservableObject
             Path.RefreshFromSnapshot();
             Speed.RefreshFromSnapshot();
             Settings.RefreshDnsPlan();
-            StatusMessage = $"检测完成 · 评分 {View.Score} / {View.GradeLabel}";
+            StatusMessage = Fmt("L.ScanCompleteScore", View.Score, View.GradeLabel);
 
             // Only real measurements are persisted; the sample snapshot stays ephemeral.
             if (!snapshot.IsSample)
@@ -333,12 +347,12 @@ public partial class ShellViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "检测已取消";
+            StatusMessage = T("L.ScanCancelled");
             RestoreView(previousView);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"检测失败：{ex.Message}";
+            StatusMessage = Fmt("L.ScanFailed", ex.Message);
             RestoreView(previousView);
         }
         finally
@@ -364,7 +378,7 @@ public partial class ShellViewModel : ObservableObject
     private void StopScan()
     {
         _scanCts?.Cancel();
-        StatusMessage = "正在停止…";
+        StatusMessage = T("L.Stopping");
     }
 
     /// <summary>Shows the save picker and writes the same report the toolbar button produces.</summary>

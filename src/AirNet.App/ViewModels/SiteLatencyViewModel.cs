@@ -358,7 +358,7 @@ public partial class SiteLatencyViewModel : ObservableObject
 
     public bool HasManagerError => !string.IsNullOrWhiteSpace(DraftError);
     public bool HasCustomSites => CustomSiteRows.Count > 0;
-    public string DraftTitle => _editingId is null ? "新增自定义站点" : "编辑自定义站点";
+    public string DraftTitle => _editingId is null ? T("L.DraftAdd") : T("L.DraftEdit");
     public string CustomSummary => LocFmt("L.CustomSummary", CustomCount, CustomSiteRules.MaxCustomSites);
 
     public string JudgementText
@@ -774,7 +774,7 @@ public partial class SiteLatencyViewModel : ObservableObject
             return;
         }
 
-        TestStatusText = $"正在测试 · {(DateTimeOffset.Now - _startedAt).TotalSeconds:0.0} s";
+        TestStatusText = LocFmt("L.TestingDuration", (DateTimeOffset.Now - _startedAt).TotalSeconds);
     }
 
     private IEnumerable<SiteResult> Successful() =>
