@@ -125,7 +125,8 @@ public partial class OverviewViewModel : ObservableObject
     {
         var local = record.At.ToLocalTime();
         var isToday = local.Date == DateTimeOffset.Now.Date;
-        var title = string.IsNullOrEmpty(record.Ssid) ? record.Kind : $"{record.Kind} · {record.Ssid}";
+        var kind = LocalizeInterfaceKind(record.Kind);
+        var title = string.IsNullOrEmpty(record.Ssid) ? kind : $"{kind} · {record.Ssid}";
         var delta = HistoryDelta.Compare(record, previous);
         var culture = LocalizationService.Current.Culture;
         var day = isToday
@@ -149,6 +150,13 @@ public partial class OverviewViewModel : ObservableObject
 
     private static string T(string key) => LocalizationService.Current.T(key);
     private static string Lfmt(string key, params object[] args) => LocalizationService.Current.Format(key, args);
+
+    private static string LocalizeInterfaceKind(string kind) => kind switch
+    {
+        "有线以太网" => T("L.Ethernet"),
+        "无线" => T("L.WirelessGeneric"),
+        _ => kind,
+    };
 
     private static string FormatDelta(HistoryDelta delta)
     {

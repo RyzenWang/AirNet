@@ -18,9 +18,12 @@ public sealed class SiteRow
     public required string Badge { get; init; }
     public bool IsInternational => Target.Group == SiteGroup.International;
     public bool IsCustom => Target.IsCustom;
-    public string Name => LocalizationService.Current.IsChinese
-        ? Target.Name
-        : Target.Id switch
+    public string Name => LocalizedName(Target);
+    public string Host => Target.Host;
+
+    public static string LocalizedName(SiteTarget target) => LocalizationService.Current.IsChinese
+        ? target.Name
+        : target.Id switch
         {
             "baidu" => "Baidu",
             "tencent" or "qq" => "Tencent",
@@ -33,9 +36,8 @@ public sealed class SiteRow
             "youtube" => "YouTube",
             "x" => "X",
             "github" => "GitHub",
-            _ => Target.Name,
+            _ => target.Name,
         };
-    public string Host => Target.Host;
 
     public bool HasResult { get; init; }
     public bool IsFailed { get; init; }
@@ -294,7 +296,7 @@ public partial class SiteLatencyViewModel : ObservableObject
         get
         {
             var fastest = Successful().MinBy(result => result.TotalMs);
-            return fastest is null ? "等待测试" : $"{fastest.Target.Name} · {fastest.Target.Host}";
+            return fastest is null ? T("L.WaitingTest") : $"{SiteRow.LocalizedName(fastest.Target)} · {fastest.Target.Host}";
         }
     }
 
@@ -312,7 +314,7 @@ public partial class SiteLatencyViewModel : ObservableObject
         get
         {
             var slowest = Successful().MaxBy(result => result.TotalMs);
-            return slowest is null ? "等待测试" : $"{slowest.Target.Name} · {slowest.Target.Host}";
+            return slowest is null ? T("L.WaitingTest") : $"{SiteRow.LocalizedName(slowest.Target)} · {slowest.Target.Host}";
         }
     }
 
@@ -326,8 +328,8 @@ public partial class SiteLatencyViewModel : ObservableObject
     }
 
     public string AverageFoot => Successful().Any()
-        ? $"成功 {Successful().Count()} 站均值（含跨境）"
-        : "等待测试";
+        ? LocFmt("L.AvgSuccess", Successful().Count())
+        : T("L.WaitingTest");
 
     public string DoneValue
     {
@@ -347,17 +349,17 @@ public partial class SiteLatencyViewModel : ObservableObject
                 || result.FailureKind is SiteFailureKind.HttpBlocked or SiteFailureKind.HttpServerError);
             var duration = _lastReport?.Duration.TotalSeconds;
             return _results.Count == 0
-                ? "失败 0 · 等待测试"
+                ? T("L.FailedNone")
                 : duration is null
-                    ? $"失败 {failed}"
-                    : $"失败 {failed} · 用时 {duration:0.0} s";
+                    ? LocFmt("L.FailedCount", failed)
+                    : LocFmt("L.FailedDuration", failed, duration.Value);
         }
     }
 
     public bool HasManagerError => !string.IsNullOrWhiteSpace(DraftError);
     public bool HasCustomSites => CustomSiteRows.Count > 0;
     public string DraftTitle => _editingId is null ? "新增自定义站点" : "编辑自定义站点";
-    public string CustomSummary => $"默认 11 · 自定义 {CustomCount} / {CustomSiteRules.MaxCustomSites}";
+    public string CustomSummary => LocFmt("L.CustomSummary", CustomCount, CustomSiteRules.MaxCustomSites);
 
     public string JudgementText
     {
@@ -479,10 +481,10 @@ public partial class SiteLatencyViewModel : ObservableObject
             _sortByTotal = true;
             var timedOut = overall.IsCancellationRequested && !_cts.IsCancellationRequested;
             TestStatusText = _cts.IsCancellationRequested
-                ? "测试已取消"
+                ? T("L.TestCancelled")
                 : timedOut
-                    ? $"部分站点超时 · {report.Succeeded}/{report.Results.Count} 成功 · 用时 {report.Duration.TotalSeconds:0.0} s"
-                    : $"{report.Succeeded}/{report.Results.Count} 站点成功 · 用时 {report.Duration.TotalSeconds:0.0} s";
+                    ? LocFmt("L.SitesPartial", report.Succeeded, report.Results.Count, report.Duration.TotalSeconds)
+                    : LocFmt("L.SitesSucceeded", report.Succeeded, report.Results.Count, report.Duration.TotalSeconds);
             RefreshRows();
             NotifySummary();
 
@@ -830,7 +832,7 @@ public partial class SiteLatencyViewModel : ObservableObject
         }
 
         _sortByTotal = true;
-        TestStatusText = $"{report.Succeeded}/{report.Results.Count} 站点成功 · 示例数据";
+        TestStatusText = $"{LocFmt("L.SitesSucceeded", report.Succeeded, report.Results.Count, report.Duration.TotalSeconds)} · {T("L.SampleRun")}";
         RefreshRows();
         NotifySummary();
     }

@@ -303,6 +303,14 @@ public partial class PathViewModel : ObservableObject
         "这一段偏长" => T("L.LongSegment"),
         "运行追踪以定位最后一跳" => T("L.TraceLastHop"),
         "等待检测" => T("L.PathWaiting"),
+        "接入段很快" => T("L.AccessFast"),
+        "骨干段正常" => T("L.BackboneNormal"),
+        "接入段偏慢" => T("L.AccessSlow"),
+        "网关本身慢，先看无线/路由" => T("L.GatewaySlow"),
+        "无法判断接入段" => T("L.AccessUnknown"),
+        "跨网段出现明显增量" => T("L.BackboneJump"),
+        "对端响应正常" => T("L.FarNormal"),
+        "增量出现在最后一跳" => T("L.FarJump"),
         _ => note,
     };
 

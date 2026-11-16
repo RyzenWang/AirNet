@@ -223,7 +223,7 @@ public sealed class SnapshotView
             LocalizationService.Current.IsChinese ? "M月d日 HH:mm" : "MMM d HH:mm",
             LocalizationService.Current.Culture);
 
-    public string InterfaceChip => IsPending ? T("L.NotDetected") : Source.Interface.Kind;
+    public string InterfaceChip => IsPending ? T("L.NotDetected") : LocalizeInterfaceKind(Source.Interface.Kind);
     public string SignalChip => IsPending
         ? T("L.NotDetected")
         : Source.Interface.SignalPercent is { } signal
@@ -238,8 +238,15 @@ public sealed class SnapshotView
 
     public string ProbeModeText => IsPending ? "等待检测" : Source.ProbeModeText;
     public string SsidText => string.IsNullOrEmpty(Source.Interface.Ssid)
-        ? Source.Interface.Kind
-        : $"{Source.Interface.Kind} · {Source.Interface.Ssid}";
+        ? LocalizeInterfaceKind(Source.Interface.Kind)
+        : $"{LocalizeInterfaceKind(Source.Interface.Kind)} · {Source.Interface.Ssid}";
+
+    private static string LocalizeInterfaceKind(string kind) => kind switch
+    {
+        "有线以太网" => T("L.Ethernet"),
+        "无线" => T("L.WirelessGeneric"),
+        _ => kind,
+    };
 
     // Dual stack ----------------------------------------------------------
     public string DualStackVerdictText => LocalizationService.Current.IsChinese

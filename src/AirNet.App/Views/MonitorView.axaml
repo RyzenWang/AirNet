@@ -255,8 +255,8 @@
                            MaxWidth="420" />
               </StackPanel>
               <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-                <Button Classes="ghost" Height="30" MinHeight="30" Padding="11,0" FontSize="11.5" Content="导出报告" Click="OnExportReportClick" />
-                <Button Classes="mini" Height="30" MinHeight="30" Padding="11,0" FontSize="11.5" Content="复制诊断信息" Click="OnCopyDiagnosticsClick" />
+                <Button Classes="ghost" Height="30" MinHeight="30" Padding="11,0" FontSize="11.5" Content="{DynamicResource L.ExportReport}" Click="OnExportReportClick" />
+                <Button Classes="mini" Height="30" MinHeight="30" Padding="11,0" FontSize="11.5" Content="{DynamicResource L.CopyDiagnostics}" Click="OnCopyDiagnosticsClick" />
               </StackPanel>
             </Grid>
           </Border>
