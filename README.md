@@ -28,7 +28,7 @@
 
 基于 .NET 10 + Avalonia 11.3，Native AOT 单目录发布；无驱动、无常驻进程、无账号、无遥测。
 
-> **状态：0.3.0**（商店包 `1.0.0.0`）。Windows 版可从
+> **状态：0.3.1**（商店包仍为 `1.0.0.0`）。Windows 版可从
 > [Microsoft Store](https://apps.microsoft.com/detail/9NH3RQW622BK) 或
 > [GitHub Releases](https://github.com/RyzenWang/AirNet/releases/latest) 安装；
 > macOS 与 Linux 为便携归档。两个渠道同一份源码、版本各自一条线，规则见
@@ -75,7 +75,7 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **MTU**（DF 二分） | ✅ M2 实测 1480（PPPoE） |
 | **报告导出**（自包含 HTML，可打印 PDF） | ✅ M2 7.8KB / 零脚本 / 地址掩码 |
 | **一键 DNS + 还原**（Windows 提权） | ✅ M2 命令先展示，还原记录落盘 |
-| **单元测试**（xUnit） | ✅ 142 项：统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / 邻区 / 模式 / 站点目录与 HTTP 状态 |
+| **单元测试**（xUnit） | ✅ 186 项：统计 / 分档 / 解析 / 掩码 / 历史 / DNS / 双栈 / 代理 / 邻区 / 模式 / 站点目录与 HTTP 状态 / 诊断包 / Store 包身份 |
 | **设置**（持久化 / 自动刷新 / 键盘快捷键） | ✅ M2，写入 `settings.json`；60s 自动刷新仅在窗口可见时执行 |
 | **Microsoft Store** | ✅ 已上架：<https://apps.microsoft.com/detail/9NH3RQW622BK>（包版本 `1.0.0.0`，微软签名，商店负责更新） |
 | Windows 正式发布 | ✅ Native AOT：16.83MB zip（CI）；本机启动 411ms / 内存 118.9MB；需保留同目录原生 DLL |
@@ -102,7 +102,7 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | 渠道 | 版本 | 形式 | 更新方式 |
 | --- | --- | --- | --- |
 | **Microsoft Store**（推荐） | `1.0.0.0` | 商店安装，微软签名 | 商店推送 |
-| GitHub Release | `0.3.0` | 免安装便携包（Windows / Linux / macOS） | 手动下载新包 |
+| GitHub Release | `0.3.1` | 免安装便携包（Windows / Linux / macOS） | 手动下载新包 |
 
 商店版不能自动提权修改 DNS，只显示命令供复制；便携版保留一键执行。
 其余能力一致，差异与版本规则都见 [双渠道发布](docs/CHANNELS.md)。

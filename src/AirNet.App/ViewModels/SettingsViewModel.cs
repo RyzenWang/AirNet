@@ -81,7 +81,7 @@ public partial class SettingsViewModel : ObservableObject
 
     public bool HasNeighborRows => NeighborRows.Count > 0;
 
-    public string VersionText => "0.3.0 · M3";
+    public string VersionText => $"{AppVersion.Current} · M3";
 
     /// <summary>
     /// The Store channel versions packages on its own line (1.0.0.0, 1.1.0.0, …) while the

@@ -3,6 +3,29 @@
 All notable changes are documented here. The format follows Keep a Changelog and the
 project uses semantic versioning for release tags.
 
+## [0.3.1] - 2026-11-16
+
+Portable-only maintenance release. The Microsoft Store build stays at `1.0.0.0` because this
+round has no Store-visible behavior change; the Store channel will move on the next functional
+patch.
+
+### Changed
+
+- The About card and footer now read the running app version instead of hardcoded `0.3.0`
+  strings, so future version bumps cannot leave stale numbers in screenshots or bug reports.
+- Documentation test counts are now 186 everywhere they describe the current suite.
+
+### Fixed
+
+- README still said 142 tests; TECH_PLAN and WEBSITE_LATENCY repeated the same stale number.
+- The changelog/release-note count (182 at the 0.3.0 tag) is now kept separate from the current
+  186-test suite instead of implying the release had tests that did not exist yet.
+
+### Verified
+
+- 186 unit tests on the 0.3.1 tag.
+- Portable Windows/macOS/Linux AOT assets rebuilt by CI from the tag.
+
 ## [0.3.0] - 2026-11-13
 
 First release that ships through two channels: the GitHub portable archives and the
@@ -59,7 +82,7 @@ The Store listing is live at <https://apps.microsoft.com/detail/9NH3RQW622BK>.
 
 - Windows 11 x64, AOT package, sideloaded: install, icons in all three surfaces, scan,
   the Store-build DNS message, and history surviving a restart.
-- 182 unit tests.
+- 182 unit tests at release; the 0.3.1 line brings the current suite to 186.
 
 ## [0.2.8] - 2026-11-13
 

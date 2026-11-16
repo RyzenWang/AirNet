@@ -107,7 +107,9 @@ public static class AppVersion
     {
         try
         {
-            var version = typeof(AppVersion).Assembly.GetName().Version;
+            // The entry assembly is the App; falling back to Core keeps the CLI/test host usable.
+            var assembly = System.Reflection.Assembly.GetEntryAssembly() ?? typeof(AppVersion).Assembly;
+            var version = assembly.GetName().Version;
             return version is null ? "0.0.0" : version.ToString(3);
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)

@@ -182,6 +182,7 @@ public partial class ShellViewModel : ObservableObject
         }
     }
 
+    public string VersionText => $"AIRNET {AppVersion.Current}";
     public string ConnectionChip => View.IsPending ? "等待检测" : View.InterfaceChip;
     public string LastScanText => View.IsPending ? "尚未检测" : $"上次检测 {View.CapturedAtText}";
     public string FooterLatencyText => $"延迟 {View.LatencyAvgText} ms";
