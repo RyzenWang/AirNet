@@ -72,12 +72,12 @@
 
           <Border Classes="card" Padding="18,16">
             <StackPanel Spacing="2">
-              <TextBlock Text="检测" Classes="h3" FontSize="13.5" Margin="0,0,0,8" />
+              <TextBlock Text="{DynamicResource L.Testing}" Classes="h3" FontSize="13.5" Margin="0,0,0,8" />
 
               <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,10">
                 <StackPanel Spacing="1">
-                  <TextBlock Text="定时自动刷新" FontSize="12" FontWeight="SemiBold" />
-                  <TextBlock Text="每 60 秒补一次采样，窗口最小化时暂停" Classes="micro" FontSize="10" />
+                  <TextBlock Text="{DynamicResource L.AutoRefreshTitle}" FontSize="12" FontWeight="SemiBold" />
+                  <TextBlock Text="{DynamicResource L.AutoRefreshNote}" Classes="micro" FontSize="10" />
                 </StackPanel>
                 <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding AutoRefresh, Mode=TwoWay}" VerticalAlignment="Center" />
               </Grid>
@@ -85,8 +85,8 @@
 
               <Grid ColumnDefinitions="*,Auto" Margin="0,10,0,10">
                 <StackPanel Spacing="1">
-                  <TextBlock Text="ICMP + TCP 双探测" FontSize="12" FontWeight="SemiBold" />
-                  <TextBlock Text="ICMP 被拦截时自动改用 TCP 时间，避免误判丢包" Classes="micro" FontSize="10" />
+                  <TextBlock Text="{DynamicResource L.DualProbeTitle}" FontSize="12" FontWeight="SemiBold" />
+                  <TextBlock Text="{DynamicResource L.DualProbeNote}" Classes="micro" FontSize="10" />
                 </StackPanel>
                 <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding DualProbe, Mode=TwoWay}" VerticalAlignment="Center" />
               </Grid>
@@ -94,8 +94,8 @@
 
               <Grid ColumnDefinitions="*,Auto" Margin="0,10,0,0">
                 <StackPanel Spacing="1">
-                  <TextBlock Text="保留历史" FontSize="12" FontWeight="SemiBold" />
-                  <TextBlock Text="本地保存最近 30 天，用于对比与趋势" Classes="micro" FontSize="10" />
+                  <TextBlock Text="{DynamicResource L.KeepHistoryTitle}" FontSize="12" FontWeight="SemiBold" />
+                  <TextBlock Text="{DynamicResource L.KeepHistoryNote}" Classes="micro" FontSize="10" />
                 </StackPanel>
                 <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding KeepHistory, Mode=TwoWay}" VerticalAlignment="Center" />
               </Grid>
@@ -107,14 +107,14 @@
               <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Orientation="Horizontal" Spacing="7">
                   <Path Classes="icon small accent" Data="{StaticResource IconWifi}" Width="15" Height="15" VerticalAlignment="Center" />
-                  <TextBlock Text="Wi-Fi 邻区" Classes="h3" FontSize="13.5" VerticalAlignment="Center" />
+                  <TextBlock Text="{DynamicResource L.WifiNeighbors}" Classes="h3" FontSize="13.5" VerticalAlignment="Center" />
                 </StackPanel>
                 <Button Grid.Column="1"
                         Classes="mini"
                         Height="26"
                         MinHeight="26"
                         Padding="9,0"
-                        Content="扫描邻区"
+                        Content="{DynamicResource L.ScanNeighbors}"
                         Command="{Binding ScanNeighborsCommand}"
                         IsEnabled="{Binding !IsNeighborScanning}" />
               </Grid>
@@ -147,7 +147,7 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
-              <TextBlock Text="只读扫描，不修改路由器；Windows WLAN API 不提供信道，页面不编造信道建议。"
+              <TextBlock Text="{DynamicResource L.NeighborReadOnlyNote}"
                          Classes="micro"
                          FontSize="8.5"
                          LineHeight="13"
@@ -157,31 +157,31 @@
 
           <Border Classes="card" Padding="18,16">
             <StackPanel Spacing="10">
-              <TextBlock Text="快捷键" Classes="h3" FontSize="13.5" />
+              <TextBlock Text="{DynamicResource L.Shortcuts}" Classes="h3" FontSize="13.5" />
               <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="9">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <Border Classes="pill" Padding="7,2">
                     <TextBlock Text="Ctrl R" Classes="mono" FontSize="10" />
                   </Border>
-                  <TextBlock Text="开始检测" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
+                  <TextBlock Text="{DynamicResource L.StartScan}" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                   <Border Classes="pill" Padding="7,2">
                     <TextBlock Text="Ctrl 1-7" Classes="mono" FontSize="10" />
                   </Border>
-                  <TextBlock Text="切换页面" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
+                  <TextBlock Text="{DynamicResource L.SwitchPage}" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
                   <Border Classes="pill" Padding="7,2">
                     <TextBlock Text="Ctrl T" Classes="mono" FontSize="10" />
                   </Border>
-                  <TextBlock Text="切换主题" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
+                  <TextBlock Text="{DynamicResource L.ToggleTheme}" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="8">
                   <Border Classes="pill" Padding="7,2">
                     <TextBlock Text="Esc" Classes="mono" FontSize="10" />
                   </Border>
-                  <TextBlock Text="停止检测" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
+                  <TextBlock Text="{DynamicResource L.StopScan}" Classes="caption" FontSize="10.5" VerticalAlignment="Center" />
                 </StackPanel>
               </Grid>
             </StackPanel>
@@ -193,7 +193,7 @@
             <StackPanel Spacing="10">
               <StackPanel Orientation="Horizontal" Spacing="7">
                 <Path Classes="icon small accent" Data="{StaticResource IconShield}" Width="15" Height="15" />
-                <TextBlock Text="数据与隐私" Classes="h3" FontSize="13.5" VerticalAlignment="Center" />
+                <TextBlock Text="{DynamicResource L.DataPrivacy}" Classes="h3" FontSize="13.5" VerticalAlignment="Center" />
               </StackPanel>
               <TextBlock Text="{Binding PrivacyText}"
                          Classes="caption"
@@ -205,8 +205,8 @@
                 <TextBlock Grid.Column="1" Text="{Binding HistoryStatusText}" Classes="micro" FontSize="10" />
               </Grid>
               <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,0">
-                <Button Classes="mini" Content="清空历史" Command="{Binding ClearHistoryCommand}" />
-                <Button Classes="mini" Content="导出诊断包" Click="OnExportDiagnosticsClick" />
+                <Button Classes="mini" Content="{DynamicResource L.ClearHistory}" Command="{Binding ClearHistoryCommand}" />
+                <Button Classes="mini" Content="{DynamicResource L.ExportDiagnostics}" Click="OnExportDiagnosticsClick" />
               </StackPanel>
               <TextBlock Text="{Binding DiagnosticsStatusText}"
                          Classes="micro"
@@ -218,7 +218,7 @@
 
           <Border Classes="card" Padding="18,16">
             <StackPanel Spacing="9">
-              <TextBlock Text="关于" Classes="eyebrow" />
+              <TextBlock Text="{DynamicResource L.About}" Classes="eyebrow" />
               <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Text="AirNet" FontSize="13" FontWeight="SemiBold" />
                 <TextBlock Grid.Column="1" Text="{Binding VersionText}" Classes="micro" FontSize="10" />
@@ -231,7 +231,7 @@
                          IsVisible="{Binding HasPackageNote}" />
               <Border Classes="hairline" />
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="运行环境" Classes="caption" FontSize="10.5" />
+                <TextBlock Text="{DynamicResource L.Runtime}" Classes="caption" FontSize="10.5" />
                 <TextBlock Grid.Column="1"
                            Text="{Binding RuntimeText}"
                            Classes="micro"
@@ -249,7 +249,7 @@
                          IsVisible="{Binding HasPlatformNote}" />
               <Border Classes="hairline" />
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="占用" Classes="caption" FontSize="10.5" />
+                <TextBlock Text="{DynamicResource L.Footprint}" Classes="caption" FontSize="10.5" />
                 <TextBlock Grid.Column="1"
                            Text="{Binding FootprintText}"
                            Classes="micro"
@@ -265,7 +265,7 @@
             <StackPanel Spacing="9">
               <Grid ColumnDefinitions="Auto,*,Auto">
                 <Path Classes="icon small accent" Data="{StaticResource IconGlobe}" Width="15" Height="15" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="DNS 优化" Classes="h3" FontSize="13.5" Margin="7,0,0,0" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{DynamicResource L.DnsOptimize}" Classes="h3" FontSize="13.5" Margin="7,0,0,0" VerticalAlignment="Center" />
                 <Border Grid.Column="2" Classes="pill" Padding="8,2">
                   <TextBlock Text="{Binding DnsCurrentText}" Classes="micro" FontSize="9.5" />
                 </Border>
@@ -310,19 +310,19 @@
               </Border>
               <StackPanel Orientation="Horizontal" Spacing="8">
                 <Button Classes="mini"
-                        Content="复制命令"
+                        Content="{DynamicResource L.CopyCommand}"
                         Click="OnCopyDnsCommandClick"
                         IsVisible="{Binding CanApplyDns}" />
                 <Button Classes="mini"
-                        Content="预演（不执行）"
+                        Content="{DynamicResource L.PreviewNoExec}"
                         Command="{Binding PreviewDnsCommand}"
                         IsVisible="{Binding CanApplyDns}" />
                 <Button Classes="mini"
-                        Content="应用（需管理员）"
+                        Content="{DynamicResource L.ApplyAdmin}"
                         Command="{Binding ApplyDnsCommand}"
                         IsVisible="{Binding CanApplyDns}" />
                 <Button Classes="mini"
-                        Content="还原"
+                        Content="{DynamicResource L.Restore}"
                         Command="{Binding RestoreDnsCommand}"
                         IsVisible="{Binding HasDnsBackup}" />
               </StackPanel>
@@ -342,19 +342,19 @@
 
           <Border Classes="card" Padding="18,16">
             <StackPanel Spacing="8">
-              <TextBlock Text="项目" Classes="eyebrow" />
+              <TextBlock Text="{DynamicResource L.Project}" Classes="eyebrow" />
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="许可" Classes="caption" FontSize="10.5" />
+                <TextBlock Text="{DynamicResource L.License}" Classes="caption" FontSize="10.5" />
                 <TextBlock Grid.Column="1" Text="MIT" Classes="micro" FontSize="10" />
               </Grid>
               <Border Classes="hairline" />
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="技术栈" Classes="caption" FontSize="10.5" />
+                <TextBlock Text="{DynamicResource L.TechStack}" Classes="caption" FontSize="10.5" />
                 <TextBlock Grid.Column="1" Text=".NET 10 · Avalonia 11.3" Classes="micro" FontSize="10" />
               </Grid>
               <Border Classes="hairline" />
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="反馈" Classes="caption" FontSize="10.5" />
+                <TextBlock Text="{DynamicResource L.Feedback}" Classes="caption" FontSize="10.5" />
                 <TextBlock Grid.Column="1" Text="issue / 邮箱" Classes="micro" FontSize="10" />
               </Grid>
             </StackPanel>
