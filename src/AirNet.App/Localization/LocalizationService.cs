@@ -204,6 +204,19 @@ public sealed class LocalizationService
             ["L.SampleRun"] = ("Sample data", "示例数据"),
             ["L.LocalMeasurement"] = ("Local measurement", "本机实测"),
             ["L.NotScanned"] = ("Not scanned yet", "尚未检测"),
+            ["L.LastNDays"] = ("Last {0} days", "近 {0} 天"),
+            ["L.RunsCount"] = ("{0} scans", "{0} 次检测"),
+            ["L.BucketRuns"] = ("{0} runs", "{0} 次"),
+            ["L.LateNight"] = ("Late night", "凌晨"),
+            ["L.Morning"] = ("Morning", "上午"),
+            ["L.Afternoon"] = ("Afternoon", "下午"),
+            ["L.Evening"] = ("Evening", "晚间"),
+            ["L.InsightWorst"] = ("{0} ({1}) averages {2} ms, above {3} ms overall; congestion is more likely in this window.", "{0}（{1}）平均 {2} ms，高于整体 {3} ms；网络拥堵更可能出现在这个时段。"),
+            ["L.InsightFlat"] = ("No clear time-of-day difference yet; more samples make evening congestion and occasional loss easier to see.", "当前时段差异不明显；样本越多，晚间拥堵和偶发丢包越容易看出来。"),
+            ["L.CompareSummary"] = ("{0}  →  {1}; ↑ better · ↓ worse", "{0}  →  {1}；↑ 变好 · ↓ 变差"),
+            ["L.Score"] = ("Score", "评分"),
+            ["L.NotMeasured"] = ("Not measured", "未测"),
+            ["L.Flat"] = ("No change", "持平"),
         };
 
     private ResourceDictionary? _dictionary;

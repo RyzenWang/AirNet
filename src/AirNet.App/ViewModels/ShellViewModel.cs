@@ -83,6 +83,8 @@ public partial class ShellViewModel : ObservableObject
             Path.RefreshFromSnapshot();
             Speed.RefreshFromSnapshot();
             Settings.RefreshDnsPlan();
+            _ = Trends.LoadAsync();
+            _ = Overview.LoadHistoryAsync();
         };
 
         _ = Overview.LoadHistoryAsync();

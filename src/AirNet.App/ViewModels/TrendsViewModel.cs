@@ -1,4 +1,5 @@
 using System.Globalization;
+using AirNet.App.Localization;
 using AirNet.Core.History;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -179,7 +180,7 @@ public partial class TrendsViewModel : ObservableObject
             var records = await Shell.History.LoadAsync(500).ConfigureAwait(true);
             SetCompareOptions(records);
             var summary = HistoryTrendAnalyzer.Analyze(records, RangeDays);
-            RangeCaption = $"近 {RangeDays} 天";
+            RangeCaption = T("L.LastNDays", RangeDays);
             HasData = summary.HasData;
             IsEmpty = !summary.HasData;
 
@@ -189,7 +190,7 @@ public partial class TrendsViewModel : ObservableObject
                 AverageLatencyText = "—";
                 AverageJitterText = "—";
                 AverageLossText = "—";
-                RunCountText = "0 次检测";
+                RunCountText = T("L.RunsCount", 0);
                 LatencySeries = [];
                 ScoreSeries = [];
                 LatencyMinText = "—";
@@ -206,7 +207,7 @@ public partial class TrendsViewModel : ObservableObject
             AverageLatencyText = summary.AverageLatencyMs.ToString("0.0", CultureInfo.InvariantCulture);
             AverageJitterText = summary.AverageJitterMs.ToString("0.0", CultureInfo.InvariantCulture);
             AverageLossText = summary.AverageLossPercent.ToString("0.0", CultureInfo.InvariantCulture);
-            RunCountText = $"{summary.Count} 次检测";
+            RunCountText = T("L.RunsCount", summary.Count);
 
             LatencySeries = summary.Points.Select(point => point.LatencyMs).ToList();
             ScoreSeries = summary.Points.Select(point => (double)point.Score).ToList();
@@ -219,9 +220,9 @@ public partial class TrendsViewModel : ObservableObject
                 .Select(bucket => bucket.AverageLatencyMs).DefaultIfEmpty(1).Max());
             Buckets = summary.Buckets.Select(bucket => new TrendBucketRow
             {
-                Label = bucket.Label,
+                Label = T(BucketKey(bucket.Label)),
                 RangeText = bucket.RangeText,
-                CountText = bucket.HasData ? $"{bucket.Count} 次" : "—",
+                CountText = bucket.HasData ? T("L.BucketRuns", bucket.Count) : "—",
                 LatencyText = bucket.HasData ? $"{bucket.AverageLatencyMs:0.0} ms" : "—",
                 ScoreText = bucket.HasData ? bucket.AverageScore.ToString("0", CultureInfo.InvariantCulture) : "—",
                 Bar = bucket.HasData ? Math.Clamp(bucket.AverageLatencyMs / maxBucketLatency, 0.08, 1) : 0,
@@ -249,9 +250,10 @@ public partial class TrendsViewModel : ObservableObject
             var worst = summary.WorstBucket;
             InsightText = worst is { HasData: true, Count: >= 2 }
                           && worst.AverageLatencyMs > summary.AverageLatencyMs * 1.15
-                ? $"{worst.Label}（{worst.RangeText}）平均 {worst.AverageLatencyMs:0.0} ms，" +
-                  $"高于整体 {summary.AverageLatencyMs:0.0} ms；网络拥塞更可能出现在这个时段。"
-                : "当前时段差异不明显；样本越多，晚间拥塞和偶发丢包越容易看出来。";
+                ? T("L.InsightWorst", T(BucketKey(worst.Label)), worst.RangeText,
+                    worst.AverageLatencyMs.ToString("0.0", CultureInfo.InvariantCulture),
+                    summary.AverageLatencyMs.ToString("0.0", CultureInfo.InvariantCulture))
+                : T("L.InsightFlat");
         }
         finally
         {
@@ -298,17 +300,31 @@ public partial class TrendsViewModel : ObservableObject
 
         var a = CompareA!.Record;
         var b = CompareB!.Record;
-        CompareSummary = $"{CompareA!.Label}  →  {CompareB!.Label}；↑ 变好 · ↓ 变差";
+        CompareSummary = T("L.CompareSummary", CompareA!.Label, CompareB!.Label);
         CompareRows =
         [
-            Compare("评分", a.Score, b.Score, "分", higherIsBetter: true),
-            Compare("延迟", a.LatencyAvg, b.LatencyAvg, "ms", higherIsBetter: false),
-            Compare("抖动", a.Jitter, b.Jitter, "ms", higherIsBetter: false),
-            Compare("丢包", a.Loss, b.Loss, "%", higherIsBetter: false),
-            Compare("下行", a.DownMbps, b.DownMbps, "Mbps", higherIsBetter: true, zeroIsMissing: true),
-            Compare("上行", a.UpMbps, b.UpMbps, "Mbps", higherIsBetter: true, zeroIsMissing: true),
+            Compare(T("L.Score"), a.Score, b.Score, "分", higherIsBetter: true),
+            Compare(T("L.Latency"), a.LatencyAvg, b.LatencyAvg, "ms", higherIsBetter: false),
+            Compare(T("L.Jitter"), a.Jitter, b.Jitter, "ms", higherIsBetter: false),
+            Compare(T("L.Loss"), a.Loss, b.Loss, "%", higherIsBetter: false),
+            Compare(T("L.Download"), a.DownMbps, b.DownMbps, "Mbps", higherIsBetter: true, zeroIsMissing: true),
+            Compare(T("L.Upload"), a.UpMbps, b.UpMbps, "Mbps", higherIsBetter: true, zeroIsMissing: true),
         ];
     }
+
+    private static string T(string key, params object[] args) =>
+        args.Length == 0
+            ? LocalizationService.Current.T(key)
+            : LocalizationService.Current.Format(key, args);
+
+    private static string BucketKey(string label) => label switch
+    {
+        "凌晨" => "L.LateNight",
+        "上午" => "L.Morning",
+        "下午" => "L.Afternoon",
+        "晚间" => "L.Evening",
+        _ => label,
+    };
 
     private static CompareMetricRow Compare(
         string name,
@@ -327,14 +343,14 @@ public partial class TrendsViewModel : ObservableObject
         var delta = missing
             ? "—"
             : Math.Abs(diff) < 0.05
-                ? "持平"
+                ? T("L.Flat")
                 : $"{(diff > 0 ? "+" : "−")}{Math.Abs(diff).ToString(digits, CultureInfo.InvariantCulture)} {unit}";
 
         return new CompareMetricRow
         {
             Name = name,
-            AText = missing ? "未测" : string.Format(CultureInfo.InvariantCulture, valueFormat, a) + " " + unit,
-            BText = missing ? "未测" : string.Format(CultureInfo.InvariantCulture, valueFormat, b) + " " + unit,
+            AText = missing ? T("L.NotMeasured") : string.Format(CultureInfo.InvariantCulture, valueFormat, a) + " " + unit,
+            BText = missing ? T("L.NotMeasured") : string.Format(CultureInfo.InvariantCulture, valueFormat, b) + " " + unit,
             DeltaText = delta,
             IsBetter = better,
             IsWorse = worse,
