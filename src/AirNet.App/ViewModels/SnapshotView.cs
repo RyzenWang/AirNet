@@ -166,7 +166,7 @@ public sealed class SnapshotView
     public string LatencyP95Text => IsPending ? "—" : Fmt.Fixed(Source.Latency.P95Ms);
     public string JitterText => IsPending ? "—" : Fmt.Fixed(Source.Latency.JitterMs);
     public string LossText => IsPending ? "—" : Fmt.Fixed(Source.Latency.LossPercent);
-    public string DownloadText => Fmt.Mbps(Source.DownloadMbps);
+    public string DownloadText => Source.DownloadMbps > 0 ? Fmt.Mbps(Source.DownloadMbps) : T("L.NotTested");
     public string UploadText => Fmt.Mbps(Source.UploadMbps);
     public bool HasBandwidth => Source.HasBandwidth;
     public string DnsText => Source.DnsMs <= 0 ? "未测" : Fmt.Fixed(Source.DnsMs);

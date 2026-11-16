@@ -4,7 +4,7 @@
         xmlns:vm="using:AirNet.App.ViewModels"
         x:Class="AirNet.App.Views.ShareCardWindow"
         x:DataType="vm:ShareCardViewModel"
-        Title="AirNet 分享卡片"
+        Title="{DynamicResource L.ShareCard}"
         Width="760"
         Height="920"
         MinWidth="640"
@@ -17,8 +17,8 @@
     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" PointerPressed="OnTitleBarPointerPressed">
       <Path Classes="icon small accent" Data="{StaticResource IconShare}" Width="16" Height="16" VerticalAlignment="Center" />
       <StackPanel Grid.Column="1" Spacing="1">
-        <TextBlock Text="分享卡片" Classes="h3" />
-        <TextBlock Text="生成一张适合发群或社交平台的 PNG" Classes="caption" FontSize="10.5" />
+        <TextBlock Text="{DynamicResource L.ShareCard}" Classes="h3" />
+        <TextBlock Text="{DynamicResource L.ShareWindowNote}" Classes="caption" FontSize="10.5" />
       </StackPanel>
       <Button Grid.Column="2"
               Classes="icon small"

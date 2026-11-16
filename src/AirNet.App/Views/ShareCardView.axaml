@@ -110,7 +110,7 @@
           <Grid ColumnDefinitions="*,Auto">
             <StackPanel Spacing="4">
               <TextBlock Text="NETWORK REPORT" Classes="eyebrow" FontSize="8.5" />
-              <TextBlock Text="这一网，&#10;能打几分？" FontSize="27" FontWeight="SemiBold" LetterSpacing="-0.7" LineHeight="29" />
+              <TextBlock Text="{DynamicResource L.ShareTitle}" FontSize="27" FontWeight="SemiBold" LetterSpacing="-0.7" LineHeight="29" />
             </StackPanel>
             <TextBlock Grid.Column="1" Text="{Binding CapturedText}" Classes="micro" FontSize="9" TextAlignment="Right" VerticalAlignment="Top" />
           </Grid>
@@ -122,12 +122,12 @@
                     CornerRadius="13"
                     Padding="13,12">
               <StackPanel Spacing="2">
-                <TextBlock Text="延迟 / LATENCY" Classes="eyebrow" FontSize="8.5" />
+                <TextBlock Text="{DynamicResource L.MetricLatency}" Classes="eyebrow" FontSize="8.5" />
                 <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Bottom">
                   <TextBlock Text="{Binding LatencyText}" FontSize="28" FontWeight="SemiBold" LetterSpacing="-0.8" />
                   <TextBlock Text="ms" Classes="unit" FontSize="9.5" Margin="0,0,0,3" />
                 </StackPanel>
-                <TextBlock Text="平均往返" Classes="micro" FontSize="8.5" />
+                <TextBlock Text="{DynamicResource L.AverageRtt}" Classes="micro" FontSize="8.5" />
               </StackPanel>
             </Border>
             <Border Grid.Column="1"
@@ -137,12 +137,12 @@
                     CornerRadius="13"
                     Padding="13,12">
               <StackPanel Spacing="2">
-                <TextBlock Text="抖动 / JITTER" Classes="eyebrow" FontSize="8.5" />
+                <TextBlock Text="{DynamicResource L.MetricJitter}" Classes="eyebrow" FontSize="8.5" />
                 <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Bottom">
                   <TextBlock Text="{Binding JitterText}" FontSize="28" FontWeight="SemiBold" LetterSpacing="-0.8" />
                   <TextBlock Text="ms" Classes="unit" FontSize="9.5" Margin="0,0,0,3" />
                 </StackPanel>
-                <TextBlock Text="相邻样本差" Classes="micro" FontSize="8.5" />
+                <TextBlock Text="{DynamicResource L.AdjacentSample}" Classes="micro" FontSize="8.5" />
               </StackPanel>
             </Border>
             <Border Grid.Row="1"
@@ -152,12 +152,12 @@
                     CornerRadius="13"
                     Padding="13,12">
               <StackPanel Spacing="2">
-                <TextBlock Text="丢包 / LOSS" Classes="eyebrow" FontSize="8.5" />
+                <TextBlock Text="{DynamicResource L.MetricLoss}" Classes="eyebrow" FontSize="8.5" />
                 <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Bottom">
                   <TextBlock Text="{Binding LossText}" FontSize="28" FontWeight="SemiBold" LetterSpacing="-0.8" />
                   <TextBlock Text="%" Classes="unit" FontSize="9.5" Margin="0,0,0,3" />
                 </StackPanel>
-                <TextBlock Text="ICMP 探测" Classes="micro" FontSize="8.5" />
+                <TextBlock Text="{DynamicResource L.IcmpProbe}" Classes="micro" FontSize="8.5" />
               </StackPanel>
             </Border>
             <Border Grid.Row="1"
@@ -168,7 +168,7 @@
                     CornerRadius="13"
                     Padding="13,12">
               <StackPanel Spacing="2">
-                <TextBlock Text="带宽 / BANDWIDTH" Classes="eyebrow" FontSize="8.5" />
+                <TextBlock Text="{DynamicResource L.Bandwidth}" Classes="eyebrow" FontSize="8.5" />
                 <TextBlock Text="{Binding DownloadText}" FontSize="23" FontWeight="SemiBold" LetterSpacing="-0.5" Margin="0,2,0,0" />
                 <TextBlock Text="{Binding UploadFootText}" Classes="micro" FontSize="8.5" />
               </StackPanel>
@@ -180,8 +180,8 @@
       <!-- Scenarios -->
       <StackPanel Grid.Row="2" Spacing="10" Margin="0,24,0,0">
         <Grid ColumnDefinitions="*,Auto">
-          <TextBlock Text="场景体验" Classes="h3" FontSize="14" />
-          <TextBlock Grid.Column="1" Text="5 项预测 · 按当前网络计算" Classes="micro" FontSize="9" />
+          <TextBlock Text="{DynamicResource L.Scenarios}" Classes="h3" FontSize="14" />
+          <TextBlock Grid.Column="1" Text="{DynamicResource L.FivePredictions}" Classes="micro" FontSize="9" />
         </Grid>
         <ItemsControl ItemsSource="{Binding Scenarios}">
           <ItemsControl.ItemsPanel>
@@ -228,7 +228,7 @@
       <!-- Footer -->
       <Grid Grid.Row="4" ColumnDefinitions="*,Auto" Margin="0,20,0,0" VerticalAlignment="Bottom">
         <StackPanel Spacing="2">
-          <TextBlock Text="AirNet · 无驱动 · 无常驻进程" Classes="micro" FontSize="9.5" />
+          <TextBlock Text="{DynamicResource L.NoDriverShort}" Classes="micro" FontSize="9.5" />
           <TextBlock Text="github.com/RyzenWang/AirNet" Classes="mono" FontSize="9" />
         </StackPanel>
         <TextBlock Grid.Column="1"

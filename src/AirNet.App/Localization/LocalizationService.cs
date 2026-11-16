@@ -223,6 +223,19 @@ public sealed class LocalizationService
             ["L.ThisScan"] = ("This scan", "本次检测"),
             ["L.VsLast"] = ("vs last", "较上次"),
             ["L.Example"] = ("Example", "示例"),
+            ["L.ShareTitle"] = ("This network,\nwhat does it score?", "这一网，\n能打几分？"),
+            ["L.FivePredictions"] = ("5 predictions · computed from this network", "5 项预测 · 按当前网络计算"),
+            ["L.AverageRtt"] = ("average round trip", "平均往返"),
+            ["L.AdjacentSample"] = ("adjacent-sample difference", "相邻样本差"),
+            ["L.IcmpProbe"] = ("ICMP probes", "ICMP 探测"),
+            ["L.NoDriverShort"] = ("No driver · no resident process", "无驱动 · 无常驻进程"),
+            ["L.ShareWindowNote"] = ("Generate a PNG for a group chat or social post", "生成一张适合发群或社交平台的 PNG"),
+            ["L.UploadFormat"] = ("Upload {0}", "上行 {0}"),
+            ["L.WebBrowsing"] = ("Web browsing", "网页浏览"),
+            ["L.Video4K"] = ("4K video", "4K 视频"),
+            ["L.OnlineGaming"] = ("Online gaming", "在线游戏"),
+            ["L.VideoMeeting"] = ("Video meetings", "视频会议"),
+            ["L.LargeDownload"] = ("Large downloads", "大文件下载"),
         };
 
     private ResourceDictionary? _dictionary;
