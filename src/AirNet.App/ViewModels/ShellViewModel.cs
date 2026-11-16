@@ -121,6 +121,7 @@ public partial class ShellViewModel : ObservableObject
                 OnPropertyChanged(nameof(FooterTimestampText));
                 OnPropertyChanged(nameof(SourceChipText));
                 OnPropertyChanged(nameof(IsSample));
+                OnPropertyChanged(nameof(CanShare));
                 OnPropertyChanged(nameof(ShowScore));
                 OnPropertyChanged(nameof(HideScore));
             }
@@ -223,6 +224,7 @@ public partial class ShellViewModel : ObservableObject
         ? T("L.WaitingForScan")
         : View.IsSample ? T("L.SampleRun") : T("L.LocalMeasurement");
     public bool IsSample => View.IsSample;
+    public bool CanShare => !View.IsPending;
 
     public bool IsDarkMode => _theme == ThemeMode.Dark
         || (_theme == ThemeMode.System && Application.Current?.ActualThemeVariant == ThemeVariant.Dark);

@@ -163,7 +163,7 @@
             <TextBlock Text="{DynamicResource L.AutoRefresh}" Classes="caption" VerticalAlignment="Center" />
             <ToggleButton Classes="switch"
                           IsChecked="{Binding Settings.AutoRefresh, Mode=TwoWay}"
-                          ToolTip.Tip="每 60 秒自动检测一次；窗口最小化时暂停"
+                          ToolTip.Tip="{DynamicResource L.AutoRefreshTooltip}"
                           VerticalAlignment="Center" />
             <Border Width="1" Height="14" Background="{DynamicResource BorderBrush}" Margin="6,0" />
             <Button Classes="ghost"
@@ -171,10 +171,12 @@
                     MinHeight="28"
                     Padding="10,0"
                     FontSize="11.5"
-                    Click="OnExportReportClick">
+                    Click="OnShareCardClick"
+                    IsVisible="{Binding CanShare}"
+                    ToolTip.Tip="{DynamicResource L.ShareCardTooltip}">
               <StackPanel Orientation="Horizontal" Spacing="6">
-                <Path Classes="icon small muted" Data="{StaticResource IconReport}" />
-                <TextBlock Text="{DynamicResource L.ExportReport}" FontSize="11.5" VerticalAlignment="Center" />
+                <Path Classes="icon small accent" Data="{StaticResource IconShare}" />
+                <TextBlock Text="{DynamicResource L.ShareCard}" FontSize="11.5" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
           </StackPanel>

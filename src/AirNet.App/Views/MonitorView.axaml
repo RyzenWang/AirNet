@@ -248,14 +248,13 @@
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
               <StackPanel Spacing="3" VerticalAlignment="Center">
                 <TextBlock Text="NEXT" Classes="eyebrow" FontSize="9.5" />
-                <TextBlock Text="{DynamicResource L.NextNote}"
+                <TextBlock Text="{DynamicResource L.NextNoteCopy}"
                            Classes="caption"
                            FontSize="10.5"
                            TextWrapping="Wrap"
                            MaxWidth="420" />
               </StackPanel>
               <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-                <Button Classes="ghost" Height="30" MinHeight="30" Padding="11,0" FontSize="11.5" Content="{DynamicResource L.ExportReport}" Click="OnExportReportClick" />
                 <Button Classes="mini" Height="30" MinHeight="30" Padding="11,0" FontSize="11.5" Content="{DynamicResource L.CopyDiagnostics}" Click="OnCopyDiagnosticsClick" />
               </StackPanel>
             </Grid>

@@ -77,12 +77,18 @@ public partial class ShellView : UserControl
 
     private Window? Host => TopLevel.GetTopLevel(this) as Window;
 
-    private async void OnExportReportClick(object? sender, RoutedEventArgs e)
+    private async void OnShareCardClick(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is ShellViewModel viewModel && TopLevel.GetTopLevel(this) is { } top)
+        if (DataContext is not ShellViewModel viewModel || TopLevel.GetTopLevel(this) is not Window owner)
         {
-            await viewModel.ExportReportWithPickerAsync(top);
+            return;
         }
+
+        var window = new ShareCardWindow
+        {
+            DataContext = new ShareCardViewModel(viewModel.View),
+        };
+        await window.ShowDialog(owner);
     }
 
     /// <summary>Keeps the custom chrome in sync with the real window state.</summary>

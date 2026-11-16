@@ -11,14 +11,6 @@ public partial class MonitorView : UserControl
         InitializeComponent();
     }
 
-    private async void OnExportReportClick(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is MonitorViewModel viewModel && TopLevel.GetTopLevel(this) is { } top)
-        {
-            await viewModel.Shell.ExportReportWithPickerAsync(top);
-        }
-    }
-
     private async void OnCopyDiagnosticsClick(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MonitorViewModel viewModel)
