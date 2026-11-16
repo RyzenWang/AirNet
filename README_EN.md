@@ -31,26 +31,12 @@ end? No driver, no resident agent, no account, no telemetry.
 The Store build cannot self-elevate, so DNS changes are copy-the-command; the portable build
 keeps the one-click path on Windows, macOS (`osascript`) and Linux (`pkexec`).
 
-## Headless CLI
-
-```bash
-airnet-cli scan --json                 # one ProbeJson object
-airnet-cli scan --json out.json --bandwidth
-airnet-cli watch --json --interval 10  # NDJSON, one object per line
-airnet-cli history --json --limit 10
-```
-
-`scan`/`watch` never write history. `--bandwidth` is opt-in because it uploads about 4 MB.
-See [llms.txt](llms.txt), [docs/AGENT.md](docs/AGENT.md) and
-[skills/airnet/SKILL.md](skills/airnet/SKILL.md) for agent rules.
-
 ## Build
 
 Requires .NET 10 SDK.
 
 ```bash
 dotnet run --project src/AirNet.App
-dotnet run --project src/AirNet.Cli -- scan --json
 dotnet test tests/AirNet.Core.Tests/AirNet.Core.Tests.csproj
 powershell -File packaging/pack-aot.ps1
 ```

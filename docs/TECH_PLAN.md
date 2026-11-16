@@ -53,8 +53,7 @@ AirNet.sln
 │  ├─ Sites/                  SiteCatalog（11 站）, CustomSiteStore, SiteHistoryStore, SiteLatencyProbe
 │  ├─ Diagnostics/            NetworkSnapshot(模型), LatencyAnalyzer(统计), DiagnosisEngine(评分/归因)
 │  └─ Demo/                   确定性样例数据（评审与演示用）
-src/AirNet.Cli/               无头 scan / watch / history（不初始化 Avalonia）
-llms.txt / docs/AGENT.md      Agent 可读的 CLI 契约与安全边界
+
 └─ src/AirNet.App             Avalonia
    ├─ ViewModels/             Shell(导航+扫描生命周期), Overview, Monitor, Speed, SiteLatency, Path, Settings
    ├─ Views/                  ShellView + 七个页面（UserControl，非 Window）+ SiteManagerView
@@ -298,7 +297,7 @@ UI 上所有"一键"操作都必须：① 展示将要执行的命令；② 提�
 | **M0 视觉原型** | 四页原型 + 设计系统 + 真实探针内核 + 样例数据 | 可运行 exe、8 张截图、本文档 | ✅ 已完成 |
 | **M1 测量内核** | TCP 计时抖动、Wi-Fi 信号、DNS/TCP/TLS/TTFB 分解、评分校准、历史落盘、裁剪+R2R 发布 | 抖动 2.6ms、四段分解条、历史落盘、40MB 发布包 | ✅ 已完成 |
 | **M2 诊断与优化** | 三段归因、逐跳、MTU、网站延迟（含自定义站点）、一键 DNS（含还原）、报告导出、CI | ✅ 已完成 | — |
-| **M3 场景与分发** | 游戏/会议模式、双栈、无头 CLI + NDJSON、Agent 文档、邻区扫描、DNS 审计、历史 A/B、MSIX + Microsoft Store 已落地；英文 UI、macOS 签名/公证、便携包签名、macOS/Linux arm64 真机验证仍待做 | 1.1 | 进行中 |
+| **M3 场景与分发** | 游戏/会议模式、双栈、邻区扫描、DNS 审计、历史 A/B、MSIX + Microsoft Store 已落地；英文 UI、macOS 签名/公证、便携包签名、macOS/Linux arm64 真机验证仍待做 | 1.1 | 进行中 |
 
 ## 13. 风险
 

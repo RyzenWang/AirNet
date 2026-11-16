@@ -7,18 +7,18 @@ project uses semantic versioning for release tags.
 
 ### Added
 
-- `AirNet.Cli`: a headless `scan` / `watch` / `history` CLI that never initializes Avalonia.
-  `watch --json` emits one compact `ProbeJson` line per measurement (NDJSON); `scan` carries
-  the health verdict in its exit code and never writes history.
 - `ProbeJson` now exposes `downloadMbps`/`uploadMbps` (additive, schema stays 1).
-- `llms.txt`, `docs/AGENT.md` and `skills/airnet/SKILL.md` for safe agent use.
 - Settings now has a DNS dry-run action and a local `dns-operations.jsonl` audit trail.
 - History has an A/B comparison of any two stored runs (score, latency, jitter, loss,
   download, upload), not just the adjacent-run deltas.
-- English README and English agent notes.
+- English README and a runtime Chinese/English UI language switch.
 
 ### Changed
 
+- Removed the separate `AirNet.Cli` project and its agent documentation. The existing
+  in-app `--probe --json` / `--sites` / `--report` flags remain.
+- Localized the shell status chips, settings statuses, site manager and share-card chrome;
+  English UI is still being completed for live page states.
 - `docs/FEATURES.md`, `docs/TECH_PLAN.md` and the README no longer claim macOS/Linux radio,
   cross-platform DNS, the history page or MSIX are unfinished.
 

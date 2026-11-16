@@ -15,6 +15,9 @@ namespace AirNet.App.ViewModels;
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
+    private static string T(string key) => LocalizationService.Current.T(key);
+    private static string Fmt(string key, params object[] args) => LocalizationService.Current.Format(key, args);
+
     private readonly DnsBackupStore _dnsBackups = new();
     private readonly DnsOperationLog _dnsOperations = new();
 
@@ -42,7 +45,7 @@ public partial class SettingsViewModel : ObservableObject
     private bool _keepHistory;
 
     [ObservableProperty]
-    private string _historyCountText = "读取中…";
+    private string _historyCountText = T("L.Reading");
 
     [ObservableProperty]
     private string _historyStatusText = string.Empty;
@@ -79,10 +82,10 @@ public partial class SettingsViewModel : ObservableObject
     private bool _isNeighborScanning;
 
     [ObservableProperty]
-    private string _neighborStatusText = "扫描一次查看附近热点";
+    private string _neighborStatusText = T("L.NeighborHint");
 
     [ObservableProperty]
-    private string _neighborAdvice = "邻区扫描只读；Windows WLAN API 不提供信道，AirNet 不会编造信道建议。";
+    private string _neighborAdvice = T("L.NeighborAdviceDefault");
 
     [ObservableProperty]
     private IReadOnlyList<WifiNeighborRow> _neighborRows = [];
@@ -97,28 +100,27 @@ public partial class SettingsViewModel : ObservableObject
     /// traced back to a commit.
     /// </summary>
     public string PackageText => PackagedApp.PackageVersion is { } version
-        ? $"商店包 {version} · 源码 {AppVersion.Current}"
+        ? Fmt("L.PackageFormat", version, AppVersion.Current)
         : string.Empty;
 
     public bool HasPackageNote => PackageText.Length > 0;
     public string RuntimeText => ".NET 10 · Avalonia 11.3 · Windows / macOS / Linux";
-    public string FootprintText => "R2R 单文件 · 无驱动 · 无后台常驻";
+    public string FootprintText => T("L.FootprintText");
 
     /// <summary>
     /// Says "experimental" on the platforms nobody has run on real hardware yet. Hidden on the
     /// two that were verified, because a permanent caveat everywhere stops being read.
     /// </summary>
     public string PlatformNote => OperatingSystem.IsMacOS()
-        ? "macOS 为实验性支持：未签名、未公证，也未在真机验证。"
+        ? T("L.ExperimentalMac")
         : OperatingSystem.IsLinux()
           && System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture
              == System.Runtime.InteropServices.Architecture.Arm64
-            ? "Linux arm64 为实验性支持：CI 构建通过，未在真机验证。"
+            ? T("L.ExperimentalLinuxArm")
             : string.Empty;
 
     public bool HasPlatformNote => PlatformNote.Length > 0;
-    public string PrivacyText =>
-        "测量在本机完成；出口 IP 查询会访问 3322 / Cloudflare，不上传本地字段。历史记录仅保存在本地。";
+    public string PrivacyText => T("L.PrivacyText");
 
     public bool IsChineseLanguage => LocalizationService.Current.IsChinese;
     public bool IsEnglishLanguage => LocalizationService.Current.IsEnglish;
@@ -136,7 +138,7 @@ public partial class SettingsViewModel : ObservableObject
     public bool CanApplyDns => DnsPlan.IsWorthChanging;
     public bool HasDnsEvidence => DnsServerRows.Count > 0;
 
-    public string DnsCurrentText => $"当前 {DnsPlan.CurrentDns}";
+    public string DnsCurrentText => Fmt("L.CurrentDns", DnsPlan.CurrentDns);
 
     partial void OnAutoRefreshChanged(bool value)
     {
@@ -167,7 +169,7 @@ public partial class SettingsViewModel : ObservableObject
     public async Task RefreshHistoryCountAsync()
     {
         var count = await Shell.History.CountAsync().ConfigureAwait(true);
-        HistoryCountText = count == 0 ? "暂无记录" : $"{count} 条记录 · 保留 30 天";
+        HistoryCountText = count == 0 ? T("L.NoRecords") : Fmt("L.RecordsFormat", count);
     }
 
     /// <summary>Re-planned after every scan, because the recommendation now rests on measurements.</summary>
@@ -195,7 +197,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             rows.Add(new DnsServerRow
             {
-                Label = string.IsNullOrWhiteSpace(current.Address) ? "当前 DNS" : $"当前 · {current.Address}",
+                Label = string.IsNullOrWhiteSpace(current.Address) ? T("L.CurrentDnsLabel") : $"{T("L.CurrentDnsLabel")} · {current.Address}",
                 TimeText = current.TimeText,
                 IsBest = false,
             });
@@ -206,7 +208,7 @@ public partial class SettingsViewModel : ObservableObject
             var isBest = ReferenceEquals(alternative, comparison.Best);
             rows.Add(new DnsServerRow
             {
-                Label = $"{alternative.Label} · {alternative.Address}{(isBest ? " · 最快" : string.Empty)}",
+                Label = $"{alternative.Label} · {alternative.Address}{(isBest ? T("L.FastestSuffix") : string.Empty)}",
                 TimeText = alternative.TimeText,
                 IsBest = isBest,
             });
@@ -229,13 +231,13 @@ public partial class SettingsViewModel : ObservableObject
         if (OperatingSystem.IsWindows() && !InterfaceInspector.Inspect().IsWireless)
         {
             NeighborRows = [];
-            NeighborStatusText = "当前为有线连接，无需邻区扫描";
-            NeighborAdvice = "当前使用有线网络。接入或启用无线网卡后，才能扫描周围 Wi-Fi 热点。";
+            NeighborStatusText = T("L.WiredNoScan");
+            NeighborAdvice = T("L.WiredAdvice");
             return;
         }
 
         IsNeighborScanning = true;
-        NeighborStatusText = "正在扫描 WLAN 邻区…";
+        NeighborStatusText = T("L.ScanningWlan");
         try
         {
             var scan = await WlanNeighborProbe.ScanAsync().ConfigureAwait(true);
@@ -254,19 +256,19 @@ public partial class SettingsViewModel : ObservableObject
                 .ToList();
 
             NeighborStatusText = !scan.IsSupported
-                ? scan.Note ?? "当前平台不支持邻区扫描"
+                ? scan.Note ?? T("L.NoNeighborSupport")
                 : scan.HasNeighbors
-                    ? $"发现 {scan.Neighbors.Count} 个邻区"
-                    : scan.Note ?? "未发现可见邻区";
+                    ? Fmt("L.FoundNeighbors", scan.Neighbors.Count)
+                    : scan.Note ?? T("L.NoVisibleNeighbors");
             NeighborAdvice = BuildNeighborAdvice(scan);
         }
         catch (OperationCanceledException)
         {
-            NeighborStatusText = "扫描已取消";
+            NeighborStatusText = T("L.ScanCancelled");
         }
         catch (Exception ex)
         {
-            NeighborStatusText = $"扫描失败：{ex.Message}";
+            NeighborStatusText = Fmt("L.ScanFailed", ex.Message);
         }
         finally
         {
@@ -278,25 +280,23 @@ public partial class SettingsViewModel : ObservableObject
     {
         if (!scan.IsSupported)
         {
-            return "邻区扫描仅在 Windows 的 WLAN API 下可用；其他平台会明确降级，不伪造热点列表。";
+            return T("L.NeighborUnsupportedAdvice");
         }
 
         if (!scan.HasNeighbors)
         {
-            return "没有发现可见邻区。若本机是无线连接，检查 WLAN 服务、飞行模式和附近是否有 2.4/5/6GHz 热点。";
+            return T("L.NoNeighborAdvice");
         }
 
         var best = scan.Neighbors.MaxBy(item => item.SignalQuality)!;
         var sameSsid = scan.Neighbors.Count(item => string.Equals(item.Ssid, best.Ssid, StringComparison.OrdinalIgnoreCase));
-        var advice = $"最强邻区：{best.Ssid}（{best.SignalQuality}% · {best.Phy}）。";
+        var advice = Fmt("L.StrongestNeighbor", best.Ssid, best.SignalQuality, best.Phy);
         if (sameSsid > 1)
         {
-            advice += $" 同一 SSID 有 {sameSsid} 个热点，优先靠近信号更强的 AP。";
+            advice += Fmt("L.SameSsid", sameSsid);
         }
 
-        advice += best.SignalQuality < 50
-            ? " 信号偏低，靠近路由器或改用 5GHz/6GHz 会更稳。"
-            : " 信号可用；邻区只读，不会修改路由器配置。";
+        advice += best.SignalQuality < 50 ? T("L.WeakSignalAdvice") : T("L.GoodSignalAdvice");
         return advice;
     }
 
@@ -307,7 +307,7 @@ public partial class SettingsViewModel : ObservableObject
         await RefreshHistoryCountAsync().ConfigureAwait(true);
         Shell.Overview.ResetRecentRuns();
         await Shell.Trends.LoadAsync().ConfigureAwait(true);
-        HistoryStatusText = "已清空本机历史";
+        HistoryStatusText = T("L.ClearHistoryDone");
     }
 
     /// <summary>
@@ -319,12 +319,12 @@ public partial class SettingsViewModel : ObservableObject
 
         var file = await top.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "导出 AirNet 诊断包",
+            Title = T("L.DiagnosticsTitle"),
             SuggestedFileName = $"airnet-diag-{DateTime.Now:yyyyMMdd-HHmm}",
             DefaultExtension = "zip",
             FileTypeChoices =
             [
-                new FilePickerFileType("诊断包") { Patterns = ["*.zip"] },
+                new FilePickerFileType(T("L.DiagnosticsFilter")) { Patterns = ["*.zip"] },
             ],
         });
 
@@ -339,12 +339,12 @@ public partial class SettingsViewModel : ObservableObject
             var collected = DiagnosticBundle.Write(uri.LocalPath, AppPaths.DataDirectory(), summary);
 
             DiagnosticsStatusText = collected == 0
-                ? $"已写出 {Path.GetFileName(uri.LocalPath)}（暂无本地数据）"
-                : $"已写出 {Path.GetFileName(uri.LocalPath)}，含 {collected} 个数据文件";
+                ? Fmt("L.DiagnosticsNoData", Path.GetFileName(uri.LocalPath))
+                : Fmt("L.DiagnosticsWritten", Path.GetFileName(uri.LocalPath), collected);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            DiagnosticsStatusText = "写出失败：" + ex.Message;
+            DiagnosticsStatusText = Fmt("L.DiagnosticsFailed", ex.Message);
         }
     }
 
@@ -353,11 +353,11 @@ public partial class SettingsViewModel : ObservableObject
     {
         if (!DnsPlan.IsWorthChanging)
         {
-            DnsStatusText = "当前解析已经够快，无需修改";
+            DnsStatusText = T("L.DnsAlreadyFast");
             return;
         }
 
-        DnsStatusText = "正在等待管理员确认…";
+        DnsStatusText = T("L.WaitingAdmin");
         var result = await ElevatedCommandRunner.RunAsync(DnsPlan.ApplyCommand).ConfigureAwait(true);
         await LogDnsOperationAsync(
             "apply",
@@ -378,7 +378,7 @@ public partial class SettingsViewModel : ObservableObject
             }).ConfigureAwait(true);
 
             await RefreshDnsBackupAsync().ConfigureAwait(true);
-            DnsStatusText = $"已切换到 {DnsPlan.ProposedDns}，可用「还原」恢复";
+            DnsStatusText = Fmt("L.DnsApplied", DnsPlan.ProposedDns);
         }
         else
         {
@@ -392,8 +392,8 @@ public partial class SettingsViewModel : ObservableObject
     private void PreviewDns()
     {
         DnsStatusText = DnsPlan.IsWorthChanging
-            ? $"预演（未执行）：{DnsPlan.ApplyCommand}"
-            : "当前解析已经够快，无需修改";
+            ? Fmt("L.DnsPreview", DnsPlan.ApplyCommand)
+            : T("L.DnsAlreadyFast");
     }
 
     [RelayCommand]
@@ -402,11 +402,11 @@ public partial class SettingsViewModel : ObservableObject
         var backup = await _dnsBackups.LoadAsync().ConfigureAwait(true);
         if (backup is null)
         {
-            DnsStatusText = "没有可还原的记录";
+            DnsStatusText = T("L.NoBackup");
             return;
         }
 
-        DnsStatusText = "正在等待管理员确认…";
+        DnsStatusText = T("L.WaitingAdmin");
         var result = await ElevatedCommandRunner.RunAsync(backup.RestoreCommand).ConfigureAwait(true);
         await LogDnsOperationAsync(
             "restore",
@@ -420,7 +420,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             _dnsBackups.Clear();
             await RefreshDnsBackupAsync().ConfigureAwait(true);
-            DnsStatusText = "已还原为原有 DNS 设置";
+            DnsStatusText = T("L.DnsRestored");
         }
         else
         {
@@ -464,8 +464,8 @@ public partial class SettingsViewModel : ObservableObject
         HasDnsOperation = entry is not null;
         DnsOperationText = entry is null
             ? string.Empty
-            : $"{entry.At.ToLocalTime():MM-dd HH:mm} {entry.Action} · " +
-              $"{(entry.Success ? "成功" : "失败")} · {entry.Adapter}";
+            : Fmt("L.DnsOperation", $"{entry.At.ToLocalTime():MM-dd HH:mm}", entry.Action,
+                entry.Success ? "OK" : "FAILED", entry.Adapter);
     }
 
     private async Task RefreshDnsBackupAsync()
@@ -474,7 +474,8 @@ public partial class SettingsViewModel : ObservableObject
         HasDnsBackup = backup is not null;
         DnsBackupText = backup is null
             ? string.Empty
-            : $"{backup.AppliedAt.ToLocalTime():MM-dd HH:mm} 修改过 {backup.AdapterName}，原 DNS {backup.OriginalDns}";
+            : Fmt("L.DnsBackup", $"{backup.AppliedAt.ToLocalTime():MM-dd HH:mm}",
+                backup.AdapterName, backup.OriginalDns);
     }
 }
 

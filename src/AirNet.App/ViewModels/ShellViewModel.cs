@@ -44,8 +44,8 @@ public partial class ShellViewModel : ObservableObject
         var snapshot = demo ? DemoSnapshotFactory.CreateSnapshot() : PendingSnapshot.Create();
         _view = new SnapshotView(snapshot);
         StatusMessage = demo
-            ? "示例数据 · 点击「开始检测」运行真实测量"
-            : "等待检测 · 点击「开始检测」开始测量";
+            ? Localization.LocalizationService.Current.T("L.DemoHint")
+            : Localization.LocalizationService.Current.T("L.LocalHint");
 
         // Preferences are loaded before the page view models so their initial values match disk.
         Preferences = _settingsStore.Load();
@@ -195,12 +195,20 @@ public partial class ShellViewModel : ObservableObject
     }
 
     public string VersionText => $"AIRNET {AppVersion.Current}";
-    public string ConnectionChip => View.IsPending ? "等待检测" : View.InterfaceChip;
-    public string LastScanText => View.IsPending ? "尚未检测" : $"上次检测 {View.CapturedAtText}";
-    public string FooterLatencyText => $"延迟 {View.LatencyAvgText} ms";
-    public string FooterLossText => $"丢包 {View.LossText}%";
-    public string FooterTimestampText => View.IsPending ? "尚未检测" : View.IsSample ? "示例数据" : $"采集于 {View.CapturedAtText}";
-    public string SourceChipText => View.IsPending ? "尚未检测" : View.IsSample ? "示例数据" : "本机实测";
+    private static string T(string key) => Localization.LocalizationService.Current.T(key);
+    private static string Fmt(string key, params object[] args) =>
+        Localization.LocalizationService.Current.Format(key, args);
+
+    public string ConnectionChip => View.IsPending ? T("L.WaitingForScan") : View.InterfaceChip;
+    public string LastScanText => View.IsPending ? T("L.NotScanned") : Fmt("L.LastScanFormat", View.CapturedAtText);
+    public string FooterLatencyText => Fmt("L.FooterLatency", View.LatencyAvgText);
+    public string FooterLossText => Fmt("L.FooterLoss", View.LossText);
+    public string FooterTimestampText => View.IsPending
+        ? T("L.NotScanned")
+        : View.IsSample ? T("L.SampleRun") : Fmt("L.CollectedAtFormat", View.CapturedAtText);
+    public string SourceChipText => View.IsPending
+        ? T("L.WaitingForScan")
+        : View.IsSample ? T("L.SampleRun") : T("L.LocalMeasurement");
     public bool IsSample => View.IsSample;
 
     public bool IsDarkMode => _theme == ThemeMode.Dark

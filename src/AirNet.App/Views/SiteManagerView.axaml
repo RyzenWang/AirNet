@@ -55,8 +55,8 @@
                 Padding="20,0">
           <Grid ColumnDefinitions="*,Auto">
             <StackPanel VerticalAlignment="Center" Spacing="1">
-              <TextBlock Text="管理站点" FontSize="16" FontWeight="SemiBold" />
-              <TextBlock Text="默认 11 个 · 自定义站点只保存在本机" FontSize="10"
+              <TextBlock Text="{DynamicResource L.ManageSites}" FontSize="16" FontWeight="SemiBold" />
+              <TextBlock Text="{DynamicResource L.SitesManagerNote}" FontSize="10"
                          Foreground="{DynamicResource TextSecondaryBrush}" />
             </StackPanel>
             <Button Grid.Column="1" Classes="icon small" Width="28" Height="28"
@@ -68,7 +68,7 @@
         <Grid Grid.Row="1" ColumnDefinitions="*,316">
           <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="18,10,18,12">
             <StackPanel>
-              <TextBlock Text="国内 7" Classes="groupTitle" />
+              <TextBlock Text="{DynamicResource L.Domestic7}" Classes="groupTitle" />
               <ItemsControl ItemsSource="{Binding DefaultDomestic}">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
@@ -87,14 +87,14 @@
                         <TextBlock Text="{Binding Host}" FontSize="7.5" FontFamily="{DynamicResource MonoFontFamily}"
                                    Foreground="{DynamicResource TextTertiaryBrush}" TextTrimming="CharacterEllipsis" />
                       </StackPanel>
-                      <TextBlock Grid.Column="2" Text="固定" FontSize="8"
+                      <TextBlock Grid.Column="2" Text="{DynamicResource L.Fixed}" FontSize="8"
                                  Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
                     </Grid>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
 
-              <TextBlock Text="国际 4" Classes="groupTitle" />
+              <TextBlock Text="{DynamicResource L.International4}" Classes="groupTitle" />
               <ItemsControl ItemsSource="{Binding DefaultInternational}">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
@@ -113,7 +113,7 @@
                         <TextBlock Text="{Binding Host}" FontSize="7.5" FontFamily="{DynamicResource MonoFontFamily}"
                                    Foreground="{DynamicResource TextTertiaryBrush}" TextTrimming="CharacterEllipsis" />
                       </StackPanel>
-                      <TextBlock Grid.Column="2" Text="固定" FontSize="8"
+                      <TextBlock Grid.Column="2" Text="{DynamicResource L.Fixed}" FontSize="8"
                                  Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
                     </Grid>
                   </DataTemplate>
@@ -121,7 +121,7 @@
               </ItemsControl>
 
               <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,4">
-                <TextBlock Text="自定义站点" Classes="groupTitle" Margin="0" />
+                <TextBlock Text="{DynamicResource L.CustomSites}" Classes="groupTitle" Margin="0" />
                 <TextBlock Grid.Column="1" Text="{Binding CustomLimitText}" FontSize="8.5"
                            Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
               </Grid>
@@ -140,7 +140,7 @@
                                      Foreground="{DynamicResource TextTertiaryBrush}" />
                         </StackPanel>
                         <Button Grid.Column="2" Classes="mini" Height="24" MinHeight="24" Padding="7,0"
-                                Content="编辑" FontSize="9" Click="OnEditCustomClick" />
+                                Content="{DynamicResource L.Edit}" FontSize="9" Click="OnEditCustomClick" />
                         <Button Grid.Column="3" Classes="mini" Height="24" MinHeight="24" Padding="7,0"
                                 Content="{Binding DeleteLabel}" FontSize="9" Click="OnDeleteCustomClick" />
                       </Grid>
@@ -151,7 +151,7 @@
 
               <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="9"
                       Padding="10" IsVisible="{Binding !HasCustomSites}">
-                <TextBlock Text="还没有自定义站点。右侧添加后，会出现在「自定义」分组；默认站点保持固定。"
+                <TextBlock Text="{DynamicResource L.NoCustomSites}"
                            Classes="micro" FontSize="9.5" LineHeight="15" TextWrapping="Wrap" />
               </Border>
             </StackPanel>
@@ -164,30 +164,30 @@
               <TextBlock Text="{Binding DraftTitle}" FontSize="12.5" FontWeight="SemiBold" />
 
               <StackPanel Spacing="3">
-                <TextBlock Text="名称" FontSize="9.5" FontWeight="SemiBold"
+                <TextBlock Text="{DynamicResource L.Name}" FontSize="9.5" FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondaryBrush}" />
                 <TextBox Classes="field" Text="{Binding DraftName, Mode=TwoWay}"
-                         Watermark="例如：公司官网" />
+                         Watermark="{DynamicResource L.NameExample}" />
               </StackPanel>
 
               <StackPanel Spacing="3">
-                <TextBlock Text="地址" FontSize="9.5" FontWeight="SemiBold"
+                <TextBlock Text="{DynamicResource L.Address}" FontSize="9.5" FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondaryBrush}" />
                 <TextBox Classes="field" Text="{Binding DraftHost, Mode=TwoWay}"
                          Watermark="https://status.example.com" />
               </StackPanel>
 
               <StackPanel Spacing="3">
-                <TextBlock Text="分组" FontSize="9.5" FontWeight="SemiBold"
+                <TextBlock Text="{DynamicResource L.Group}" FontSize="9.5" FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondaryBrush}" />
                 <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1" CornerRadius="8" Height="32" Padding="8,0">
-                  <TextBlock Text="自定义（固定）" FontSize="10" VerticalAlignment="Center"
+                  <TextBlock Text="{DynamicResource L.CustomFixed}" FontSize="10" VerticalAlignment="Center"
                              Foreground="{DynamicResource TextSecondaryBrush}" />
                 </Border>
               </StackPanel>
 
-              <TextBlock Text="只支持 HTTPS（443）；保存前会跑一次 DNS / TCP / TLS / 首字节测试。"
+              <TextBlock Text="{DynamicResource L.HttpsOnly}"
                          Classes="micro" FontSize="9" LineHeight="14" TextWrapping="Wrap" />
               <TextBlock Text="{Binding DraftError}"
                          IsVisible="{Binding HasManagerError}"
@@ -205,7 +205,7 @@
                         Padding="10,0"
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
-                        Content="测试连通"
+                        Content="{DynamicResource L.TestConnectivity}"
                         Command="{Binding TestDraftCommand}"
                         IsEnabled="{Binding !IsTestingDraft}" />
                 <Button Grid.Column="1"
@@ -215,10 +215,10 @@
                         Padding="10,0"
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
-                        Content="保存站点"
+                        Content="{DynamicResource L.SaveSite}"
                         Command="{Binding SaveDraftCommand}" />
               </Grid>
-              <TextBlock Text="最多 8 个；不允许重复域名；可在列表里删除。"
+              <TextBlock Text="{DynamicResource L.SiteRules}"
                          Classes="micro" FontSize="8.5" />
             </StackPanel>
           </Border>
@@ -227,10 +227,10 @@
         <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
                 Padding="20,0">
           <Grid ColumnDefinitions="*,Auto">
-            <TextBlock Text="默认站点固定；自定义站点只保存在本机。"
+            <TextBlock Text="{DynamicResource L.SitesManagerFooter}"
                        Classes="micro" FontSize="9" VerticalAlignment="Center" />
             <Button Grid.Column="1" Classes="soft" Height="28" MinHeight="28" Padding="14,0"
-                    Command="{Binding CloseManagerCommand}" Content="完成" FontSize="10.5" />
+                    Command="{Binding CloseManagerCommand}" Content="{DynamicResource L.Done}" FontSize="10.5" />
           </Grid>
         </Border>
       </Grid>

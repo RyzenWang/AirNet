@@ -122,8 +122,6 @@ title: 功能清单
 | F23 | **长期趋势** ✅ | 7/30 天延迟与评分曲线，凌晨/上午/下午/晚间时段观察 | 历史趋势页；数据来自 `history.jsonl`，不改写原始记录 |
 | F24 | **分享卡片** ✅ | 1080 × 1350 PNG，复用当前体检结论、分数和纸面视觉 | Overview「分享卡片」按钮；文件选择器保存 |
 | F25 | 多语言 🟡 | 中/英；英文 README 与 Agent 文档已完成，UI 字符串仍待抽到 `.resx` |
-| F27 | **无头 CLI** ✅ | `AirNet.Cli` 的 `scan` / `watch` / `history`；`watch --json` 输出 NDJSON；`scan` 用退出码表达健康结论 |
-| F28 | **Agent 接入** ✅ | `llms.txt` + `docs/AGENT.md` + `skills/airnet/SKILL.md`，默认只读，DNS/提权操作留给人工 |
 | F29 | **DNS 安全预演与审计** ✅ | 设置页「预演（不执行）」；应用/还原写 `dns-operations.jsonl`，并收进诊断包 |
 | F30 | **历史 A/B 对比** ✅ | 历史页任选两条记录比较评分、延迟、抖动、丢包、上下行 |
 

@@ -87,7 +87,7 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 | **IPv4/IPv6 双栈** | ✅ 同一主机两条路各 5 次握手，给出「均衡 / IPv6 更快 / IPv6 偏慢」，偏慢时进诊断 |
 | **代理 / VPN 识别** | ✅ 检测系统代理与隧道网卡，明确标注「经代理 / 经 VPN」并说明哪些数字因此失真 |
 | **DNS 三方对比** | ✅ 同一域名实测「当前 / 223.5.5.5 / 1.1.1.1」，差 20% 且 ≥5ms 才建议更换 |
-| **CLI JSON** | ✅ 无头 `scan --json` / `watch --json`（NDJSON）/ `history --json`；稳定 schema + 退出码（0 健康 / 1 一般 / 2 较差 / 3 失败） |
+| **CLI JSON** | ✅ `--probe --json out.json`，稳定 schema + 退出码（0 健康 / 1 一般 / 2 较差 / 3 失败） |
 | **历史差值** | ✅ 每条历史显示与上次的分数 / 延迟 / 抖动 / 下行变化，一眼看出改动是否有效 |
 | **历史趋势页** | ✅ 7 / 30 天延迟与评分曲线、凌晨/上午/下午/晚间时段观察、最近记录 |
 | **分享卡片** | ✅ 一键生成 1080 × 1350 PNG，复用当前体检结论和纸面视觉 |
@@ -109,25 +109,8 @@ MTU、网站延迟（含自定义站点）、上下行测速、IPv4/IPv6 双栈�
 商店版不能自动提权修改 DNS，只显示命令供复制；便携版保留一键执行。
 其余能力一致，差异与版本规则都见 [双渠道发布](docs/CHANNELS.md)。
 
-## 无头 CLI / Agent
-
-`src/AirNet.Cli` 不初始化 Avalonia，适合脚本、服务器和 AI Agent：
-
-```bash
-dotnet run --project src/AirNet.Cli -c Release -- scan --json
-dotnet run --project src/AirNet.Cli -c Release -- scan --json result.json --bandwidth
-dotnet run --project src/AirNet.Cli -c Release -- watch --json --interval 10
-dotnet run --project src/AirNet.Cli -c Release -- history --json --limit 10
-```
-
-- `scan` / `watch` 默认**只读、不写历史**；`--bandwidth` 需显式开启。
-- `scan --json` 输出一个 `ProbeJson` 对象并带健康分退出码；`watch --json` 每行一个
-  紧凑 JSON（NDJSON）。
-- `history --json` 读取本机历史，不修改它。
-- DNS 设置页新增「预演（不执行）」，实际应用/还原会写本地
-  `dns-operations.jsonl` 审计记录；Store 版仍不能自动提权。
-- Agent 说明：[llms.txt](llms.txt) · [docs/AGENT.md](docs/AGENT.md) ·
-  [skills/airnet/SKILL.md](skills/airnet/SKILL.md)。
+DNS 设置页新增「预演（不执行）」，实际应用/还原会写本地
+`dns-operations.jsonl` 审计记录；Store 版仍不能自动提权。
 
 历史页新增 A/B 对比：选两条记录，看评分、延迟、抖动、丢包、上下行的完整差异。
 
@@ -150,8 +133,6 @@ dotnet run --project src/AirNet.App -- --probe --json probe.json  # 脚本用：
 dotnet run --project src/AirNet.App -- --report report.html      # 真测一轮并导出 HTML 报告（含最近站点表）
 dotnet run --project src/AirNet.App -- --export docs/shots --scale 1   # 重新生成全部截图（动效自动关闭）
 dotnet run --project src/AirNet.App -- --scan-shot scan.png      # 抓一张"检测中"的界面（动效开启）
-dotnet run --project src/AirNet.Cli -- scan --json                # 无头测量（不启动 UI）
-dotnet run --project src/AirNet.Cli -- watch --json --count 3     # NDJSON 实时输出
 dotnet test tests/AirNet.Core.Tests/AirNet.Core.Tests.csproj     # 纯逻辑单元测试
 
 powershell -File packaging/publish.ps1                           # 裁剪单文件发布 + 实测启动/内存
@@ -193,7 +174,6 @@ culprit=无 precise=True headline=整条路径没有明显瓶颈
 
 ```
 src/AirNet.Core/         探测与诊断内核（无 UI 依赖）
-src/AirNet.Cli/          无头 CLI：scan / watch / history / version
   Probes/                InterfaceInspector · LatencyProbe · ThroughputProbe · EgressProbe
                          ApplicationTimingProbe · TraceProbe · MtuProbe · WlanRadio · MeasurementRunner
   Diagnostics/           NetworkSnapshot · LatencyAnalyzer · DiagnosisEngine
