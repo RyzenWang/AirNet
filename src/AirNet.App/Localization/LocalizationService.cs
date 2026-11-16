@@ -58,6 +58,22 @@ public sealed class LocalizationService
             ["L.Latency"] = ("Latency", "延迟"),
             ["L.Loss"] = ("Loss", "丢包"),
             ["L.Bandwidth"] = ("Bandwidth", "带宽"),
+            ["L.MonitorSubtitle"] = ("60 s window · 20 samples · hop attribution", "60 秒窗口 · 20 次采样 · 逐跳定位"),
+            ["L.ScanAgain"] = ("Scan again", "重新检测"),
+            ["L.SixtySecondsAgo"] = ("60 s ago", "60 秒前"),
+            ["L.Diagnosis"] = ("Diagnosis", "诊断结论"),
+            ["L.ByImpact"] = ("By impact", "按影响排序"),
+            ["L.NextNote"] = ("Export a shareable report, or compare with yesterday at the same time.", "导出可分享的报告，或与昨天同一时段对比。"),
+            ["L.KeyMetrics"] = ("KEY METRICS", "关键指标"),
+            ["L.Scenarios"] = ("Scenarios", "场景体验"),
+            ["L.Predicted"] = ("Predicted", "预测"),
+            ["L.ScenarioNote"] = ("Estimated from latency, jitter, loss and bandwidth", "由延迟、抖动、丢包与带宽共同估算"),
+            ["L.DeepModes"] = ("Deep tests", "模式深测"),
+            ["L.OnDemand"] = ("On demand", "按需"),
+            ["L.GameMeetingNote"] = ("Game: UDP/STUN. Meeting: upload, jitter and loss.", "游戏测 UDP/STUN；会议测上行、抖动与丢包。"),
+            ["L.NatNote"] = ("NAT result is a STUN mapping heuristic, not a full NAT type.", "NAT 结论是 STUN 映射行为启发式，不等于完整 NAT 类型。"),
+            ["L.HopByHop"] = ("Hop by hop", "逐跳"),
+            ["L.FirstPacket"] = ("First-packet split", "首包分解"),
         };
 
     private ResourceDictionary? _dictionary;

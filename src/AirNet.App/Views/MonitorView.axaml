@@ -50,8 +50,8 @@
           RowSpacing="12">
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
         <StackPanel Spacing="1">
-          <TextBlock Text="实时检测" Classes="h3" />
-          <TextBlock Text="60 秒窗口 · 20 次采样 · 逐跳定位"
+          <TextBlock Text="{DynamicResource L.Monitor}" Classes="h3" />
+          <TextBlock Text="{DynamicResource L.MonitorSubtitle}"
                      Classes="caption"
                      FontSize="10.5" />
         </StackPanel>
@@ -65,7 +65,7 @@
           <Button Classes="ghost" Height="30" MinHeight="30" Padding="11,0" Command="{Binding Shell.RunScanCommand}">
             <StackPanel Orientation="Horizontal" Spacing="6">
               <Path Classes="icon small muted" Data="{StaticResource IconRefresh}" />
-              <TextBlock Text="重新检测" FontSize="11.5" VerticalAlignment="Center" />
+              <TextBlock Text="{DynamicResource L.ScanAgain}" FontSize="11.5" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
         </StackPanel>
@@ -189,7 +189,7 @@
                                   GuideBrush="{DynamicResource GuideBrush}" />
 
               <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,7,0,0">
-                <TextBlock Text="60 秒前" Classes="micro" FontSize="10" />
+                <TextBlock Text="{DynamicResource L.SixtySecondsAgo}" Classes="micro" FontSize="10" />
                 <TextBlock Grid.Column="1" Text="{Binding View.PeakText}" Classes="micro" FontSize="10" />
               </Grid>
             </Grid>
@@ -199,9 +199,9 @@
           <Border Classes="card" Padding="18,14">
             <StackPanel Spacing="0">
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="诊断结论" Classes="h3" FontSize="13.5" />
+                <TextBlock Text="{DynamicResource L.Diagnosis}" Classes="h3" FontSize="13.5" />
                 <TextBlock Grid.Column="1"
-                           Text="按影响排序"
+                           Text="{DynamicResource L.ByImpact}"
                            Classes="micro"
                            FontSize="10"
                            VerticalAlignment="Center" />
@@ -248,7 +248,7 @@
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
               <StackPanel Spacing="3" VerticalAlignment="Center">
                 <TextBlock Text="NEXT" Classes="eyebrow" FontSize="9.5" />
-                <TextBlock Text="导出可分享的报告，或与昨天同一时段对比。"
+                <TextBlock Text="{DynamicResource L.NextNote}"
                            Classes="caption"
                            FontSize="10.5"
                            TextWrapping="Wrap"
@@ -275,7 +275,7 @@
                       Opacity="0" />
               <StackPanel Spacing="8">
                 <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Text="关键指标" Classes="eyebrow" VerticalAlignment="Center" />
+                  <TextBlock Text="{DynamicResource L.KeyMetrics}" Classes="eyebrow" VerticalAlignment="Center" />
                   <TextBlock Grid.Column="1"
                              Text="{Binding View.CapturedAtText}"
                              Classes="micro"
@@ -302,8 +302,8 @@
           <Border Classes="card" Padding="14,12">
             <StackPanel Spacing="8">
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="场景体验" Classes="h3" FontSize="13" />
-                <TextBlock Grid.Column="1" Text="预测" Classes="micro" FontSize="10" VerticalAlignment="Center" />
+                <TextBlock Text="{DynamicResource L.Scenarios}" Classes="h3" FontSize="13" />
+                <TextBlock Grid.Column="1" Text="{DynamicResource L.Predicted}" Classes="micro" FontSize="10" VerticalAlignment="Center" />
               </Grid>
               <ItemsControl ItemsSource="{Binding View.Scenarios}">
                 <ItemsControl.ItemTemplate>
@@ -322,7 +322,7 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
-              <TextBlock Text="由延迟、抖动、丢包与带宽共同估算"
+              <TextBlock Text="{DynamicResource L.ScenarioNote}"
                          Classes="micro"
                          FontSize="10"
                          Margin="0,2,0,0" />
@@ -333,10 +333,10 @@
           <Border Classes="card" Padding="14,12">
             <StackPanel Spacing="7">
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="模式深测" Classes="h3" FontSize="13" />
-                <TextBlock Grid.Column="1" Text="按需" Classes="micro" FontSize="10" VerticalAlignment="Center" />
+                <TextBlock Text="{DynamicResource L.DeepModes}" Classes="h3" FontSize="13" />
+                <TextBlock Grid.Column="1" Text="{DynamicResource L.OnDemand}" Classes="micro" FontSize="10" VerticalAlignment="Center" />
               </Grid>
-              <TextBlock Text="游戏测 UDP/STUN；会议测上行、抖动与丢包。"
+              <TextBlock Text="{DynamicResource L.GameMeetingNote}"
                          Classes="micro"
                          FontSize="9.5"
                          TextWrapping="Wrap" />
@@ -392,7 +392,7 @@
                              TextWrapping="Wrap" />
                 </StackPanel>
               </Border>
-              <TextBlock Text="NAT 结论是 STUN 映射行为启发式，不等于完整 NAT 类型。"
+              <TextBlock Text="{DynamicResource L.NatNote}"
                          Classes="micro"
                          FontSize="8.5"
                          TextWrapping="Wrap" />
@@ -403,8 +403,8 @@
           <Border Classes="card" Padding="14,12">
             <StackPanel Spacing="8">
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="链路" Classes="h3" FontSize="13" />
-                <TextBlock Grid.Column="1" Text="逐跳" Classes="micro" FontSize="10" VerticalAlignment="Center" />
+                <TextBlock Text="{DynamicResource L.Path}" Classes="h3" FontSize="13" />
+                <TextBlock Grid.Column="1" Text="{DynamicResource L.HopByHop}" Classes="micro" FontSize="10" VerticalAlignment="Center" />
               </Grid>
               <ItemsControl ItemsSource="{Binding View.Hops}">
                 <ItemsControl.ItemTemplate>
@@ -434,7 +434,7 @@
               <!-- First-byte breakdown: the four segments add up to the number on the right. -->
               <Border Classes="hairline" Margin="0,2" />
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="首包分解" Classes="micro" FontSize="9.5" VerticalAlignment="Center" />
+                <TextBlock Text="{DynamicResource L.FirstPacket}" Classes="micro" FontSize="9.5" VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1"
                            Text="{Binding View.TimingTotalText}"
                            Classes="mono"
